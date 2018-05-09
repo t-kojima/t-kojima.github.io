@@ -73,7 +73,17 @@ pagination_dir: page
 # Extensions
 ## Plugins: https://hexo.io/plugins/
 ## Themes: https://hexo.io/themes/
-theme: landscape
+theme: light
+
+sitemap:
+  path: sitemap.xml
+
+robotstxt:
+  useragent: "*"
+  disallow:
+    - /images/
+  allow:
+  sitemap: https://techblog.pepese.net/sitemap.xml
 
 # Deployment
 ## Docs: https://hexo.io/docs/deployment.html
