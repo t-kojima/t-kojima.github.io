@@ -25,6 +25,8 @@ str = '1 2 3 4 5 6 7'
 
 ## やり方
 
+`toString()`して`replace`する
+
 ```js
 const array = [1, 2, [3, 4, [5, 6, [7]]]]
 const str = array.toString().replace(/,/g, ' ')
@@ -34,9 +36,9 @@ const str = array.toString().replace(/,/g, ' ')
 
 ## 疑似 flatten
 
-文字列にしたものを split すると元の配列を flatten した感じになる。
+文字列にしたものを`split`すると元の配列を`flatten`した感じになる。
 
-疑似って言ってるのは要素にカンマがあると破綻するから
+疑似って言ってるのは数値が文字列になってしまったり、要素が文字列の時にカンマを含むと破綻するから
 
 ```js
 const array = [1, 2, [3, 4, [5, 6, [7]]]]
@@ -44,6 +46,16 @@ const str = array.toString().replace(/,/g, ' ')
 const flat = str.split(' ')
 
 // => [ '1', '2', '3', '4', '5', '6', '7' ]
+```
+
+数値は数値のままにしておきたい場合
+
+```js
+const array = [1, 2, ['a', 'b', [5, 6, [7]]]]
+const str = array.toString().replace(/,/g, ' ')
+const flat = str.split(' ').map(a => Number(a) || a)
+
+// => [ 1, 2, 'a', 'b', 5, 6, 7 ]
 ```
 
 条件付きだけど、手軽に変換できて良いのではないかな
