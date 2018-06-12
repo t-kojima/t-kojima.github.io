@@ -11,5 +11,6 @@ hexo new post <page name>
 ## deploy
 
 ```bash
+hexo clean # clean public directory
 hexo deploy -g
 ```
