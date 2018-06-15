@@ -96,6 +96,8 @@ module.exports = config => {
 })()
 ```
 
+[引用元 : https://developer.cybozu.io/hc/ja/articles/201767270](https://developer.cybozu.io/hc/ja/articles/201767270)
+
 ### テストコード
 
 - test/test.js

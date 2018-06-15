@@ -43,6 +43,8 @@ kintone のチュートリアル[第 2 回 レコード一覧画面にボタン�
 })()
 ```
 
+[参考 : https://developer.cybozu.io/hc/ja/articles/201767270](https://developer.cybozu.io/hc/ja/articles/201767270)
+
 ポイントは以下 3 点
 
 - `myIndexButton.innerHTML`を`{{ message }}`にし、Vue の message が表示されるようにする。
