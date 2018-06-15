@@ -1,5 +1,5 @@
 ---
-title: '[kintone] kintoneのスタブモジュールを作った'
+title: '[kintone] kintoneで自動テスト'
 date: 2018-06-12 15:43:18
 tags:
 - kintone
