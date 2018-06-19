@@ -1,5 +1,5 @@
 ---
-title: 'ネストの深いArrayをフラットな文字列にする'
+title: '[JavaScript] ネストの深いArrayをフラットな文字列にする'
 date: 2018-06-07 14:50:30
 tags:
 - javascript
