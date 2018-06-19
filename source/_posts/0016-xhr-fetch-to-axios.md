@@ -95,3 +95,24 @@ electron 側は localhost という扱いの為、クロスドメインに引っ
 上記の node-fetch の例はさすがに酷いというか、もうちょっとイケてる書き方があるんじゃないかと思うんだけど、それを考える前に axios でいいんじゃないの？という気がしてきた。
 
 実際のところ、400 番台と 500 番台をどう扱うかでどちらを使うか選定する感じがいいのかな。
+
+---
+
+## 追記
+
+async/await にしたら fetch でもスッキリ書けた。
+
+```js
+const fetch = require('node-fetch')
+
+const url = '<url>'
+const headers = {}
+
+const res = await fetch(url, { headers });
+const json = await res.json();
+if (!res.ok) {
+  throw Error(json.message)
+} else {
+  console.log(json.data)
+}
+```
