@@ -227,7 +227,7 @@ export default {
 </script>
 ```
 
-ESLint の設定を変えて `eslint --fix` でフォーマットと自動修正もできるみたいだけど、Prettier を使ってフォーマットをしてみたい（後々.vue ファイルは Prettier じゃないと上手くフォーマットできなかった）
+ESLint の設定を変えて `eslint --fix` でフォーマットと自動修正もできるみたいだけど、Prettier を使ってフォーマットをしてみたい
 
 ### Prettier をインストール
 
