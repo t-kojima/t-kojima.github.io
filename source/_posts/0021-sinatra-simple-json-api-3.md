@@ -7,12 +7,12 @@ tags:
 - rspec
 ---
 
-前の記事（[[Sinatra] シンプルな JSON API サーバーに手を加える（POST で DB 登録）](https://t-kojima.github.io/2018/06/18/0015-sinatra-simple-json-api-2/)）に続いて、RSpec でテストを実施する。
+前の記事（[[Sinatra] シンプルな JSON API サーバーに手を加える（POST で DB 登録）](https://t-kojima.github.io/2018/06/26/0020-sinatra-simple-json-api-2/)）に続いて、RSpec でテストを実施する。
 
 #### おしながき
 
 - POST でデータを登録できるようにする
-- RSpec でテストする
+- **RSpec でテストする**
 - データを JSON Schema でバリデーションする
 
 <!-- more -->
@@ -263,6 +263,8 @@ post /books
 Finished in 4.79 seconds (files took 9.58 seconds to load)
 4 examples, 0 failures
 ```
+
+ただ database_cleaner を入れてから、あからさまに RSpec が遅くなった。もう、目に見えて
 
 ## さいごに
 
