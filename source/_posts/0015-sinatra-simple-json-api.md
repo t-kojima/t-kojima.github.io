@@ -265,7 +265,7 @@ nginx を restart して完了だ
 sudo systemctl restart nginx
 ```
 
-[http://<server_name>/v1/books/1](http://<server_name>/v1/books/1)にアクセスすると、DB の Books テーブルから Id:1 のデータを引っ張ってきて、JSON で返してくれる。
+`http://<server_name>/v1/books/1` にアクセスすると、DB の Books テーブルから Id:1 のデータを引っ張ってきて、JSON で返してくれる。
 
 ## さいごに
 

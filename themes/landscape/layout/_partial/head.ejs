@@ -33,4 +33,7 @@
     <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
   <% } %>
   <%- css('css/style') %>
+  <% if (is_post() && config.generator_amp){ %>
+    <link rel="amphtml" href="<%= config.url %>/<%= page.path %>/amp/index.html">
+  <% } %>
 </head>
