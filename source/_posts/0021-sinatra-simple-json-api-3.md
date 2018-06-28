@@ -117,8 +117,7 @@ POST のテストは DB の登録を含むので、まずテスト用 DB 環境�
 - [sqlalchemy-migrate](https://github.com/openstack/sqlalchemy-migrate)で DB のマイグレーションをする
 - RSpec でテストを行うたびに DB のデータはクリーンアップする
 
-> ここも sqlalchemy-migrate を使うのは、実際の開発で使っているから…  
-> なので、DB のリセットに `rake db:reset` は使えない。
+`ここも sqlalchemy-migrate を使うのは、実際の開発で使っているから… なので、DB のリセットに rake db:reset は使えない。`
 
 #### FactoryBot を使う
 
@@ -188,10 +187,10 @@ end
 { :title => "すごいHaskellたのしく学ぼう!", :author => "Miran Lipovaca", :pages => 391 }
 
 # attributes_for(:book).to_json
-{ "title": "すごいHaskellたのしく学ぼう!", "autho": "Miran Lipovaca", "pages": 391 }
+{ "title": "すごいHaskellたのしく学ぼう!", "author": "Miran Lipovaca", "pages": 391 }
 
 # attributes_for(:book).to_json.to_s
-'{ "title": "すごいHaskellたのしく学ぼう!", "autho": "Miran Lipovaca", "pages": 391 }'
+'{ "title": "すごいHaskellたのしく学ぼう!", "author": "Miran Lipovaca", "pages": 391 }'
 ```
 
 このままレコードが正常登録されるかの spec も追加したいが、このままでは spec 毎に post が走ってレコードがその分登録されてしまう。レコードのカラムにユニーク制約が付いている場合はエラーにもなる。

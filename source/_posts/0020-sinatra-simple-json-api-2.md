@@ -111,7 +111,7 @@ end
 
 ![Mysql2::Error::ConnectionErrorが発生した](/images/20-01.png)
 
-> 実際開発していた API サーバーでのキャプチャなので、アドレスが違うのは勘弁してホシイ
+`※ 実際開発していた API サーバーでのキャプチャなので、アドレスが違うのは勘弁してホシイ`
 
 今回開発環境用の DB として docker で mysql サーバーをローカルに立てていた。しかし mysql2 はソケット接続しようとしていてエラーになっているらしい。解決策はここ（[Ruby On Rails で MySQL の Socket エラーが出た時は素直に localhost を 127.0.0.1 に直すのが一番いいと思う](https://qiita.com/benzookapi/items/07b658700a53155a6263)）にある通り、接続先を`localhost`から`127.0.0.1`に変更することで対応した。
 
