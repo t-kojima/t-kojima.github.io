@@ -1,6 +1,6 @@
 ---
 title: '[Sinatra] シンプルなJSON API サーバーに手を加える（JSON Schema）'
-date: 2018-06-26 16:16:06
+date: 2018-06-28 16:16:06
 tags:
 - ruby
 - sinatra
@@ -24,6 +24,8 @@ JSON Schema とは、ある JSON が正しい構造・仕様を満たしてい�
 
 ### 例 1
 
+Schema
+
 ```json
 {
   "type": "object",
@@ -34,6 +36,8 @@ JSON Schema とは、ある JSON が正しい構造・仕様を満たしてい�
   }
 }
 ```
+
+対象の JSON
 
 ```json
 {
@@ -55,6 +59,8 @@ JSON Schema とは、ある JSON が正しい構造・仕様を満たしてい�
 
 一番外側はオブジェクトじゃなくてもいい、配列（`"type": "array"`）の場合はこうだ
 
+Schema
+
 ```json
 {
   "type": "array",
@@ -63,6 +69,8 @@ JSON Schema とは、ある JSON が正しい構造・仕様を満たしてい�
   }
 }
 ```
+
+対象の JSON
 
 ```json
 [1, 2, 3]
