@@ -14,11 +14,11 @@ tags:
 
 ちなみに以下サイトを参考にしている。というかほとんど下記サイトのまんま
 
-[sinatra でミニマムな Web サービスを公開してみるよ【sinatra + nginx + puma + Capistrano】](https://tisnote.com/sinatra-web-setup-deploy/)
+<a href="https://tisnote.com/sinatra-web-setup-deploy/" class="embedly-card" data-card-image="0" data-card-controls="0" data-card-align="left"></a>
 
 以下はサンプルで作ったリポジトリ
 
-[https://github.com/t-kojima/sinatra-api-sample](https://github.com/t-kojima/sinatra-api-sample)
+<a href="https://github.com/t-kojima/sinatra-api-sample" class="embedly-card" data-card-image="0" data-card-controls="0" data-card-align="left"></a>
 
 ## sinatra を使う
 
@@ -50,7 +50,7 @@ ruby index.rb
 
 業種柄（？）既存システムの DB は SQLServer が多いので、`activerecord-sqlserver-adapter`と`tiny_tds`を使って DB にアクセスする。
 
-[https://github.com/t-kojima/ruby-sqlserver-script](https://github.com/t-kojima/ruby-sqlserver-script)
+<a href="https://github.com/t-kojima/ruby-sqlserver-script" class="embedly-card" data-card-image="0" data-card-controls="0" data-card-align="left"></a>
 
 ```ruby
 require 'bundler/setup'

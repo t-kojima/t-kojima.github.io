@@ -7,19 +7,17 @@ tags:
 - sqlalchemy
 ---
 
-luigiのタスクの`output`をDB登録とする時、前回まででは`SQLAlchemy`との連携を使用した。
+luigi のタスクの`output`を DB 登録とする時、前回まででは`SQLAlchemy`との連携を使用した。
 その中でタスクの`complete`判定は以下のようになっている。
 
 <!-- more -->
 
-- `complete`判定用に`table_updates`テーブルをDB上に持つ。このテーブルは最初に参照された時に自動生成される。
+- `complete`判定用に`table_updates`テーブルを DB 上に持つ。このテーブルは最初に参照された時に自動生成される。
 - 判定は`table_updates`テーブルに`update_id`をキーとしたレコードの有無で判断する。あれば実行済みだ。
 - `update_id`はデフォルトでは`<タスクネームスペース>.<タスク名>_<パラメータ（の一部）>_<パラメータのmd5ハッシュ>`をキーとして使用する。
-- `complete`が`False`の場合、データを対象テーブルにInsertする。
+- `complete`が`False`の場合、データを対象テーブルに Insert する。
 
 ただしこのデフォルト設定にはいくつか問題点がある。
-
-&nbsp;
 
 ## **update_id**が固定
 
@@ -31,29 +29,23 @@ luigiのタスクの`output`をDB登録とする時、前回まででは`SQLAlch
         return self.path
 ```
 
-&nbsp;
-
-## Insertが失敗する可能性がある
+## Insert が失敗する可能性がある
 
 `update_id`は実際に登録するデータのキーと紐づいているわけではないので、`complete`が`False`になったとしてもデータ登録が`Duplicate Key Error`になる可能性がある。ここは`update_id`をプライマリーキーの値にする（もしくはユニークとなる値）よう自力で設定するしかない。
 
-&nbsp;
-
-## InsertではなくUpdateしたい
+## Insert ではなく Update したい
 
 今回の本題がこれ
-データをInsertして`Duplicate Key Error`になる時は、そもそもInsertではなくUpdateしたいという場合だ。（いわゆる`Upsert`）
+データを Insert して`Duplicate Key Error`になる時は、そもそも Insert ではなく Update したいという場合だ。（いわゆる`Upsert`）
 
-MySQLの`ON DUPLICATE KEY UPDATE`機能をSQLAlchemyから呼び出して対応してみたい。
+MySQL の`ON DUPLICATE KEY UPDATE`機能を SQLAlchemy から呼び出して対応してみたい。
 
-[sqla.CopyToTableのソースコードを確認](http://luigi.readthedocs.io/en/stable/_modules/luigi/contrib/sqla.html#CopyToTable.copy)すると、Insert処理をしているのは`copy`メソッドであることがわかる。このメソッドのコメントに以下のようなことが書いてある。
+[sqla.CopyToTable のソースコードを確認](http://luigi.readthedocs.io/en/stable/_modules/luigi/contrib/sqla.html#CopyToTable.copy)すると、Insert 処理をしているのは`copy`メソッドであることがわかる。このメソッドのコメントに以下のようなことが書いてある。
 
->   A task that needs row updates instead of insertions should overload this method.
+> A task that needs row updates instead of insertions should overload this method.
 
-Updateにしたければオーバーロードしろと  
+Update にしたければオーバーロードしろと  
 オーバーライドじゃないのか…？と思いつつ実装してみる
-
-&nbsp;
 
 ### オーバーライド後
 
@@ -70,7 +62,7 @@ class Archive(sqla.CopyToTable):
 
     def requires(self):
         return BuildRecord(path)
-    
+
     def update_id(self):
         return self.path
 
@@ -96,26 +88,22 @@ class Archive(sqla.CopyToTable):
         conn.execute(ins, ins_rows)
 ```
 
-&nbsp;
-
-#### 1行目
+#### 1 行目
 
 ```python
 bound_cols = dict((c, sqlalchemy.bindparam("_" + c.key)) for c in table_bound.columns)
 ```
 
-投入されるデータ（`ins_rows`）はカラム名に`_`がついているので、そのままではカラム名不一致でテーブルに投入できない。その為、カラム名の対応表として上記のdictを作成している。
+投入されるデータ（`ins_rows`）はカラム名に`_`がついているので、そのままではカラム名不一致でテーブルに投入できない。その為、カラム名の対応表として上記の dict を作成している。
 この行は特にいじらず、このままにしておく。
 
-&nbsp;
-
-#### 2行目
+#### 2 行目
 
 ```python
 ins = table_bound.insert().values(bound_cols)
 ```
 
-`values`にカラム名の対応表（1行目で作成したdict）を設定することで、パラメータを更新している。しかしこのままではMySQLに対応していないので`sqlalchemy.dialects.mysql`の`insert`を利用して再定義する。
+`values`にカラム名の対応表（1 行目で作成した dict）を設定することで、パラメータを更新している。しかしこのままでは MySQL に対応していないので`sqlalchemy.dialects.mysql`の`insert`を利用して再定義する。
 
 ```python
 from sqlalchemy.dialects.mysql import insert
@@ -129,38 +117,30 @@ on_duplicate_key = ins.on_duplicate_key_update(
 )
 ```
 
-すると`on_duplicate_key_update`メソッドが使用できるので、`Duplicate Key`の時にUpdateをするカラムを設定することができる。
+すると`on_duplicate_key_update`メソッドが使用できるので、`Duplicate Key`の時に Update をするカラムを設定することができる。
 
-&nbsp;
-
-#### 3行目
+#### 3 行目
 
 ```python
 conn.execute(ins, ins_rows)
 ```
 
-ここは単純にSQLを流している。以下のように書き換えてあげよう。
+ここは単純に SQL を流している。以下のように書き換えてあげよう。
 
 ```python
 conn.execute(on_duplicate_key, ins_rows)
 ```
 
 以上で`Upsert`を実装することができた。
-いままで`Upsert`って使ったことがなかったけど、これってluigiだけじゃなくて普通のSQLAlchemyでも使えるね
+いままで`Upsert`って使ったことがなかったけど、これって luigi だけじゃなくて普通の SQLAlchemy でも使えるね
 
-
-MySQL以外にも、PostgreSQLやSQLiteでもできるらしいが、今回はここまで
-
-
-&nbsp;
+MySQL 以外にも、PostgreSQL や SQLite でもできるらしいが、今回はここまで
 
 ## 参考
 
-- [SQLAlchemy で MySQL の upsert を試す](https://qiita.com/elm200/items/5ba61d8799da99b8d162)  
-- [INSERT…ON DUPLICATE KEY UPDATE (Upsert)](http://docs.sqlalchemy.org/en/latest/dialects/mysql.html#insert-on-duplicate-key-update-upsert)  
+- [SQLAlchemy で MySQL の upsert を試す](https://qiita.com/elm200/items/5ba61d8799da99b8d162)
+- [INSERT…ON DUPLICATE KEY UPDATE (Upsert)](http://docs.sqlalchemy.org/en/latest/dialects/mysql.html#insert-on-duplicate-key-update-upsert)
 - [MySQL DML Constructs](http://docs.sqlalchemy.org/en/latest/dialects/mysql.html#sqlalchemy.dialects.mysql.dml.insert)
-
-&nbsp;
 
 ## 実行環境
 
@@ -168,5 +148,3 @@ MySQL以外にも、PostgreSQLやSQLiteでもできるらしいが、今回は�
 - Python 3.6.3
 - luigi 2.7.2
 - SQLAlchemy 1.2.1
-
-

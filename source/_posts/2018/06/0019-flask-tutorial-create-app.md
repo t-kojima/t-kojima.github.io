@@ -14,7 +14,7 @@ tags:
 
 ## 参考にしたサイト
 
-[How To Structure Large Flask Applications](https://www.digitalocean.com/community/tutorials/how-to-structure-large-flask-applications)
+<a href="https://www.digitalocean.com/community/tutorials/how-to-structure-large-flask-applications" class="embedly-card" data-card-image="0" data-card-controls="0" data-card-align="left"></a>
 
 基本的にはここの手順通り、ただディレクトリ構成とか少し直している。
 

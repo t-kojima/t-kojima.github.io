@@ -5,7 +5,7 @@ tags:
 - vue
 ---
 
-[Vue.js でブラックジャックを作ってみた](https://qiita.com/t2kojima/items/88a924fa3807909e0488)
+<a href="https://qiita.com/t2kojima/items/88a924fa3807909e0488" class="embedly-card" data-card-image="0" data-card-controls="0" data-card-align="left"></a>
 
 Qiita では書かなかった雑感と言い訳を少々
 

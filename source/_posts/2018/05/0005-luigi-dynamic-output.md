@@ -6,9 +6,11 @@ tags:
 - luigi
 ---
 
-最近[luigi](https://github.com/spotify/luigi)というワークフローフレームワークでPythonのバッチ処理を書いている。
+<a href="https://github.com/spotify/luigi" class="embedly-card" data-card-image="0" data-card-controls="0" data-card-align="left"></a>
 
-このluigiの特徴として複数のタスクで依存関係を持たせることができ、以下のような流れで依存関係を解決する。
+最近[luigi](https://github.com/spotify/luigi)というワークフローフレームワークで Python のバッチ処理を書いている。
+
+この luigi の特徴として複数のタスクで依存関係を持たせることができ、以下のような流れで依存関係を解決する。
 
 <!-- more -->
 
@@ -20,19 +22,19 @@ tags:
 
 ## 今回やりたかったこと
 
-今回やりたかったことは以下3点
+今回やりたかったことは以下 3 点
 
-- ターゲットフォルダからファイルを1個自動で選ぶ
+- ターゲットフォルダからファイルを 1 個自動で選ぶ
 - バックアップフォルダへコピーする
-- コピー先のパスをDBに登録する
+- コピー先のパスを DB に登録する
 
 これだけ、内容自体はよくある処理で、個別に実装する分にはイージーだ。
 
 それぞれを`Pickup`,`FileCopy`,`Archive`という名前でタスクを作成する。
 
-- ターゲットフォルダからファイルを1個自動で選ぶ -> `Pickup`
+- ターゲットフォルダからファイルを 1 個自動で選ぶ -> `Pickup`
 - バックアップフォルダへコピーする -> `FileCopy`
-- コピー先のパスをDBに登録する -> `Archive`
+- コピー先のパスを DB に登録する -> `Archive`
 
 処理の流れは`Pickup`->`FileCopy`->`Archive`なんだけど、依存関係を遡って処理していくので最初に動かすタスクは`Archive`になる。
 
@@ -94,26 +96,25 @@ class Archive(luigi.Task):
         return luigi.LocalTarget('archive-output-file')
 ```
 
-
-## outputをどうするか
+## output をどうするか
 
 上記のコードで`output`で出力するファイルをどうするか考える
 
 `Archive`と`Pickup`のようにファイル名が決まっている場合（`requires`で呼ばれたタイミングでは決まっている場合）は問題ないが、`FileCopy`のように動的にファイルを決めたい場合（`requires`時点ではまだファイル名が決定できない場合）は途端に難しくなる。
 
-上記のコードでは`Archive`から依存タスクを遡っていって、実際は`Pickup`が最初に`run`される。この時に処理するファイルが**自動**でピックアップされる（っていう仕様）ので、ここで初めてコピー・DB登録されるファイルが決まるのである。
-しかしluigiでは依存タスクの解決をする時点でファイル名は定まっていなければならない。`Archive`が`FileCopy`に依存しているとチェックする一番最初の箇所で、`FileCopy`の`output`は何というファイルなのかを求められてしまうのだ。
+上記のコードでは`Archive`から依存タスクを遡っていって、実際は`Pickup`が最初に`run`される。この時に処理するファイルが**自動**でピックアップされる（っていう仕様）ので、ここで初めてコピー・DB 登録されるファイルが決まるのである。
+しかし luigi では依存タスクの解決をする時点でファイル名は定まっていなければならない。`Archive`が`FileCopy`に依存しているとチェックする一番最初の箇所で、`FileCopy`の`output`は何というファイルなのかを求められてしまうのだ。
 
-処理されるファイル名が動的に決定するというパターンは決してレアケースではなく、むしろありふれた処理だと思う。しかしluigiではタスクの依存性を解決していく中でファイル名を動的に取得するという動きができない。
+処理されるファイル名が動的に決定するというパターンは決してレアケースではなく、むしろありふれた処理だと思う。しかし luigi ではタスクの依存性を解決していく中でファイル名を動的に取得するという動きができない。
 
 依存性を解決する為にファイル名が必要、ファイル名を決める為には依存性の解決が必要、ルイージのジレンマだ。
 
 ## ではどうするの？
 
 そもそも`requires`と`output`で連鎖的に依存関係を解決していく方法では、`output`の出力ファイルは`requires`時点で決定していなければならない」という制約があることを理解することだ。
-今回のように動的に`output`を定めたい場合は`requires`を用いらずに動的に依存関係を解決する方法がluigiから提供されている。
+今回のように動的に`output`を定めたい場合は`requires`を用いらずに動的に依存関係を解決する方法が luigi から提供されている。
 
-### Dynamic dependenciesを使う
+### Dynamic dependencies を使う
 
 [Dynamic dependencies（動的依存関係）](http://luigi.readthedocs.io/en/stable/tasks.html#dynamic-dependencies)を使うと`run`した際に動的に依存関係を解決できる。
 
@@ -191,10 +192,9 @@ class Archive(luigi.Task):
 だから`FileCopy`の`output`が存在していても、無関係に`Pickup`は毎回実行される。
 まあ、`FileCopy`は動的に処理したいのだから`Pickup`に依存してなくていい、望んでいた形ではある。
 
-
 ## 残課題
 
-- `Archive`はDB登録する処理だから、`output`は[MySqlTarget](http://luigi.readthedocs.io/en/stable/api/luigi.contrib.mysqldb.html)にしたほうがいい
+- `Archive`は DB 登録する処理だから、`output`は[MySqlTarget](http://luigi.readthedocs.io/en/stable/api/luigi.contrib.mysqldb.html)にしたほうがいい
 - `Pickup`は毎回無条件に実施するのであればタスクでなくてよかったかも？以下のコードはその場で処理してしまっていいかもしれない
 
 ```python

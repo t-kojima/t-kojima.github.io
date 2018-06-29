@@ -9,14 +9,18 @@ tags:
 
 ## 適当なキーワードでパッケージを探したら本当にあった
 
-Rubyに[zipline](https://github.com/fringd/zipline)というgemがある。ファイルのリストを渡すとzipに固めてストリーミングダウンロードしてくれるというRails向けのgemだ。今回同じことをPythonで行いたく、似たような機能のパッケージ探してみた。
+<a href="https://github.com/fringd/zipline" class="embedly-card" data-card-image="0" data-card-controls="0" data-card-align="left"></a>
+
+Ruby に[zipline](https://github.com/fringd/zipline)という gem がある。ファイルのリストを渡すと zip に固めてストリーミングダウンロードしてくれるという Rails 向けの gem だ。今回同じことを Python で行いたく、似たような機能のパッケージ探してみた。
 
 <!-- more -->
 
 すると全く同じ名前のパッケージを見つけたけど、これ[zipline](https://github.com/quantopian/zipline)アルゴリズムトレードライブラリだ！
 
-しょうがないからgoogleで「python zip stream」あたりのキーワードで適当に検索を掛けてみると、ドンピシャなパッケージ[python-zipstream](https://github.com/allanlei/python-zipstream)が一発ヒットしてビビる。
+しょうがないから google で「python zip stream」あたりのキーワードで適当に検索を掛けてみると、ドンピシャなパッケージ[python-zipstream](https://github.com/allanlei/python-zipstream)が一発ヒットしてビビる。
 これは使えそうだ
+
+<a href="https://github.com/allanlei/python-zipstream" class="embedly-card" data-card-image="0" data-card-controls="0" data-card-align="left"></a>
 
 ## ダミーファイル作成
 
@@ -25,14 +29,14 @@ Rubyに[zipline](https://github.com/fringd/zipline)というgemがある。フ�
 `dd if=/dev/random of=dummy1.txt bs=1M count=100`
 `for i in {1..10} ; do dd if=/dev/random of=dummy${i}.txt bs=1M count=100; done`
 
-参考：<a href="https://qiita.com/ytyng/items/d7afe80ef9da7aa8b721" rel="noopener" target="_blank">https://qiita.com/ytyng/items/d7afe80ef9da7aa8b721</a>
+参考：[Bash でいろいろループする - Qiita](https://qiita.com/ytyng/items/d7afe80ef9da7aa8b721)
 
-これで`dummy1.txt`～`dummy10.txt`まで100MBのファイルが10個作成された。
+これで`dummy1.txt`～`dummy10.txt`まで 100MB のファイルが 10 個作成された。
 
-## zipをストリーミングダウンロード
+## zip をストリーミングダウンロード
 
 先に成功したコードを挙げておく。
-これで開発環境の場合は`http://localhost:3030/zip`にアクセスすると、`dummy1.txt`～`dummy10.txt`をzipした`files.zip`がストリーミングでダウンロードされる。
+これで開発環境の場合は`http://localhost:3030/zip`にアクセスすると、`dummy1.txt`～`dummy10.txt`を zip した`files.zip`がストリーミングでダウンロードされる。
 
 ```python
 import zipstream
@@ -70,21 +74,21 @@ def zip():
 zip = zipstream.ZipFile(mode='w', compression=zipstream.ZIP_DEFLATED)
 ```
 
-まずはZipFileのインスタンスを作る。`zipstream.ZipFile`は`zipfile.ZipFile`を継承したラッパークラスなので、共通のインターフェースになっている。[ここ](https://docs.python.jp/3/library/zipfile.html)を読むと分かりやすいかもしれない。
+まずは ZipFile のインスタンスを作る。`zipstream.ZipFile`は`zipfile.ZipFile`を継承したラッパークラスなので、共通のインターフェースになっている。[ここ](https://docs.python.jp/3/library/zipfile.html)を読むと分かりやすいかもしれない。
 
 `mode='w'`を指定しているが、ここはデフォルトも`'w'`だし、`'w'`が含まれないと`RuntimeError`になる。
-`compression`はデフォルト`ZIP_STORED`なのでデフォルトだと圧縮されない。取り合えず圧縮したいレベルなら`ZIP_DEFLATED`でおK。
+`compression`はデフォルト`ZIP_STORED`なのでデフォルトだと圧縮されない。取り合えず圧縮したいレベルなら`ZIP_DEFLATED`でお K。
 
 - ZIP_STORED : 圧縮無しでファイルをまとめるだけ
-- ZIP_DEFLATED : 通常のZIP圧縮、`zlib`モジュールが必要
-- ZIP_BZIP2 : BZIP2での圧縮を行う、`bz2`モジュールが必要
-- ZIP_LZMA : LZMAでの圧縮を行う、`lzma`モジュールが必要
+- ZIP_DEFLATED : 通常の ZIP 圧縮、`zlib`モジュールが必要
+- ZIP_BZIP2 : BZIP2 での圧縮を行う、`bz2`モジュールが必要
+- ZIP_LZMA : LZMA での圧縮を行う、`lzma`モジュールが必要
 
 ```python
 zip.write((path / 'dummy1.txt').as_posix(), arcname='1.txt')
 ```
 
-ZipFileインスタンスにファイルを渡していく。ここも`zipfile.ZipFile#write`とインターフェースは同じで、`write('ファイルパス', arcname='アーカイブされるファイル名', compress_type='個別の圧縮指定')`になる。
+ZipFile インスタンスにファイルを渡していく。ここも`zipfile.ZipFile#write`とインターフェースは同じで、`write('ファイルパス', arcname='アーカイブされるファイル名', compress_type='個別の圧縮指定')`になる。
 ここでディレクトリを渡してしまうと**空のディレクトリ**が入ってしまうので注意が必要。
 
 `write_iter(arcname, iterable, compress_type)`メソッドではファイルパスではなくイテレータを渡すこともできるようだ。
@@ -109,13 +113,13 @@ return response
 
 最後は`bottle`の`response`部分だ。`Content-Type`は`'application/zip'`を指定する。`Content-Disposition`にはファイルをアタッチすることで即ダウンロードする動きをしてくれる。`response.body`はジェネレータを受けることができるので、`generator()`関数をそのままセットするとストリーム処理するようになってくれる、ありがたい。
 
-## Content-Lengthは？
+## Content-Length は？
 
 `Content-Length`を指定しないとダウンロードの残り時間表示が「**不明**」になってしまうが、圧縮後のサイズが事前に分からないのでここはしょうがない。
 試しに`Content-Length`に適当な値を設定してみたら、ダウンロードが強制中断になってしまった。
 
-
 ## 実行環境
+
 - Python 3.6.3
 - bottle 0.12.13
 - zipstream 1.1.4

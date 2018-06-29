@@ -9,15 +9,15 @@ tags:
 
 前回の残課題
 
-- `Archive`はDB登録する処理だから、`output`は[MySqlTarget](http://luigi.readthedocs.io/en/stable/api/luigi.contrib.mysqldb.html)にしたほうがいい
+- `Archive`は DB 登録する処理だから、`output`は[MySqlTarget](http://luigi.readthedocs.io/en/stable/api/luigi.contrib.mysqldb.html)にしたほうがいい
 
-どうやって`output`をDB登録にするか、普段`SQLAlchemy`を使っているので`SQLAlchemy`との連携をやりたいと思う。
+どうやって`output`を DB 登録にするか、普段`SQLAlchemy`を使っているので`SQLAlchemy`との連携をやりたいと思う。
 
 <!-- more -->
 
 ## 前回のコード
 
-前回のコードは以下のものだ、`output`がファイル出力になっているのでこれをDB登録に対応させていく
+前回のコードは以下のものだ、`output`がファイル出力になっているのでこれを DB 登録に対応させていく
 
 ```python
 import luigi
@@ -43,8 +43,11 @@ class Archive(luigi.Task):
         return luigi.LocalTarget('archive-output-file')
 ```
 
-参考にしたのは
-[Python: データパイプライン構築用フレームワーク Luigi を使ってみる](http://blog.amedama.jp/entry/2017/05/13/203907)と[Using SQLAlchemy in Luigi Workflow Pipeline](http://gouthamanbalaraman.com/blog/sqlalchemy-luigi-workflow-pipeline.html)と[公式ドキュメント](http://luigi.readthedocs.io/en/stable/api/luigi.contrib.sqla.html)
+参考にしたのは以下
+
+- [Python: データパイプライン構築用フレームワーク Luigi を使ってみる](http://blog.amedama.jp/entry/2017/05/13/203907)
+- [Using SQLAlchemy in Luigi Workflow Pipeline](http://gouthamanbalaraman.com/blog/sqlalchemy-luigi-workflow-pipeline.html)
+- [公式ドキュメント](http://luigi.readthedocs.io/en/stable/api/luigi.contrib.sqla.html)
 
 ## データベースの準備
 
@@ -76,8 +79,6 @@ def downgrade(migrate_engine):
     meta.bind = migrate_engine
     table.drop()
 ```
-
-
 
 ## Dynamic dependencies
 
@@ -136,19 +137,19 @@ class Archive(sqla.CopyToTable):
         return BuildRecord()
 ```
 
-これでDB登録できるようなった！
+これで DB 登録できるようなった！
 
-基本的な流れは今まで通り、`Archive`タスクを実行すると`requires`で`BuildRecord`を呼び、`BuildRecord`の`run`でデータを作成、`Archive`に戻ってSQLAlchemyでDB登録という形だ。
+基本的な流れは今まで通り、`Archive`タスクを実行すると`requires`で`BuildRecord`を呼び、`BuildRecord`の`run`でデータを作成、`Archive`に戻って SQLAlchemy で DB 登録という形だ。
 
 細かな注意点は以下の通りだ
 
-- 登録するデータは`\t`で区切った文字列で渡す。今回は1行のみだが、複数行渡す場合は`\n`で改行する。
+- 登録するデータは`\t`で区切った文字列で渡す。今回は 1 行のみだが、複数行渡す場合は`\n`で改行する。
 - 区切り文字`\t`は`column_separator`オプションで変更可能
-- `id`は*AUTO INCREMENT*だが、登録データを空白にするとカラムがずれるので`0`を指定してあげる。そうするとInsertする時にちゃんと*AUTO INCREMENT*してくれる。
+- `id`は*AUTO INCREMENT*だが、登録データを空白にするとカラムがずれるので`0`を指定してあげる。そうすると Insert する時にちゃんと*AUTO INCREMENT*してくれる。
 
 ## `sqla.CopyToTable`の`output`
 
-`Archive`タスクは`output`としてレコードをDBに登録することができたが、このレコードを削除したら次にタスクを回した時再度登録されるだろうか？
+`Archive`タスクは`output`としてレコードを DB に登録することができたが、このレコードを削除したら次にタスクを回した時再度登録されるだろうか？
 
 実際やってみると再登録はされない。それどころか`Archive`処理自体が走らなくなる。
 
@@ -157,21 +158,16 @@ class Archive(sqla.CopyToTable):
 つまりタスクとパラメータが同一ならキーが変わらないので`sqla.CopyToTable`は走らない。
 そしてこの情報は`table_updates`というテーブルが自動的に作成されて保存されている。
 
-今回の要件だとタスクのIDよりもレコードの内容で`complete`を判定して欲しい。具体的にはユニークである`filename`のカラムだ。
+今回の要件だとタスクの ID よりもレコードの内容で`complete`を判定して欲しい。具体的にはユニークである`filename`のカラムだ。
 しかし`Archive`タスクで`update_id`メソッドをオーバーライドしようとしても、`complete`を判定するタイミングで`filename`はわからない。ジレンマの再来だ。
-
-
 
 ## 残課題
 
 - `update_id`をオーバーライドして、レコード内容をもとに`complete`判定をするようにしたい。現状ではパラメータを渡さなければ一回限りの実行しかしないし、何かしらパラメータを渡しても無条件で`run`が走る形になってしまう。
 
-
-
 ## 余談
 
 サンプルでも`MockTarget`使ってる…`MockTarget`はユニットテスト用途と言われているけど、やっぱり`output`がファイルである必要性が無いタスクは`MockTarget`使ったほうがスマートだよね
-
 
 ## 実行環境
 

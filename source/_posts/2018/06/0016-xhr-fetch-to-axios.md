@@ -17,7 +17,7 @@ electron-vue のテンプレートを使った時に axios がデフォルトで
 
 と思っていたら機能比較の一覧を見つけた。これは便利
 
-[https://www.javascriptstuff.com/ajax-libraries/](https://www.javascriptstuff.com/ajax-libraries/)
+<a href="https://www.javascriptstuff.com/ajax-libraries/" class="embedly-card" data-card-image="0" data-card-controls="0" data-card-align="left"></a>
 
 ただ Concise Syntax と Formal Specification が具体的に何を指しているのか良く分からなかった。簡素な記述ができるか？公式の仕様があるか？って意味でいいんだろうか。
 
@@ -33,9 +33,9 @@ import axiosbase from 'axios'
 const axios = axiosbase.create({
   baseURL: 'http://<domain>',
   headers: {
-    'Content-Type': 'application/json'
+    'Content-Type': 'application/json',
   },
-  responseType: 'json'
+  responseType: 'json',
 })
 
 export default function() {
@@ -58,7 +58,7 @@ fetch(url, { headers })
   .then(res =>
     res.json().then(data => ({
       ok: res.ok,
-      data
+      data,
     }))
   )
   .then(res => {

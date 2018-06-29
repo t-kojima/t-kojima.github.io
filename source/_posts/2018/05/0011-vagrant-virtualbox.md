@@ -6,7 +6,7 @@ tags:
 - virtualbox
 ---
 
-Vagrantというものを使ってみたく、Windows10でVirtualBox+Vagrantの環境を構築してみる。
+Vagrant というものを使ってみたく、Windows10 で VirtualBox+Vagrant の環境を構築してみる。
 
 <!-- more -->
 
@@ -14,34 +14,36 @@ Vagrantというものを使ってみたく、Windows10でVirtualBox+Vagrantの�
 
 ### Vagrant
 
+<a href="https://www.vagrantup.com/downloads.html" class="embedly-card" data-card-image="0" data-card-controls="0" data-card-align="left"></a>
+
 特に問題なく、ふつーにインストール
-[https://www.vagrantup.com/downloads.html](https://www.vagrantup.com/downloads.html)
 
 ### VirtualBox
 
-[https://www.virtualbox.org/wiki/Downloads](https://www.virtualbox.org/wiki/Downloads)
+<a href="https://www.virtualbox.org/wiki/Downloads" class="embedly-card" data-card-image="0" data-card-controls="0" data-card-align="left"></a>
 
-5.2.10は技術的な理由で今は使えないとのこと、5.2.8をダウンロードしインストールする。
+5.2.10 は技術的な理由で今は使えないとのこと、5.2.8 をダウンロードしインストールする。
 
-[https://www.virtualbox.org/wiki/Download_Old_Builds_5_2](https://www.virtualbox.org/wiki/Download_Old_Builds_5_2)
+<a href="https://www.virtualbox.org/wiki/Download_Old_Builds_5_2" class="embedly-card" data-card-image="0" data-card-controls="0" data-card-align="left"></a>
 
-## CentOS7を動かす
+## CentOS7 を動かす
 
-```
+```bash
 vagrant init geerlingguy/centos7; vagrant up --provider virtualbox
 ```
 
-vagrantでCentOS7を動かしてみる。
+vagrant で CentOS7 を動かしてみる。
 
-```
+```bash
 Stderr: VBoxManage.exe: error: VT-x is not available (VERR_VMX_NO_VMX)
 VBoxManage.exe: error: Details: code E_FAIL (0x80004005), component ConsoleWrap, interface IConsole
 ```
 
-エラーだ…`VT-x is not available`？はて、BIOSの設定は有効になっているはず…
+エラーだ…`VT-x is not available`？はて、BIOS の設定は有効になっているはず…
 
-http://mochalog.hatenablog.com/entry/2015/12/04/143827
-http://www.cyamax.com/entry/2017/05/07/060000
+<a href="http://mochalog.hatenablog.com/entry/2015/12/04/143827" class="embedly-card" data-card-image="0" data-card-controls="0" data-card-align="left"></a>
+
+<a href="http://www.cyamax.com/entry/2017/05/07/060000" class="embedly-card" data-card-image="0" data-card-controls="0" data-card-align="left"></a>
 
 うおおお`Hyper-v`動いてるとダメなんかい…
 
@@ -49,30 +51,30 @@ http://www.cyamax.com/entry/2017/05/07/060000
 
 しかたないので`virtualbox`は諦めて`Hyper-v`で動かす方向でがんばる
 
-[https://qiita.com/nibral/items/94de6b9787e2aface2aa](https://qiita.com/nibral/items/94de6b9787e2aface2aa)
+<a href="https://qiita.com/nibral/items/94de6b9787e2aface2aa" class="embedly-card" data-card-image="0" data-card-controls="0" data-card-align="left" data-card-description="0"></a>
 
-```
+```bash
 vagrant init geerlingguy/centos7; vagrant up --provider hyperv
 ```
 
-```
+```bash
 The box you're attempting to add doesn't support the provider
 you requested. Please find an alternate box or use an alternate
 provider. Double-check your requested provider to verify you didn't
 simply misspell it.
+
+> お使いの Box は Hyper-v をサポートしておりません。。。
 ```
 
-> お使いのBoxはHyper-vをサポートしておりません。。。
-
-[https://app.vagrantup.com/boxes/search](https://app.vagrantup.com/boxes/search)でproviderをhypervにして再度検索
+[https://app.vagrantup.com/boxes/search](https://app.vagrantup.com/boxes/search)で provider を hyperv にして再度検索
 
 [https://app.vagrantup.com/generic/boxes/centos7](https://app.vagrantup.com/generic/boxes/centos7)に決めた！
 
-```
+```bash
 vagrant init generic/centos7; vagrant up --provider hyperv
 ```
 
-```
+```bash
 Script: import_vm_vmcx.ps1
 Error:
 
@@ -84,13 +86,13 @@ Hyper-V\Compare-VM : 仮想マシンをインポートできませんでした�
     + FullyQualifiedErrorId : Unspecified,Microsoft.HyperV.PowerShell.Commands.CompareVM
 ```
 
-Hyper-vのコンソールから全然関係ない仮想マシンをインポートしようとしたらこれもコケる。どうもHyper-vの「インポート」そのものが死んでる模様...？
+Hyper-v のコンソールから全然関係ない仮想マシンをインポートしようとしたらこれもコケる。どうも Hyper-v の「インポート」そのものが死んでる模様...？
 
 心当たりはある。
 
-手持ちのPCとWindows10の相性が悪く`Fall Creaters Update`を適用していないのだ。（以前適用したらエクスプローラが死ぬという致命的な障害が発生して解決できなかった為…）
+手持ちの PC と Windows10 の相性が悪く`Fall Creaters Update`を適用していないのだ。（以前適用したらエクスプローラが死ぬという致命的な障害が発生して解決できなかった為…）
 
-試しにboxのバージョンを下げてみる
+試しに box のバージョンを下げてみる
 
 ```ruby
 Vagrant.configure("2") do |config|
@@ -99,7 +101,7 @@ Vagrant.configure("2") do |config|
 end
 ```
 
-```
+```bash
 Script: import_vm_vmcx.ps1
 Error:
 
@@ -113,11 +115,11 @@ Hyper-V\Connect-VMNetworkAdapter : Hyper-V で、"螟夜Κ繝阪ャ繝医Ρ繝�
 
 エラーが変わった！[これ](https://qiita.com/euledge/items/fff2659093a13a1e888f)だ！
 
-これはリンク先の「既定のスイッチ」の問題ではなく、単に自分が日本語で仮想スイッチを作成していただけであった。（Hyper-vのバージョンが低いから「既定のスイッチ」がそもそも無い）
+これはリンク先の「既定のスイッチ」の問題ではなく、単に自分が日本語で仮想スイッチを作成していただけであった。（Hyper-v のバージョンが低いから「既定のスイッチ」がそもそも無い）
 
 仮想スイッチ名をアルファベットのみに修正して再度実行
 
-```
+```bash
     default: Inserting generated public key within guest...
     default: Removing insecure key from the guest if it's present...
     default: Key inserted! Disconnecting and reconnecting using new SSH key...
@@ -134,5 +136,5 @@ Hyper-V\Connect-VMNetworkAdapter : Hyper-V で、"螟夜Κ繝阪ャ繝医Ρ繝�
 
 ## 実行環境
 
-- Windows10 (バージョン1607 ビルド14393.1884)
+- Windows10 (バージョン 1607 ビルド 14393.1884)
 - Vagrant 2.0.4

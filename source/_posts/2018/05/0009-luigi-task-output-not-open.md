@@ -6,14 +6,13 @@ tags:
 - luigi
 ---
 
-ちょっとニッチな状況でハマったのでメモ  
+ちょっとニッチな状況でハマったのでメモ
 
 `run`でファイルコピーするだけのタスクを作った時、ファイルコピーを以下のようにやってしまった。
 
 <!-- more -->
 
 ```python
-
 import shutil
 from luigi import Task
 
@@ -24,10 +23,7 @@ class UserTask(Task):
 
     def output(self):
         return LocalTarget('<output path>')
-
 ```
-
-<br/>
 
 ## ディレクトリを自動で作ってくれない
 
@@ -48,7 +44,7 @@ class UserTask(Task):
             output.write(input.read())
 ```
 
-## ユニットテスト時にMockTargetでパッチできない
+## ユニットテスト時に MockTarget でパッチできない
 
 パッチできないわけではないけど、意図した動きにならなかった。
 
@@ -97,7 +93,7 @@ if __name__ == "__main__":
 
 ここも`shutil.copy`ではなく`self.output().open('w')`でやれば問題なかった。
 
-## パッチはするけどLocalTargetで
+## パッチはするけど LocalTarget で
 
 モックでパッチするけど、`MockTarget`ではなく`LocalTarget`で`is_tmp`する形にしている。
 

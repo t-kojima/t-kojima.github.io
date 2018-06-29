@@ -296,7 +296,7 @@ yarn eslint src/App.vue --fix
 
 動かないらしい
 
-[https://github.com/prettier/prettier-vscode/issues/338](https://github.com/prettier/prettier-vscode/issues/338)
+<a href="https://github.com/prettier/prettier-vscode/issues/338" class="embedly-card" data-card-image="0" data-card-controls="0" data-card-align="left"></a>
 
 VSCode の設定で、vetur.format.defaultFormatter.js が prettier になっているが
 

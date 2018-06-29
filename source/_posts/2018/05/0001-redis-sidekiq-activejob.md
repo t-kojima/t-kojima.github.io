@@ -16,7 +16,7 @@ tags:
 
 <!-- more -->
 
-[Active Job の基礎](https://railsguides.jp/active_job_basics.html)
+<a href="https://railsguides.jp/active_job_basics.html" class="embedly-card" data-card-image="0" data-card-controls="0" data-card-align="left"></a>
 
 冒頭にActiveJobの目的なるものが書いてある。
 

@@ -21,13 +21,13 @@ ReferenceError: kintone is not defined
 
 kintuba という npm モジュールとして作成した。
 
-[https://github.com/t-kojima/kintuba](https://github.com/t-kojima/kintuba)
+<a href="https://github.com/t-kojima/kintuba" class="embedly-card" data-card-image="0" data-card-controls="0" data-card-align="left"></a>
 
 当初`kintone stub`を省略した`kintub`という名前にしようかと思ったが、ググったらやたらと「きんつば」が出てきたので`kintuba`にした。
 
 一応単体でも動作するけど、ブラウザテストが本筋な気がしたので karma プラグインも一緒に作った。
 
-[https://github.com/t-kojima/karma-kintuba](https://github.com/t-kojima/karma-kintuba)
+<a href="https://github.com/t-kojima/karma-kintuba" class="embedly-card" data-card-image="0" data-card-controls="0" data-card-align="left"></a>
 
 ## 使用例
 
@@ -71,7 +71,7 @@ module.exports = config => {
     autoWatch: true,
     browsers: ['Chrome'],
     singleRun: true,
-    concurrency: Infinity
+    concurrency: Infinity,
   })
 }
 ```

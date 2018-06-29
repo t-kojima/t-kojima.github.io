@@ -176,4 +176,6 @@ params = JSON.parse(request.body.read).with_indifferent_access
 
 ## 参考
 
-[【Sinatra】POST メソッドで JSON を受け取りたい](https://qiita.com/izumin5210/items/caf66ece1f67a0fd6a4c)
+- [【Sinatra】POST メソッドで JSON を受け取りたい - Qiita](https://qiita.com/izumin5210/items/ca f66ece1f67a0fd6a4c)
+- [Ruby On Rails で MySQL の Socket エラーが出た時は素直に localhost を 127.0.0.1 に直すのが一番いいと思う - Qiita](https://qiita.com/benzookapi/items/07b658700a53155a6263)
+- [Hash から文字列でもシンボルでも値を取り出す - Qiita](https://qiita.com/QUANON/items/169c73425a6bc50dee51)

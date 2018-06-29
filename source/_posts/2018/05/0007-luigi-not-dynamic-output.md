@@ -12,9 +12,9 @@ tags:
 
 <!-- more -->
 
-前回まででluigiの動的アウトプット（Dynamic dependencies）でなんとか凌ごうとしていたが、依存関係が増える毎に上記の問題が頻発しうることが分かった。
+前回までで luigi の動的アウトプット（Dynamic dependencies）でなんとか凌ごうとしていたが、依存関係が増える毎に上記の問題が頻発しうることが分かった。
 
-ファイルのピックアップ処理が依存関係を辿った時に一番上流にあるからといって、無理やりluigiのタスクに落とし込んだところが失敗だったのかなと思う。
+ファイルのピックアップ処理が依存関係を辿った時に一番上流にあるからといって、無理やり luigi のタスクに落とし込んだところが失敗だったのかなと思う。
 
 ## 修正後のコード
 
@@ -93,7 +93,7 @@ class Archive(sqla.CopyToTable):
 
     def requires(self):
         return BuildRecord(path)
-    
+
     def update_id(self):
         return self.path
 ```
@@ -120,15 +120,13 @@ class FileCopy(luigi.Task):
         # 例えば以下のような形
         # output_path = '/path/to/dst' / Path(self.path).name
         return luigi.LocalTarget('<アウトプットパス>')
-
 ```
 
 `FileCopy`タスク、ファイルパスをパラメータで受け取りファイルコピーを行う。`Pickup`タスクが無くなったので、このタスクが最上流になる。
 
-----
+---
 
 前回のコードよりもスッキリしたと思う。
-
 
 ## 実行環境
 
@@ -137,4 +135,3 @@ class FileCopy(luigi.Task):
 - luigi 2.7.2
 - SQLAlchemy 1.2.1
 - sqlalchemy-migrate 0.11.0
-
