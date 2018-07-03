@@ -84,3 +84,20 @@ Format Link というアドオンを Firefox に追加する。そして FormatL
 ## おわりに
 
 はてなブログカードには及ばないと思うけど、結構見た目はいいし、マークダウンデフォルトのリンクよりかはかなりマシになったのではないかな！
+
+## 7/4 追記
+
+ブログカードの背景色が無しだとブログの文章とブログカードの内容の判別がつきにくいので、ブログカードに背景色をつけた。
+
+`/themes/landscape/source/css/_embedly.styl` というファイルを作り以下の内容にして
+
+```css
+.embedly-card
+    padding: 5px
+.embedly-card-hug
+    padding: 5px !important
+    border-radius: 10px
+    background: #EEE
+```
+
+`/themes/landscape/source/css/style.styl`に import する。これで見やすくなった。
