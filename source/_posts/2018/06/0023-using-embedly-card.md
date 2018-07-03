@@ -1,7 +1,8 @@
 ---
-title: 0023-using-embedly-card
+title: "[Hexo] リンクをブログカード風にしてみる"
 date: 2018-06-29 17:12:20
 tags:
+- hexo
 ---
 
 <blockquote class="embedly-card" data-card-controls="0"><h4><a href="https://embed.ly/">Embedly makes your content more engaging and easier to share | Embedly</a></h4><p>Embedly delivers the ultra-fast, easy to use products and tools for richer sites and apps.</p></blockquote>
@@ -27,3 +28,59 @@ Embedly のサイトから Card を生成できるが、デフォルトだと以
 - アイキャッチがやたらでかい
 - description がサイトによってはやたら長い
 - 中央寄せしかできない
+
+サイトのジェネレータからは一部の属性しか付与できないが、以下のドキュメントを見るに手動で追加できる属性がいくつかありそうだ
+
+<a href="https://docs.embed.ly/docs/cards" class="embedly-card" data-card-image="0" data-card-controls="0" data-card-align="left"></a>
+
+そこで以下のようにタグに属性を追加してやることで、上記の気になる点はいくつか解消できそうだ
+
+```html
+<a href="<url>" class="embedly-card" data-card-image="0" data-card-controls="0" data-card-align="left"></a>
+```
+
+これでアイキャッチは非表示にし、左寄せのカードになっている。場合によっては `data-card-description="0"` で description を消してしまってもいい
+
+### CDN を読みこませる
+
+上記の a タグは class を指定しているだけなので、当然あれだけではブログカードっぽくならない。以下のスクリプトもセットだ
+
+```html
+<script async src="//cdn.embedly.com/widgets/platform.js" charset="UTF-8"></script>
+```
+
+こちらはページロード時に一度読みこめばいい。
+
+ただヘッダに追加してしまうと、明らかにページのロードが遅くなるので、Body の末尾に追加する。landscape テーマだと以下の場所だ
+
+```html
+<!-- themes/landscape/layout/layout.ejs -->
+<%- partial('_partial/head') %>
+<body>
+  <div id="container">
+    <!-- 省略 -->
+  </div>
+  <script async src="//cdn.embedly.com/widgets/platform.js" charset="UTF-8"></script>
+</body>
+</html>
+```
+
+## タグの自動生成
+
+これで表示は問題ないが、あの a タグを毎回打ちたくはないので自動生成しよう
+
+`ボクが普段使ってるのはFirefoxなので、Firefoxアドオンでやります`
+
+<a href="https://addons.mozilla.org/ja/firefox/addon/format-link3/?src=userprofile" class="embedly-card" data-card-image="0" data-card-controls="0" data-card-align="left"></a>
+
+Format Link というアドオンを Firefox に追加する。そして FormatLink settings に以下のフォーマットを追加してあげる
+
+```html
+<a href="{{url}}" class="embedly-card" data-card-image="0" data-card-controls="0" data-card-align="left"></a>
+```
+
+そしてリンクを作りたいサイトでコンテキストメニューを開き、Format Link を選ぶと上記のフォーマット形式で対象のリンクがクリップボードにコピーされる。あとはそれを貼り付けるだけだ。
+
+## おわりに
+
+はてなブログカードには及ばないと思うけど、結構見た目はいいし、マークダウンデフォルトのリンクよりかはかなりマシになったのではないかな！
