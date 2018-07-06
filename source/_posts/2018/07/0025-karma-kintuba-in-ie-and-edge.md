@@ -1,5 +1,5 @@
 ---
-title: [karma-kintuba] ES2017で書かれたモジュール・テストをIEで動かしたい
+title: '[karma-kintuba] ES2017で書かれたモジュール・テストをIEで動かしたい'
 date: 2018-07-06 11:43:55
 tags:
 - karma
