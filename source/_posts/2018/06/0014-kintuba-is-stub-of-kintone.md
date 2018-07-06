@@ -40,7 +40,7 @@ kintuba という npm モジュールとして作成した。
 ```bash
 yarn add --dev kintuba karma-kintuba
 yarn add --dev mocha chai
-yarn add --dev karma karma-mocha karma-chai karma-cli karma-chrome-launcher
+yarn add --dev karma karma-mocha karma-chai karma-cli karma-chrome-launcher karma-mocha-reporter
 ```
 
 今回はやらないけど、alert とか confirm のテストもするなら sinon があるといい
