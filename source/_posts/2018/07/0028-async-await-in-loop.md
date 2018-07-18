@@ -320,7 +320,7 @@ array
 
 # 余談
 
-全部書いてから下記を見つけた。
+全部書いてから下記を見つけた。これでいいじゃん…
 
 <a href="https://qiita.com/toniov/items/127267fb64a960e8166e" class="embedly-card" data-card-image="0" data-card-controls="0" data-card-align="left"></a>
 

@@ -1,6 +1,6 @@
 ---
 title: '[Kintone] カスタムJS（CSS)ファイルのアップロードモジュールを作った'
-date: 2018-07-18 08:07:37
+date: 2018-07-19 00:07:37
 tags:
 - kintone
 ---
@@ -51,8 +51,8 @@ kinpost({
   files: [
     { path: './js/sample.js' },
     { path: './js/mobile.js', platform: 'mobile' },
-    { path: './css/global.css', type: 'css' },
-  ],
+    { path: './css/global.css', type: 'css' }
+  ]
 })
 ```
 
@@ -62,7 +62,7 @@ kinpost({
 - スマートフォン用 JavaScript ファイルに `mobile.js`
 - PC 用 CSS ファイルに `global.css`
 
-手間はほとんど変わらないけど、npm スクリプトとして登録しておいても良い。
+素の実行と手間はほとんど変わらないけど、npm スクリプトとして登録しておいても良い。
 
 ```js
   "scripts": {
@@ -105,6 +105,10 @@ kinpost({
 
 本番デプロイはオプションにして、基本はテスト環境への反映にしたほうがいいかもしれない…
 
+### 追記
+
+v1.0.1 で本番デプロイをオプションにした。
+
 ## ファイル指定方法
 
 kinpost のファイルの指定方法を見てたらこれはこれで面倒くさい気がしてきた。ファイル指定じゃなくて、ディレクトリ指定もできるようにすると楽かも
@@ -118,6 +122,6 @@ kinpost({
   username: 'user@example.com',
   password: '**********',
   files: [],
-  dirs: [{ path: './js' }], // jsディレクトリ配下の全ファイルをdesktop/jsとしてアップロード
+  dirs: [{ path: './js' }] // jsディレクトリ配下の全ファイルをdesktop/jsとしてアップロード
 })
 ```
