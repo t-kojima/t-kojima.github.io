@@ -275,6 +275,19 @@ array
 
 原理は一緒、ただ accumulator のメソッドを呼び出したい場合は一度変数（`acc`）を経由して Promise を resolve する。また、return する時に Promise で再パックする必要がある。ちょいめんどい。
 
+### 7/19 追記
+
+もっと簡単に書けた
+
+```js
+array
+  .reduce(
+    async (promise, cur) => [...(await promise), (await echo(cur)) * 2],
+    Promise.resolve([])
+  )
+  .then(console.log)
+```
+
 ## 要素をオブジェクト化
 
 同様にオブジェクト化してみる。キーをインデックス、値はそのまま値として、以下のようなものに変換したい。
@@ -306,6 +319,22 @@ array
 ```
 
 問題なく取得できた。
+
+### 7/19 追記 2
+
+こっちももっと簡単に書けた
+
+```js
+array
+  .reduce(
+    async (promise, cur, index) => ({
+      ...(await promise),
+      [index]: await echo(cur),
+    }),
+    Promise.resolve({})
+  )
+  .then(console.log)
+```
 
 # まとめ
 
