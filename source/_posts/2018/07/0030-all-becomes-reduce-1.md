@@ -1,14 +1,18 @@
 ---
 title: '全てがReduceになる(1)'
-date: 2018-07-19 16:24:23
+date: 2018-07-21 04:35:23
 tags:
 - javascript
-- node
+- nodejs
 ---
 
 ごめんなさいタイトルが言いたかっただけです。
-
 それはそうと reduce をいじっていると**なんでもできそうな気がしてきた**ので、Array のメソッドを再実装してみる。
+
+- concat
+- copyWithin
+- entries
+- every
 
 <!-- more -->
 
@@ -16,21 +20,19 @@ prototype 汚染なんか気にしないでガンガン上書きしちゃうぞ�
 
 [Array - JavaScript | MDN](https://developer.mozilla.org/ja/docs/Web/JavaScript/Reference/Global_Objects/Array)のメソッドを上から順にやっつけていく。
 
-<!-- toc -->
-
 # おさらい
 
 はじめに reduce の仕様をおさらい。
 
 <a href="https://developer.mozilla.org/ja/docs/Web/JavaScript/Reference/Global_Objects/Array/reduce" class="embedly-card" data-card-image="0" data-card-controls="0" data-card-align="left"></a>
 
-構文
+## 構文
 
 ```js
 array.reduce(callback[, initialValue])
 ```
 
-使用例（Sum）
+## 使用例（Sum）
 
 ```js
 ;[1, 2, 3].reduce(function(accumulator, currentValue, currentIndex, array) {
@@ -39,12 +41,14 @@ array.reduce(callback[, initialValue])
 // > 6
 ```
 
+## 説明
+
 基本的にはレシーバとなる配列の反復処理を行う。callback は要素の数の分だけ呼び出されるが、その時各引数は以下の値を取る。
 
 - accumulator : 前の要素の return 結果
 - currentValue : 現在の要素値
 - currentIndex : 現在の要素のインデクス
-- array : レシーバの配列
+- array : レシーバ自身
 
 最後の要素の return 結果が、最終的な reduce の戻り値として返される。
 また、最初の要素の accumulator は initialValue の値となり、initialValue を省略した場合は accumulator が最初の要素、currentValue が二番目の要素になる。
@@ -73,13 +77,15 @@ array.reduce(callback[, initialValue])
 
 concat は二つの配列を結合し、新しい配列を返すメソッド。
 
-構文
+## 構文
 
 ```js
 var new_array = old_array.concat(value1[, value2[, ...[, valueN]]])
 ```
 
-reduce のみで実装した結果がこれ
+## 再実装
+
+reduce を使って実装した結果がこれ
 
 ```js
 Array.prototype.concat = function(array) {
@@ -107,7 +113,7 @@ console.log(array.concat([5, 6, 7, 8]))
 
 copyWithin は配列の指定の範囲を別の範囲に上書きする。
 
-構文
+## 構文
 
 ```js
 arr.copyWithin(target[, start = 0[, end = this.length]])
@@ -131,6 +137,8 @@ arr.copyWithin(target[, start = 0[, end = this.length]])
 - this 自身を変更し、this を返す。
 
 逆に copyWithin は generic な関数として動作するとあるが、reduce が実装されていない型では動作できないので、この点は考慮しない。
+
+## 再実装
 
 これを reduce で実装するとこうなる
 
@@ -209,7 +217,15 @@ copyWithin は動作確認に色々なパターンがあって面倒そうだっ
 
 配列の各要素のインデクスと値のペアを含むイテレータを返す。
 
+## 構文
+
+```js
+array.entries()
+```
+
 基本的にイテレータそのものが必要になるシーンは普段無くて、大体そのまま for したり forEach したりするからこれも初めて使ったメソッドだった。
+
+## 再実装
 
 reduce で再実装すると以下のようになる。
 
@@ -238,3 +254,58 @@ Array.prototype.entries = function() {
 
 それにしてもイテレータの再実装なんてのも初めてやったな…
 
+# every
+
+[Array.prototype.every() - JavaScript | MDN](https://developer.mozilla.org/ja/docs/Web/JavaScript/Reference/Global_Objects/Array/every)
+
+指定された callback を要素が全てパスするかを判定する。
+
+## 構文
+
+```js
+array.every(callback[, thisArg])
+```
+
+callback は以下 3 つの引数を取る。
+
+- currentValue : 現在の要素値
+- index : 現在の要素のインデクス
+- array : レシーバ自身
+
+また、いくつかの特性があり仕様となる。
+
+- thisArg が指定される場合、callback 内で this として扱われる。未指定の場合は undefined となる。
+- 呼びだされた配列に破壊的変更を加えない。
+- 空配列に対しては true を返す。
+
+## 再実装
+
+```js
+Array.prototype.every = function(callback, thisArgs) {
+  return this.reduce(
+    (acc, cur, index, array) =>
+      acc ? callback.call(thisArgs, cur, index, array) : acc,
+    true
+  )
+}
+```
+
+call で関数スコープの this を指定できるのは初めて知った。しかし callback を function 式とアロー関数式で記述した時、this の評価が異なる点気になった。アロー関数式で記述した際は thisArgs が無視されるのだ。
+
+ただ[MDN の this の注意書き](https://developer.mozilla.org/ja/docs/Web/JavaScript/Reference/Operators/this)でも以下のように触れられているし
+
+> 注: this 引数がアロー関数の実行時に call, bind, apply に渡されても無視されます。まだ call に引数を加えることはできますが、最初の引数(thisArg) は null をセットすべきです。.
+
+every の polyfill にも以下のように call を使用した実装がされているので、そういう仕様で問題なさそうだ。
+
+```js
+// ii. testResult は、this 値としての T と、kValue、k、0 を含む引数リストを
+//     ともなって、callbackfn の Call 内部メソッドを実行した結果です。
+var testResult = callbackfn.call(T, kValue, k, O)
+```
+
+# さいごに
+
+やばい、これ全部のメソッド書くとすさまじい長さになる
+
+つづく
