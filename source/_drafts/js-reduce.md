@@ -1,5 +1,5 @@
 ---
-title: '全てがReduceになる'
+title: '全てがReduceになる(1)'
 date: 2018-07-19 16:24:23
 tags:
 - javascript
@@ -8,7 +8,7 @@ tags:
 
 ごめんなさいタイトルが言いたかっただけです。
 
-それはそうと reduce をいじっている間になんでもできそうな気がしてきたので、Array のメソッドを再実装してみる。
+それはそうと reduce をいじっていると**なんでもできそうな気がしてきた**ので、Array のメソッドを再実装してみる。
 
 <!-- more -->
 
@@ -201,8 +201,40 @@ return this.reduce((acc, cur, index) => {
 
 target が index 以上、かつ `target` + `startとendの差分`が index 未満の場合、該当 index の要素に `start` + `targetとindexの差分`をコピーする。
 
+copyWithin は動作確認に色々なパターンがあって面倒そうだったので[テストも書いてみた。](https://github.com/t-kojima/practice-all-becomes-reduce/blob/master/test/copy_within_test.js)
+
 # entries
 
 [Array.prototype.entries() - JavaScript | MDN](https://developer.mozilla.org/ja/docs/Web/JavaScript/Reference/Global_Objects/Array/entries)
 
 配列の各要素のインデクスと値のペアを含むイテレータを返す。
+
+基本的にイテレータそのものが必要になるシーンは普段無くて、大体そのまま for したり forEach したりするからこれも初めて使ったメソッドだった。
+
+reduce で再実装すると以下のようになる。
+
+```js
+Array.prototype.entries = function() {
+  const iterator = []
+  let count = 0
+  iterator.next = () => {
+    try {
+      return this.reduce(
+        (acc, cur, index) =>
+          count === index ? { value: [index, this[index]], done: false } : acc,
+        { value: undefined, done: true }
+      )
+    } finally {
+      count += 1
+    }
+  }
+  return iterator
+}
+```
+
+参考： [JavaScript の イテレータ を極める！ - Qiita](https://qiita.com/kura07/items/cf168a7ea20e8c2554c6)
+
+イテレータカウントのインクリメントを try/catch でやっているのが若干苦しい感じがするが、reduce のループ内でやるともっと苦しそうだったからこうなっている。
+
+それにしてもイテレータの再実装なんてのも初めてやったな…
+
