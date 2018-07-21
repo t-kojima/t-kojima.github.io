@@ -113,12 +113,12 @@ generator_amp:
   warningLog: false
 
 ## hexo-toc
-toc:
-  maxdepth: 1
-  class: toc
-  slugify: transliteration
-  decodeEntities: false
-  anchor:
-    position: after
-    symbol: '#'
-    style: header-anchor
+# toc:
+#   maxdepth: 1
+#   class: toc
+#   slugify: transliteration
+#   decodeEntities: false
+#   anchor:
+#     position: after
+#     symbol: '#'
+#     style: header-anchor

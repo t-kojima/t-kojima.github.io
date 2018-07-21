@@ -65,6 +65,8 @@ array.reduce(callback[, initialValue])
 
 # ルール
 
+ただ再実装するだけだと色々抜け道があるので以下のルールを規定する。
+
 - for 文禁止
 - Array#reduce を必ず使用する
 - Array のインスタンスメソッドは reduce 以外使用不可
@@ -88,24 +90,25 @@ var new_array = old_array.concat(value1[, value2[, ...[, valueN]]])
 reduce を使って実装した結果がこれ
 
 ```js
-Array.prototype.concat = function(array) {
+Array.prototype.concat = function(...args) {
   const copy = Array.from(this)
-  array.reduce((acc, cur) => {
-    copy.push(cur)
-  }, [])
+  args.reduce((_, array) => {
+    array.reduce((acc, cur) => {
+      copy[copy.length] = cur
+    }, null)
+  }, null)
   return copy
 }
 
 const array = [1, 2, 3, 4]
-console.log(array.concat([5, 6, 7, 8]))
+console.log(array.concat([5, 6], [7, 8]))
 
 // > [ 1, 2, 3, 4, 5, 6, 7, 8 ]
 ```
 
-- reduce をただの for として使う
-- 非破壊的なメソッドなので copy する
+まず最初に非破壊的なメソッドなので copy する。arguments を使うとそのままでは Array#reduce できない（ESLint にも怒られるし）ので、レスト構文（`...args`)を使うことで reduce を呼べるようにしている。
 
-単に for ができれば実装できる。カンタン
+次に copy 配列に args の配列を一つずつ追加していくが、Array#push が使えないので `array[array.length] = value` という形で順次配列を拡張していく。配列長を超えた要素に代入すると拡張されるのね、他の言語では大体 OutOfIndex 系のエラーが出るけど、これは助かる。
 
 # copyWithin
 
@@ -130,7 +133,7 @@ arr.copyWithin(target[, start = 0[, end = this.length]])
 
 ちょっと気になる点として、引数の end はコピー対象の末尾のインデクスを指定しているわけではなく、end-1 が実際コピーされる末尾インデクスになる。なので上の例だと start/end を `3 to 5` で指定しているので、`4,5,6` がコピー対象と思いがちだが、実際は `4,5` のみがコピー対象だ。
 
-また、以下の動作も仕様となる。
+また、以下の特性がある。
 
 - target, start, end は Number の整数に変換される。
 - 引数が負の場合は末尾から数えた位置（`this.length - x`）として扱われる。
@@ -272,7 +275,7 @@ callback は以下 3 つの引数を取る。
 - index : 現在の要素のインデクス
 - array : レシーバ自身
 
-また、いくつかの特性があり仕様となる。
+また、いくつかの特性がある。
 
 - thisArg が指定される場合、callback 内で this として扱われる。未指定の場合は undefined となる。
 - 呼びだされた配列に破壊的変更を加えない。
