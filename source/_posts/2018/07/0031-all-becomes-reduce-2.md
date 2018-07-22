@@ -1,6 +1,6 @@
 ---
 title: '全てがReduceになる(2)'
-date: 2018-07-21 04:51:34
+date: 2018-07-22 21:51:34
 tags:
 - javascript
 - nodejs
@@ -12,6 +12,8 @@ tags:
 - filter
 - find
 - findIndex
+- forEach
+- includes
 
 ちなみに[このリポジトリ](https://github.com/t-kojima/practice-all-becomes-reduce)でテストとかやってる。
 
@@ -201,3 +203,107 @@ Array.prototype.findIndex = function(callback, thisArgs) {
 ```
 
 再実装のコードも find とほぼほぼ同じだね。初期値が-1 であることと、要素の代わりに index を返すことくらいか…
+
+# flatMap と flatten
+
+[Array.prototype.flatMap() - JavaScript | MDN](https://developer.mozilla.org/ja/docs/Web/JavaScript/Reference/Global_Objects/Array/flatMap)
+[Array.prototype.flat() - JavaScript | MDN](https://developer.mozilla.org/ja/docs/Web/JavaScript/Reference/Global_Objects/Array/flat)
+
+こいつらは Node.js で利用できない＆代替手段として既に reduce が例示されているのでやらないです。。。
+
+# forEach
+
+[Array.prototype.forEach() - JavaScript | MDN](https://developer.mozilla.org/ja/docs/Web/JavaScript/Reference/Global_Objects/Array/forEach)
+
+配列の反復処理を行う。本質的には for と同じだが、for は文で forEach は式といった違いはある。
+
+## 構文
+
+```js
+array.forEach(function callback(currentValue[, index[, array]]) {
+    //your iterator
+}[, thisArg]);
+```
+
+なぜか構文の書き方が他のメソッドと違う…今までのパターンでいくと `array.forEach(callback[, thisArg])` になるはず。どうでもいいけど…
+
+構文にある通り、callback は以下 3 つの引数を取る。
+
+- currentValue : 現在の要素値
+- index : 現在の要素のインデクス
+- array : レシーバ自身
+
+そして以下の特性を持つ。
+
+- thisArg が指定される場合、callback 内で this として扱われる。未指定の場合は undefined となる。
+- 呼びだされた配列に破壊的変更を加えない。
+- 戻り値は undefined となる。
+
+## 再実装
+
+```js
+Array.prototype.forEach = function(callback, thisArgs) {
+  return this.reduce((acc, cur, index, array) => {
+    callback.call(thisArgs, cur, index, array)
+    return acc
+  }, undefined)
+}
+```
+
+ただ渡された callback を実行するだけの素直な実装だ。しいて言うなら undefined を返すよう accumulator は常に undefined であることくらいか。
+
+# includes
+
+[Array.prototype.includes() - JavaScript | MDN](https://developer.mozilla.org/ja/docs/Web/JavaScript/Reference/Global_Objects/Array/includes)
+
+指定の要素が配列に含まれるかを調べる。
+
+## 構文
+
+```js
+array.includes(searchElement[, fromIndex])
+```
+
+findIndex は検索を開始する位置（インデクス）だが、以下の性質を持つ。
+
+- 省略時は 0
+- 配列の長さ以上の場合、includes は無条件に false を返す。
+- 負の値の場合、配列を逆から数えた値となる。（補正される）
+- 補正された負の値が 0 以下になった場合、0 として扱われる。
+
+## 再実装
+
+```js
+Array.prototype.includes = function(target, fromIndex = 0) {
+  const parse = value => {
+    if (value > this.length) return this.length
+    if (value + this.length < 0) return 0
+    return Number.parseInt(value, 10) + (value < 0 ? this.length : 0)
+  }
+  const findex = parse(fromIndex)
+
+  return this.reduce(
+    (acc, cur, index) =>
+      !acc &&
+      index >= findex &&
+      (cur === target || (Number.isNaN(cur) && Number.isNaN(target)))
+        ? true
+        : acc,
+    false
+  )
+}
+```
+
+parse 関数は copyWithin や fill で使ったものと同じだ。これを findIndex に適用する。
+
+target と currentItem(cur)は `===` (厳格な比較)で比較し、合致していた場合 true となるが、`NaN` の場合は `===` で比較できないので別途 `isNaN` での比較としている。
+
+[等価性の比較とその使いどころ - JavaScript | MDN](https://developer.mozilla.org/ja/docs/Web/JavaScript/Equality_comparisons_and_when_to_use_them) を参照しても、`===` で `NaN` のみ true にならないとしているので、`NaN` のみ例外ケースとして問題ないだろう。
+
+> (x !== x) が true になる唯一のケースは x が NaN である場合です。
+
+# おわりに
+
+29 メソッドあるうち11メソッドできた。まだまだあるな…
+
+つづく

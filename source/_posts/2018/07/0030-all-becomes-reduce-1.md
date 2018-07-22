@@ -311,4 +311,4 @@ var testResult = callbackfn.call(T, kValue, k, O)
 
 やばい、これ全部のメソッド書くとすさまじい長さになる
 
-つづく
+[つづく](https://t-kojima.github.io/2018/07/22/0031-all-becomes-reduce-2/)
