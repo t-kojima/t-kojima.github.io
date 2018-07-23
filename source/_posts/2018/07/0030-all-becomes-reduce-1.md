@@ -73,7 +73,9 @@ array.reduce(callback[, initialValue])
 - Array のプロパティ、クラスメソッドは使用可能
 - スプレッド構文は使用不可（reduce すら不要になる場合があるから）
 
-# concat
+---
+
+<h1 style="font-size: 4em;">concat</h1>
 
 [Array.prototype.concat() - JavaScript | MDN](https://developer.mozilla.org/ja/docs/Web/JavaScript/Reference/Global_Objects/Array/concat)
 
@@ -110,7 +112,146 @@ console.log(array.concat([5, 6], [7, 8]))
 
 次に copy 配列に args の配列を一つずつ追加していくが、Array#push が使えないので `array[array.length] = value` という形で順次配列を拡張していく。配列長を超えた要素に代入すると拡張されるのね、他の言語では大体 OutOfIndex 系のエラーが出るけど、これは助かる。
 
-# copyWithin
+## 7/23 追記
+
+**疎な配列**（`sparse array`）の考慮が漏れていた！
+
+### 疎な配列とは
+
+こういうやつ
+
+```js
+[,,]
+// > [ <2 empty items> ]
+Array(3)
+// > [ <3 empty items> ]
+[,,,3,4,,,]
+// > [ <3 empty items>, 3, 4, <2 empty items> ]
+```
+
+性質として、length のみが設定された配列で、`empty item` となっている要素は undefined でもなく**undefined とは別の未定義**という状態だ。（便宜的に**疎の要素**とでも言おうか。。。）
+
+こいつの厄介なところは、疎の要素は undefined ではないにも関わらず、アクセスして値を取り出すと undefined が取り出されてしまうので、一見区別がつかない点だ。判別するには `Object.prototype.hasOwnProperty` を使うか、もしくは `<property> in <object>` で判別するしかない。
+
+また、疎な配列のコピー（シャローコピー）を行いたい場合にも、`Array.from(target)` は使用できない。疎の要素に undefined が入ってしまうのだ。
+
+```js
+Array.from([, , , , , ,])
+// > [ undefined, undefined, undefined, undefined, undefined, undefined ]
+```
+
+`Array#concat` や `Array#slice` を使えば疎な配列のコピーを行うことができるが、concat を再実装する為に concat が必要だというのだから本末転倒だ。
+
+そして concat（を含むほとんどのインスタンスメソッド）は疎な配列を正しく解釈する。
+
+```js
+Array(3).concat(Array(2))
+// > [ <5 empty items> ]
+```
+
+なので頑張って対応するしかない。
+
+### 改めて再実装
+
+疎な配列に対応したものが以下の実装だ。
+
+```js
+Array.prototype.concat = function(...args) {
+  const list = array => Array.from(Array(array.length))
+
+  const pushValue = (from, to, index) => {
+    if (index in from) {
+      to[to.length] = from[index]
+    } else {
+      to.length += 1
+    }
+  }
+
+  const copy = list(this).reduce((acc, cur, index) => {
+    pushValue(this, acc, index)
+    return acc
+  }, [])
+
+  const arrays = args.reduce((acc, cur) => {
+    acc[acc.length] = cur.reduce ? cur : [cur]
+    return acc
+  }, [])
+
+  arrays.reduce((_, array) => {
+    list(array).reduce((acc, cur, index) => {
+      pushValue(array, copy, index)
+    }, null)
+  }, null)
+  return copy
+}
+```
+
+#### 配列のコピー
+
+まず配列のコピーはもともと
+
+```js
+const copy = Array.from(this)
+```
+
+としていたが、疎の配列を考慮することで以下のようになった。
+
+```js
+const list = array => Array.from(Array(array.length))
+
+const pushValue = (from, to, index) => {
+  if (index in from) {
+    to[to.length] = from[index]
+  } else {
+    to.length += 1
+  }
+}
+
+const copy = list(this).reduce((acc, cur, index) => {
+  pushValue(this, acc, index)
+  return acc
+}, [])
+```
+
+`Array.from` でのコピーで疎の配列を扱えないのは前述の通りだが、reduce も反復処理の中で疎の要素を数えてくれない。なので必然的に index を基準とした要素アクセスを行う必要があり、そのために `Array.from(Array(array.length))` を reduce のレシーバとすることで、疎の要素があっても全ての要素が処理されるようにしている。
+
+`pushValue` 関数では from がコピー元の配列、to がコピー先の配列で `to.push(from[index])` のような処理を（イメージです）行っている。`index in from` で疎の要素の判別を行い、コピー元が疎の要素であればコピー先に**疎の要素の追加**を行う。しかし疎の要素は通常代入できない。なのでコピー先の length を 1 つ拡張し、拡張された分の要素が疎の要素になるようにする。
+
+#### 値の concat
+
+これは単純に MDN の記載を見逃してただけなんだけど…concat は引数に配列だけではなく、値も取ることができる。
+
+```js
+const arrays = args.reduce((acc, cur) => {
+  acc[acc.length] = cur.reduce ? cur : [cur]
+  return acc
+}, [])
+```
+
+なのでここでは引数をチェックし、値であれば配列でラップしている。
+配列かどうかの判定は `cur.reduce` の有無で判定している。`toString.call(cur) === '[object Array]'` で判定するのが本筋かとも思ったけど…どっちがいいのかな
+
+誰か教えて欲しい。
+
+#### args(arrays) を concat
+
+最後に引数の配列（arrays）を reduce で回し、更にその要素の配列を reduce で回して、copy にガンガン push していく。
+
+```js
+arrays.reduce((_, array) => {
+  list(array).reduce((acc, cur, index) => {
+    pushValue(array, copy, index)
+  }, null)
+}, null)
+```
+
+ここで回す配列も疎な配列の可能性がある為、`list` と `pushValue` 関数でのケアが必要だ。
+
+疎の配列は完全に抜けてたなぁ…他のメソッドも全部見直さなきゃ…
+
+---
+
+<h1 style="font-size: 4em;">copyWithin</h1>
 
 [Array.prototype.copyWithin() - JavaScript | MDN](https://developer.mozilla.org/ja/docs/Web/JavaScript/Reference/Global_Objects/Array/copyWithin)
 
@@ -214,7 +355,72 @@ target が index 以上、かつ `target` + `startとendの差分`が index 未�
 
 copyWithin は動作確認に色々なパターンがあって面倒そうだったので[テストも書いてみた。](https://github.com/t-kojima/practice-all-becomes-reduce/blob/master/test/copy_within_test.js)
 
-# entries
+## 7/23 追記
+
+疎な配列の対応をし、実装を見直した。
+
+```js
+// 長さが同じで要素がundefinedな配列を返す
+// 疎の配列の場合reduce of empty array回避の為
+const list = array => Array.from(Array(array.length))
+
+// 配列(to)へ配列(from)のindex位置の要素をpushする。
+// index位置が疎要素の場合はlengthを拡張して対応
+// 疎要素を維持したままpushできる。
+const pushValue = (from, to, index) => {
+  if (index in from) {
+    to[to.length] = from[index]
+  } else {
+    to.length += 1
+  }
+}
+
+// 配列をコピーする。array.concat()と等価
+// array#concatが利用できないのでreduceで実装
+const clone = array =>
+  list(array).reduce((acc, cur, index) => {
+    pushValue(array, acc, index)
+    return acc
+  }, [])
+
+Array.prototype.copyWithin = function(target, start = 0, end = this.length) {
+  const parse = value =>
+    Math.min(
+      Math.max(Number.parseInt(value, 10) + (value < 0 ? this.length : 0), 0),
+      this.length
+    )
+
+  const t = parse(target)
+  const s = parse(start)
+  const e = parse(end)
+
+  const copy = clone(this)
+
+  this.length = 0
+  return list(copy).reduce((acc, cur, index) => {
+    pushValue(
+      copy,
+      acc,
+      index >= t && index < e - s + t ? s + index - t : index
+    )
+    return acc
+  }, this)
+}
+```
+
+`list`、`pushValue`、`clone` の関数は（恐らく）今後もそのまま使えると思うので、分かりやすく外だししてみた。
+
+基本的には concat と同様の修正だ。配列のコピーは `Array.from` を使用せず、自作の `clone` 関数を使う。（concat の時は関数に `clone` という名前は付けていなかったが、同じロジックだ）
+
+一点特筆すべきは `this.length = 0` の行だ。疎の要素を追加する際、既存の配列に対してインデクスを拡張しつつ追加することはできるが、length のサイズを変えずに既存の要素を疎の要素に置き換えることができない。しかし copyWithin は破壊的な操作になるので、配列のコピーを返すわけにもいかない。
+
+そこで `this.length = 0` とすることで this の要素を全て削除し、改めてそこに要素を追加していく形にしている。これなら疎の要素も追加することができる。
+
+あと地味に parse のロジックをワンライナーに書き直した。長いけど
+
+---
+
+<h1 style="font-size: 4em;">entries</h1>
 
 [Array.prototype.entries() - JavaScript | MDN](https://developer.mozilla.org/ja/docs/Web/JavaScript/Reference/Global_Objects/Array/entries)
 
@@ -257,7 +463,51 @@ Array.prototype.entries = function() {
 
 それにしてもイテレータの再実装なんてのも初めてやったな…
 
-# every
+## 7/23 追記
+
+entries も疎の配列対応をした。
+
+```js
+Array.prototype.entries = function() {
+  const list = array => Array.from(Array(array.length))
+  const value = index => (index in this ? this[index] : undefined)
+
+  const iterator = this[Symbol.iterator]()
+  let count = 0
+  iterator.next = () => {
+    try {
+      return list(this).reduce(
+        (acc, cur, index) =>
+          count === index ? { value: [index, value(index)], done: false } : acc,
+        { value: undefined, done: true }
+      )
+    } finally {
+      count += 1
+    }
+  }
+  return iterator
+}
+```
+
+### スプレッド構文対応
+
+もともと `const iterator = []` となっていた所を、以下のように直した。
+
+```js
+const iterator = this[Symbol.iterator]()
+```
+
+`const iterator = []` でも `next()` で要素を取得する分には問題なく動いていたが、スプレッド構文で `[...array.entries()]` としたとき正常に配列を取得できなかった。`this[Symbol.iterator]()` で取得したイテレータを上書きする形にすることでちゃんと動くようになった。
+
+### 疎の配列対応
+
+entries でも疎の要素はちゃんと考慮されなければならない。疎の要素の場合、イテレータの要素は `{ value: undefined, done: false }` というオブジェクトになる。
+
+対応なようは concat や copyWithin と同様だが、引数の parse や配列のコピーが不要なので、幾分か簡素にできている。
+
+---
+
+<h1 style="font-size: 4em;">every</h1>
 
 [Array.prototype.every() - JavaScript | MDN](https://developer.mozilla.org/ja/docs/Web/JavaScript/Reference/Global_Objects/Array/every)
 
@@ -312,3 +562,7 @@ var testResult = callbackfn.call(T, kValue, k, O)
 やばい、これ全部のメソッド書くとすさまじい長さになる
 
 [つづく](https://t-kojima.github.io/2018/07/22/0031-all-becomes-reduce-2/)
+
+# 追記時の参考
+
+- [JavaScript の配列のパターン | Web Scratch](https://efcl.info/2016/10/11/array-patterns/)
