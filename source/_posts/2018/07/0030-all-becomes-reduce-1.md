@@ -16,6 +16,12 @@ tags:
 
 <!-- more -->
 
+----
+
+- 7/23 `concat`、`copyWithin`、`entries` を疎の配列を考慮した実装に修正
+
+----
+
 prototype 汚染なんか気にしないでガンガン上書きしちゃうぞ！（というかこういう機会じゃないと prototype 拡張なんかしないから…）
 
 [Array - JavaScript | MDN](https://developer.mozilla.org/ja/docs/Web/JavaScript/Reference/Global_Objects/Array)のメソッドを上から順にやっつけていく。
@@ -173,7 +179,7 @@ Array.prototype.concat = function(...args) {
   }, [])
 
   const arrays = args.reduce((acc, cur) => {
-    acc[acc.length] = cur.reduce ? cur : [cur]
+    acc[acc.length] = Array.isArray(cur) ? cur : [cur]
     return acc
   }, [])
 
@@ -223,15 +229,12 @@ const copy = list(this).reduce((acc, cur, index) => {
 
 ```js
 const arrays = args.reduce((acc, cur) => {
-  acc[acc.length] = cur.reduce ? cur : [cur]
+  acc[acc.length] = Array.isArray(cur) ? cur : [cur]
   return acc
 }, [])
 ```
 
-なのでここでは引数をチェックし、値であれば配列でラップしている。
-配列かどうかの判定は `cur.reduce` の有無で判定している。`toString.call(cur) === '[object Array]'` で判定するのが本筋かとも思ったけど…どっちがいいのかな
-
-誰か教えて欲しい。
+なのでここでは引数をチェックし、値であれば配列でラップしている。配列かどうかの判定は `Array.isArray(cur)` の有無で判定する。
 
 #### args(arrays) を concat
 
