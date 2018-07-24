@@ -19,6 +19,12 @@ tags:
 
 <!-- more -->
 
+---
+
+- 7/24 `fill`、`findIndex`、`includes` を疎の配列を考慮した実装に修正
+
+---
+
 # ルール
 
 引き続き以下のルールでやっていく。
@@ -409,4 +415,4 @@ Array.prototype.includes = function(target, fromIndex = 0) {
 
 29 メソッドあるうち 10 メソッドできた。まだまだあるな…
 
-つづく
+[つづく](https://t-kojima.github.io/2018/07/24/0032-all-becomes-reduce-3/)
