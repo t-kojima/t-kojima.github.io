@@ -19,12 +19,6 @@ tags:
 
 <!-- more -->
 
----
-
-- 7/24 `fill`、`findIndex`、`a` を疎の配列を考慮した実装に修正
-
----
-
 # ルール
 
 引き続き以下のルールでやっていく。
@@ -35,7 +29,9 @@ tags:
 - Array のプロパティ、クラスメソッドは使用可能
 - スプレッド構文は使用不可（reduce すら不要になる場合があるから）
 
-# fill
+---
+
+<h1 style="font-size: 4em;">fill</h1>
 
 [Array.prototype.fill() - JavaScript | MDN](https://developer.mozilla.org/ja/docs/Web/JavaScript/Reference/Global_Objects/Array/fill)
 
@@ -79,7 +75,36 @@ parse 関数は copyWithin の時に比べ少しだけ変えた。とはいえ�
 
 fill される条件は単純にインデクスが start 以上、end 未満の場合だ。ここは単純になっていて分かりやすい。
 
-# filter
+## 7/24 追記
+
+疎な配列の対応をし、実装を見直した。
+
+```js
+Array.prototype.fill = function(target, start = 0, end = this.length) {
+  const list = array => Array.from(Array(array.length))
+  const parse = value =>
+    Math.min(
+      Math.max(Number.parseInt(value, 10) + (value < 0 ? this.length : 0), 0),
+      this.length
+    )
+
+  const s = parse(start)
+  const e = parse(end)
+
+  return list(this).reduce((acc, cur, index) => {
+    if (index >= s && index < e) {
+      acc[index] = target
+    }
+    return acc
+  }, this)
+}
+```
+
+基本的にはレシーバとなる this を list 関数でラップし、疎の要素があっても列挙されるようにした。あと copyWithin と同様に parse をワンライナーに修正。
+
+---
+
+<h1 style="font-size: 4em;">filter</h1>
 
 [Array.prototype.filter() - JavaScript | MDN](https://developer.mozilla.org/ja/docs/Web/JavaScript/Reference/Global_Objects/Array/filter)
 
@@ -120,7 +145,9 @@ Array.prototype.filter = function(callback, thisArgs) {
 
 実装は非常にシンプルになった。reduce の初期値として空配列を指定し、callback に通った要素だけ追加していけばいい。
 
-# find
+---
+
+<h1 style="font-size: 4em;">find</h1>
 
 [Array.prototype.find() - JavaScript | MDN](https://developer.mozilla.org/ja/docs/Web/JavaScript/Reference/Global_Objects/Array/find)
 
@@ -180,7 +207,9 @@ Array.prototype.find = function(callback, thisArgs) {
 
 reduce の初期値に undefined を指定し、callback の判定をパスしたら accumulator に要素を代入する。すると以後の callback は評価されず、最初に代入した要素がそのまま返される。
 
-# findIndex
+---
+
+<h1 style="font-size: 4em;">findIndex</h1>
 
 [Array.prototype.findIndex() - JavaScript | MDN](https://developer.mozilla.org/ja/docs/Web/JavaScript/Reference/Global_Objects/Array/findIndex)
 
@@ -210,6 +239,35 @@ Array.prototype.findIndex = function(callback, thisArgs) {
 
 再実装のコードも find とほぼほぼ同じだね。初期値が-1 であることと、要素の代わりに index を返すことくらいか…
 
+## 7/24 追記
+
+疎な配列の対応をし、実装を見直した。
+
+```js
+Array.prototype.findIndex = function(callback, thisArgs) {
+  return Array.from(this).reduce(
+    (acc, cur, index, array) =>
+      acc < 0 && callback.call(thisArgs, cur, index, array) ? index : acc,
+    -1
+  )
+}
+```
+
+findIndex には疎の要素を undefined として判別する特徴がある。つまり以下のようなコードがあった場合、戻り値は 3 になる。
+
+```js
+;[0, 1, 2, , , , ,].findIndex(v => v === undefined)
+// > 3
+```
+
+そのため、`Array.from(this)`とすることで元の配列の疎の要素を全て undefined に変換をしている。
+
+```js
+Array.from([0, 1, 2, , , , ,]) // を通すと
+// > [0,1,2,undefined,undefined,undefined,undefined]
+// 疎の要素はundefinedになる
+```
+
 # flatMap と flatten
 
 [Array.prototype.flatMap() - JavaScript | MDN](https://developer.mozilla.org/ja/docs/Web/JavaScript/Reference/Global_Objects/Array/flatMap)
@@ -217,7 +275,9 @@ Array.prototype.findIndex = function(callback, thisArgs) {
 
 こいつらは Node.js で利用できない＆代替手段として既に reduce が例示されているのでやらないです。。。
 
-# forEach
+---
+
+<h1 style="font-size: 4em;">forEach</h1>
 
 [Array.prototype.forEach() - JavaScript | MDN](https://developer.mozilla.org/ja/docs/Web/JavaScript/Reference/Global_Objects/Array/forEach)
 
@@ -258,7 +318,9 @@ Array.prototype.forEach = function(callback, thisArgs) {
 
 ただ渡された callback を実行するだけの素直な実装だ。しいて言うなら undefined を返すよう accumulator は常に undefined であることくらいか。
 
-# includes
+---
+
+<h1 style="font-size: 4em;">includes</h1>
 
 [Array.prototype.includes() - JavaScript | MDN](https://developer.mozilla.org/ja/docs/Web/JavaScript/Reference/Global_Objects/Array/includes)
 
@@ -309,6 +371,39 @@ target と currentItem(cur)は `===` (厳格な比較)で比較し、合致し�
 [等価性の比較とその使いどころ - JavaScript | MDN](https://developer.mozilla.org/ja/docs/Web/JavaScript/Equality_comparisons_and_when_to_use_them) を参照しても、`===` で `NaN` のみ true にならないとしているので、`NaN` のみ例外ケースとして問題ないだろう。
 
 > (x !== x) が true になる唯一のケースは x が NaN である場合です。
+
+## 7/24 追記
+
+疎な配列の対応をし、実装を見直した。
+
+```js
+Array.prototype.includes = function(target, fromIndex = 0) {
+  const list = array => Array.from(Array(array.length))
+
+  const parse = value =>
+    Math.min(
+      Math.max(Number.parseInt(value, 10) + (value < 0 ? this.length : 0), 0),
+      this.length
+    )
+
+  const sameValueZero = (v1, v2) =>
+    v1 === v2 || (Number.isNaN(v1) && Number.isNaN(v2))
+
+  const findex = parse(fromIndex)
+
+  return list(this).reduce(
+    (acc, cur, index) =>
+      !acc && index >= findex && sameValueZero(this[index], target)
+        ? true
+        : acc,
+    false
+  )
+}
+```
+
+他のメソッドと同様に、this を list 関数でラップする対応を行った。
+
+また、疎な配列とは関係ないが、SameValueZero 判定を関数に切り出し明確にした。
 
 # おわりに
 
