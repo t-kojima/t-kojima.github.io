@@ -20,6 +20,12 @@ tags:
 
 <!-- more -->
 
+---
+
+- 7/25 `pop` を微修正
+
+---
+
 # ルール
 
 引き続き以下のルールでやっていく。
@@ -290,6 +296,22 @@ Array.prototype.pop = function() {
 実装自体は単純で、reduce をひたすら回して最後に返った `this[index]` が最後の要素だよね、という動きになっている。最後が疎の要素だった場合は、undefined を返す。
 
 try/finally が若干危険な感じなんだけど…個人的には return した後に length を-1 するという意図がこの形だと読み取り易いと思っている。
+
+### 7/25 修正
+
+ほんのちょっと修正、list関数はいらんかった。
+
+```js
+Array.prototype.pop = function() {
+  try {
+    return Array.from(this).reduce((acc, cur, index) => this[index], undefined)
+  } finally {
+    if (this.length) this.length -= 1
+  }
+}
+```
+
+というかこれ以前のメソッドでも全部いらんかった。
 
 ---
 

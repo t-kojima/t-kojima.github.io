@@ -19,6 +19,7 @@ tags:
 ---
 
 - 7/23 `concat`、`copyWithin`、`entries` を疎の配列を考慮した実装に修正
+- 7/27 `every` を truthly で判定するよう修正
 
 ---
 
@@ -559,6 +560,24 @@ every の polyfill にも以下のように call を使用した実装がされ�
 //     ともなって、callbackfn の Call 内部メソッドを実行した結果です。
 var testResult = callbackfn.call(T, kValue, k, O)
 ```
+
+## 7/27 追記
+
+実装に誤りがあったので修正
+
+```js
+Array.prototype.every = function(callback, thisArgs) {
+  return this.reduce(
+    (acc, cur, index, array) =>
+      acc ? !!callback.call(thisArgs, cur, index, array) : acc,
+    true
+  )
+}
+```
+
+戻り値は boolean を返さなくてはいけなかったのに、callback の結果をそのまま渡してしまっていた。
+
+例えば数値の 4 は truthly だが、そのまま戻り値として 4 を渡してしまってはいけない。`!!callback` で callback の結果を boolean に変換してあげる。これならば callback の結果が 4 であっても true が戻るようになる。
 
 # さいごに
 
