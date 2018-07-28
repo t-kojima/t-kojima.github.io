@@ -1,5 +1,5 @@
 ---
-title: '全てがReduceになる(4)'
+title: '全てがReduceになる(5)'
 date: 2018-07-28 01:16:49
 tags:
 - javascript
@@ -32,7 +32,7 @@ tags:
 
 [Array.prototype.sort() - JavaScript | MDN](https://developer.mozilla.org/ja/docs/Web/JavaScript/Reference/Global_Objects/Array/sort)
 
-reduceRight は通常左の要素から順に処理する reduce を右の要素から処理するようにしたもの。
+sort なので当然配列の並び替えを行う。ただしこの sort メソッドは非常にクセがある。（後述）
 
 ## 構文
 
@@ -122,7 +122,8 @@ const sorted = quickSort(this, (x, y) => {
 })
 ```
 
-`quickSort` 関数は名前の通りクイックソートを行う関数だが、第二引数には callback を渡す。この時 quickSort に渡す callback は元の sort メソッドの引数である compareFunction が undefined の場合の比較処理を追加している。（仕様にある"文字列で比較し辞書順にソート"の部分である）
+ソートにはクイックソートを使う。
+`quickSort` 関数は名前の通りクイックソートを行う関数で、第一引数にソート対象の配列、第二引数には callback を渡す。この時 quickSort に渡す callback は比較関数である compareFunction を渡すのだが、 sort メソッドの引数である compareFunction をそのまま渡すのではなく、 undefined の場合や compareFunction が未定義の場合の比較処理を追加した関数でラップしている。（仕様にある"文字列で比較し辞書順にソート"の部分である）
 
 これは ECMAScript 仕様書の[Runtime Semantics: SortCompare(x,y)](https://www.ecma-international.org/ecma-262/6.0/#sec-sortcompare)にある手順をそのまま実装している。
 
@@ -191,7 +192,7 @@ const array = [1, undefined, 'z', 2, 'a', 0, null]
 [0, null, 1, 'z', 2, 'a', undefined]
 ```
 
-上記の通り、0 の位置が異なる。そもそも比較関数が `(x, y) => x - y` なら未指定の場合と同じ動作（昇順）になるんじゃないか？とも思うが、どうやら違うようだ。
+上記の通り、0 の位置が異なる。
 
 ### Node.js(v8) のソースを見てみる。
 
@@ -204,7 +205,7 @@ Node.js は v8 を使用しているので、sort のコードを確認してみ
 > // In-place QuickSort algorithm.  
 > // For short (length <= 10) arrays, insertion sort is used for efficiency.
 
-そのコードは以下のものだ
+その挿入ソートに対応するコードは以下のものだ
 
 ```js
 function InsertionSort(a, from, to) {
@@ -224,7 +225,7 @@ function InsertionSort(a, from, to) {
 }
 ```
 
-これを使って疑似的にネイティブのソートを再現してみる。
+このコード使って疑似的なネイティブのソートを再現し、どのような結果を返すか確認してみる。
 
 ```js
 const compare = (x, y) => x - y
@@ -261,7 +262,7 @@ InsertionSort(array, 0, array.length)
 console.log(array)
 ```
 
-結果、これも違うソート結果になってしまった。。。
+結果、ネイティブと違うソート結果になってしまった。。。
 
 ```js
 // 元配列
@@ -277,7 +278,7 @@ console.log(array)
 // 全部ちがう。。。
 ```
 
-InsertionSort の `a[j + 1] = element` 箇所で console.log を仕込み、配列の途中経過を出力するようにしてみた。
+更に詳細な動作を確認するため、InsertionSort の `a[j + 1] = element` 箇所で console.log を仕込み、配列の途中経過を出力するようにしてみた。
 
 ```bash
 [ 1, undefined, 'z', 2, 'a', 0, null ]
@@ -291,9 +292,9 @@ InsertionSort の `a[j + 1] = element` 箇所で console.log を仕込み、配�
 
 すると undefined がただ後ろに移動していくだけの動きをしていることが分かった。
 
-しかし[挿入ソートのアルゴリズム](https://www.codereading.com/algo_and_ds/algo/insertion_sort.html)を改めて確認すると、`1, z, 2, a, 0` の並びは 数値と文字を比較すると結果が全て 0 になるため、隣同士の比較だと動くことができなくて、さらに 0 と null の比較も結果は 0 になる（null は計算上 0 扱いの為）ので、0 と null の比較も動かない。結局 undefined だけが 0 以外の結果を返し、移動していく形になっている。
+しかし[挿入ソートのアルゴリズム](https://www.codereading.com/algo_and_ds/algo/insertion_sort.html)を改めて確認すると、`1, z, 2, a, 0` の並びは 数値と文字を比較すると結果が全て 0 になるため、隣同士の比較だと動くことができなくて、さらに 0 と null の比較も結果は 0 になる（null は計算上 0 扱いの為）ので、0 と null の比較も動かない。結局 undefined だけが 0 以外の結果を返し、移動していく形になっている。つまり動作としては何ら問題がないことになる。
 
-これどうやっても null は先頭にいかないよな…？
+ネイティブのようにnullを先頭にやらないといけないのだが、これどうやっても null は先頭にいかないよな…？
 
 ### 改めて v8 のコードを読む
 
@@ -303,12 +304,12 @@ InsertionSort の `a[j + 1] = element` 箇所で console.log を仕込み、配�
 
 （意訳）non-undefined な要素を配列の先頭に移動し、その後ろに undefined な要素を移動する。そうすると穴が消える
 
-`%PrepareElementsForSort(array, length);` から処理を辿っていき、詳しく見てみる。
+この処理は `%PrepareElementsForSort(array, length);` というC++の関数で行われているようだ。ここから処理を辿っていき、動作を詳しく見てみる。
 
-- [v8/runtime-array.cc at 676501a8d7e208e16356027925b2ee60bd4fbc9c · v8/v8](https://github.com/v8/v8/blob/676501a8d7e208e16356027925b2ee60bd4fbc9c/src/runtime/runtime-array.cc#L356)
-- [v8/runtime-array.cc at 676501a8d7e208e16356027925b2ee60bd4fbc9c · v8/v8](https://github.com/v8/v8/blob/676501a8d7e208e16356027925b2ee60bd4fbc9c/src/runtime/runtime-array.cc#L157)
+- [v8/runtime-array.cc at v8/v8#L356](https://github.com/v8/v8/blob/676501a8d7e208e16356027925b2ee60bd4fbc9c/src/runtime/runtime-array.cc#L356)
+- [v8/runtime-array.cc at v8/v8#L157](https://github.com/v8/v8/blob/676501a8d7e208e16356027925b2ee60bd4fbc9c/src/runtime/runtime-array.cc#L157)
 
-すると該当の場所が…あった
+すると配列の操作をしていると思われる場所が…あった
 
 ```cpp
     unsigned int undefs = limit;
@@ -373,27 +374,6 @@ Array のメソッドはまだ少しあるので、そちらに力を割くこ�
 
 つづく
 
-<!-- ### 謎な部分がある
-
-InsertionSort を実行する前、InnerArraySort を呼び出した直後に以下のブロックがある。`!IS_CALLABLE(comparefn)` となっていることから、comparefn が未定義の場合に comparefn のデフォルト動作を定義する箇所に思えるが、その定義される内容が[Runtime Semantics: SortCompare(x,y)](https://www.ecma-international.org/ecma-262/6.0/#sec-sortcompare)と若干異なるのだ。そもそも仕様上は comparefn の定義有無に関わらずこの処理はあるべき（Step4 で comparefn が呼ばれる為）なのだが、下記のロジックからは Step4 が抜けている。
-
-以下のコードが正しいのであれば、comparefn が定義されている場合、仕様通りの動きをしないのではないか？？
-
-```js
-  if (!IS_CALLABLE(comparefn)) {
-    comparefn = function (x, y) {
-      if (x === y) return 0;
-      if (%_IsSmi(x) && %_IsSmi(y)) {
-        return %SmiLexicographicCompare(x, y);
-      }
-      x = TO_STRING(x);
-      y = TO_STRING(y);
-      if (x == y) return 0;
-      else return x < y ? -1 : 1;
-    };
-}
-``` -->
-
 ## （余談）ブラウザで実行してみたら…
 
 JSFiddle で以下のコードを実行してみたところ、Firefox のみ違うソート結果となってしまった。node と Chrome は同じ v8 を使っているから同じ結果なのだろうか。Array#sort が頻繁に実装依存と言われているのはこういうことなんだな。
@@ -432,6 +412,27 @@ console.log(array)
 - [言語仕様から入る JavaScript 入門 その 1 - Panda Noir](https://www.pandanoir.info/entry/2016/04/16/190000)
 - [ECMAScript 2015 Language Specification – ECMA-262 6th Edition](https://www.ecma-international.org/ecma-262/6.0/#sec-array.prototype.sort)
 - [v8/v8: The official mirror of the V8 Git repository](https://github.com/v8/v8)
+
+<!-- ### 謎な部分がある
+
+InsertionSort を実行する前、InnerArraySort を呼び出した直後に以下のブロックがある。`!IS_CALLABLE(comparefn)` となっていることから、comparefn が未定義の場合に comparefn のデフォルト動作を定義する箇所に思えるが、その定義される内容が[Runtime Semantics: SortCompare(x,y)](https://www.ecma-international.org/ecma-262/6.0/#sec-sortcompare)と若干異なるのだ。そもそも仕様上は comparefn の定義有無に関わらずこの処理はあるべき（Step4 で comparefn が呼ばれる為）なのだが、下記のロジックからは Step4 が抜けている。
+
+以下のコードが正しいのであれば、comparefn が定義されている場合、仕様通りの動きをしないのではないか？？
+
+```js
+  if (!IS_CALLABLE(comparefn)) {
+    comparefn = function (x, y) {
+      if (x === y) return 0;
+      if (%_IsSmi(x) && %_IsSmi(y)) {
+        return %SmiLexicographicCompare(x, y);
+      }
+      x = TO_STRING(x);
+      y = TO_STRING(y);
+      if (x == y) return 0;
+      else return x < y ? -1 : 1;
+    };
+}
+``` -->
 
 <!-- ## 22.1.3.24 Array.prototype.sort (comparefn)
 
