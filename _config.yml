@@ -83,7 +83,7 @@ robotstxt:
   disallow:
     - /images/
   allow:
-  sitemap: https://techblog.pepese.net/sitemap.xml
+  sitemap: https://t-kojima.github.io/sitemap.xml
 
 # Deployment
 ## Docs: https://hexo.io/docs/deployment.html
