@@ -89,7 +89,8 @@ robotstxt:
 ## Docs: https://hexo.io/docs/deployment.html
 deploy:
   type: git
-  repo: https://github.com/t-kojima/t-kojima.github.io.git
+  ## repo: https://github.com/t-kojima/t-kojima.github.io.git
+  repo: git@github.com:t-kojima/t-kojima.github.io.git
   branch: master
 
 ## hexo-generator-feed (https://github.com/hexojs/hexo-generator-feed)
