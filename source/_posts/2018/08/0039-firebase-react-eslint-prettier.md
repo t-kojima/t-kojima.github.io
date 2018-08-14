@@ -1,5 +1,5 @@
 ---
-title: 0039-firebase-react-eslint-prettier
+title: '[React] ESLintとPrettierをReactに適用'
 date: 2018-08-12 10:17:55
 tags:
   - firebase
@@ -42,10 +42,10 @@ module.exports = {
     browser: true,
     es6: true
   },
-  extends: ["standard"],
-  plugins: ["react", "jsx-a11y", "import"],
+  extends: ['standard'],
+  plugins: ['react', 'jsx-a11y', 'import'],
   rules: {}
-};
+}
 ```
 
 もし VSCode で`ESLint`拡張機能を入れていない場合は入れておこう。
@@ -54,7 +54,9 @@ module.exports = {
 
 # Prettier
 
-このままだとエラーは表示されるが自動的にフォーマットは掛けてくれない。一個一個手動でエラーを潰すのは手間なので、 Prettier を導入してフォーマットすることで解決できるエラーはこれで潰すと楽だ。
+このままだとエラーは表示されるが自動的にフォーマットは掛けてくれないが、一個一個手動でエラーを潰すのは手間だ。
+
+そこで Prettier を利用してフォーマットをかけることにする。 Prettier でフォーマットすることでいくつかのエラーは解決することができる。フォーマットに関わるエラーはこれで潰すと楽だ。
 
 ```yarn
 yarn add --dev prettier eslint-config-prettier eslint-plugin-prettier
@@ -70,37 +72,38 @@ module.exports = {
     browser: true,
     es6: true
   },
-  extends: ["standard", "prettier/react", "prettier/standard"],
-  plugins: ["react", "jsx-a11y", "import", "prettier"],
+  extends: ['standard', 'prettier/react', 'prettier/standard'],
+  plugins: ['react', 'jsx-a11y', 'import', 'prettier'],
   globals: {
     it: false
   },
   rules: {
-    "react/jsx-uses-vars": 1,
-    "react/jsx-uses-react": 1,
-    "space-before-function-paren": 0,
-    "prettier/prettier": [
-      "error",
+    'react/jsx-uses-vars': 1,
+    'react/jsx-uses-react': 1,
+    'space-before-function-paren': 0,
+    'comma-dangle': 0,
+    'prettier/prettier': [
+      'error',
       {
         semi: false,
         singleQuote: true,
-        trailingComma: "es5"
+        trailingComma: 'es5'
       }
     ]
   }
-};
+}
 ```
 
-追加のルールには prettier のフォーマットを指定するルール他、3 つ追加している。
+追加のルールには prettier のフォーマットを指定するルール他、4 つ追加している。
 
 ### react/jsx-uses-vars
 
 このルールが適用されると、以下の JSX で`import App from './App'`が`no-unused-vars`でエラーとなってしまう。
 
 ```js
-import App from "./App";
+import App from './App'
 
-ReactDOM.render(<App />, document.getElementById("root"));
+ReactDOM.render(<App />, document.getElementById('root'))
 ```
 
 `'react/jsx-uses-vars': 1`とすることでこのルールを回避する。
@@ -110,7 +113,7 @@ ReactDOM.render(<App />, document.getElementById("root"));
 JSX 自体を有効にするため、`import React from 'react'`としてインポートする必要があるが、このルールが適用されるとやはり`no-unused-vars`となる。
 
 ```js
-import React from "react";
+import React from 'react'
 ```
 
 これも同様に`'react/jsx-uses-react': 1`でルールを回避できる。
@@ -134,19 +137,23 @@ prettier の挙動をある程度設定するため、`.prettierrc.js`も作成�
 module.exports = {
   semi: false,
   singleQuote: true,
-  trailingComma: "es5"
-};
+  trailingComma: 'es5'
+}
 ```
 
-作成すると言ったが、VSCode の場合は`"prettier.eslintIntegration": true,`という設定でも良い。この設定を true にすると`.eslintrc.js`を参照して Prettier が挙動を決定する。つまり上記の`.eslintrc.js`のように Prettier の挙動をルールとして定義しておけば、`.prettierrc.js`不要で同様の挙動を取るようにすることができる。
+作成すると言ったが、VSCode の場合は`"prettier.eslintIntegration": true,`という設定でも良い。
+
+この設定を true にすると`.eslintrc.js`を参照して Prettier が挙動を決定する。つまり上記の`.eslintrc.js`のように Prettier の挙動をルールとして定義しておけば、`.prettierrc.js`不要で同様の挙動を取るようにすることができる。
 
 こっちのほうがカンタンだ。
+
+最後に VSCode で`Prettier`拡張機能を入れていない場合は入れておこう。これで Prettier が有効になり、フォーマットができるはずだ。
 
 # ついでに
 
 `create-react-app`で生成されるコードは以下のように Component を継承しているが、Stateless Functional Component (SFC) に書き直してみる。
 
-```js
+```jsx
 class App extends Component {
   render() {
     return (
@@ -159,16 +166,16 @@ class App extends Component {
           To get started, edit <code>src/App.js</code> and save to reload.
         </p>
       </div>
-    );
+    )
   }
 }
 
-export default App;
+export default App
 ```
 
 とはいえ以下のように関数とするだけだ
 
-```js
+```jsx
 export default () => (
   <div className="App">
     <header className="App-header">
@@ -179,7 +186,7 @@ export default () => (
       To get started, edit <code>src/App.js</code> and save to reload.
     </p>
   </div>
-);
+)
 ```
 
 それほど変わっていないが、`render`関数が不要になったり、`Component`を import しなくても良かったりするので、よりシンプルになったと思う。
