@@ -2,41 +2,41 @@
 title: '[Rails] RedisとSidekiqとActiveJobで苦しむ'
 date: 2018-05-10 00:38:03
 tags:
-- ruby
-- rails
-- redis
-- sidekiq
+  - ruby
+  - rails
+  - redis
+  - sidekiq
 ---
 
-## Railsでバッチ処理をしたい
+## Rails でバッチ処理をしたい
 
-具体的には動画のエンコードをRails上でやりたい。
+具体的には動画のエンコードを Rails 上でやりたい。
 
-もちろんリクエストを投げてエンコード結果のレスポンスを返すなんてことは無理だ、だからバッチでやる。Railsでバッチ処理のやり方を調べると、Rails4.2からはActiveJobという機能を使ってやるらしい。
+もちろんリクエストを投げてエンコード結果のレスポンスを返すなんてことは無理だ、だからバッチでやる。Rails でバッチ処理のやり方を調べると、Rails4.2 からは ActiveJob という機能を使ってやるらしい。
 
 <!-- more -->
 
 <a href="https://railsguides.jp/active_job_basics.html" class="embedly-card" data-card-image="0" data-card-controls="0" data-card-align="left"></a>
 
-冒頭にActiveJobの目的なるものが書いてある。
+冒頭に ActiveJob の目的なるものが書いてある。
 
-&gt;Active Jobの主要な目的は、Railsアプリを即席で作成した直後でも使用できる、自前のジョブ管理インフラを持つことです。これにより、Delayed JobとResqueなどのように、さまざまなジョブ実行機能のAPIの違いを気にせずにジョブフレームワーク機能やその他のgemを搭載することができるようになります。バックエンドでのキューイング作業では、操作方法以外のことを気にせずに済みます。さらに、ジョブ管理フレームワークを切り替える際にジョブを書き直さずに済みます。
+&gt;Active Job の主要な目的は、Rails アプリを即席で作成した直後でも使用できる、自前のジョブ管理インフラを持つことです。これにより、Delayed Job と Resque などのように、さまざまなジョブ実行機能の API の違いを気にせずにジョブフレームワーク機能やその他の gem を搭載することができるようになります。バックエンドでのキューイング作業では、操作方法以外のことを気にせずに済みます。さらに、ジョブ管理フレームワークを切り替える際にジョブを書き直さずに済みます。
 
 なるほど、ジョブ管理フレームワーク（アダプタ）の差異を吸収してくれる機能なわけね。
 
 アダプタは情報が多そうな`Sidekiq`を使ってみることにする。
 
-## Redisで苦しむ
+## Redis で苦しむ
 
-`Sidekiq`を使うには`Redis`のインストールが必要なようだ。WSL（Windows Subsystem for Linux）のUbuntuで動作させる為、Redisをaptからインストールする。
+`Sidekiq`を使うには`Redis`のインストールが必要なようだ。WSL（Windows Subsystem for Linux）の Ubuntu で動作させる為、Redis を apt からインストールする。
 
 ```
 sudo apt-get install -y redis-server
 ```
 
-うまくインストールされた。`redis-server`コマンドでRedis自体も立ち上がった。次はSidekiqだ
+うまくインストールされた。`redis-server`コマンドで Redis 自体も立ち上がった。次は Sidekiq だ
 
-Gemfileに追記し
+Gemfile に追記し
 
 ```ruby:Gemfile
 gem 'sidekiq'
@@ -48,7 +48,7 @@ gem 'sidekiq'
 bundle install
 ```
 
-そしてSidekiqを起動......起動しない
+そして Sidekiq を起動......起動しない
 
 ```bash
 $ bundle exec sidekiq
@@ -80,11 +80,11 @@ Error connecting to Redis on 127.0.0.1:6379 (Errno::ECONNREFUSED)
 Could not connect to Redis at 127.0.0.1:6379: Connection refused
 ```
 
-結局原因は分からなかったが、パッケージマネージャからインストールするとRedisのバージョンが古い模様（この時2.8がインストールされていた）
+結局原因は分からなかったが、パッケージマネージャからインストールすると Redis のバージョンが古い模様（この時 2.8 がインストールされていた）
 
 ### 最新バージョンをインストールする
 
-[Ubuntu Linux 14.04 LTSにRedis 3をインストールする](http://d.hatena.ne.jp/Kazuhira/20160116/1452933029)を参考に最新バージョンを入れる。
+[Ubuntu Linux 14.04 LTS に Redis 3 をインストールする](http://d.hatena.ne.jp/Kazuhira/20160116/1452933029)を参考に最新バージョンを入れる。
 
 ```
 sudo add-apt-repository ppa:chris-lea/redis-server
@@ -92,7 +92,7 @@ sudo apt-get update
 sudo apt-get install redis-server
 ```
 
-見事4.0.9がインストールされた...が、今度は起動しないのだ。
+見事 4.0.9 がインストールされた...が、今度は起動しないのだ。
 
 ```bash
 $ redis-server
@@ -105,14 +105,14 @@ $ redis-server
 68:M 31 Mar 13:27:35.509 # Creating Server TCP listening socket *:6379: bind: Address already in use
 ```
 
-configファイルの指定をしたら立ち上がった
+config ファイルの指定をしたら立ち上がった
 `--help`には未指定ならデフォルトって書いてるのに...
 
 ```
 sudo redis-server /etc/redis/redis.conf
 ```
 
-そして今度こそSidekiqが立ち上がった。
+そして今度こそ Sidekiq が立ち上がった。
 
 ```bash
 $ bundle exec sidekiq
@@ -138,9 +138,9 @@ $ bundle exec sidekiq
 2018-03-31T04:35:22.053Z 92 TID-oxyufulvw INFO: Starting processing, hit Ctrl-C to stop
 ```
 
-### RedisをDockerで入れる
+### Redis を Docker で入れる
 
-ここまでやって「あれ...Dockerでいいんじゃね？」と気付く
+ここまでやって「あれ...Docker でいいんじゃね？」と気付く
 
 ```
 docker run --name redis -d -p 6379:6379 redis redis-server
@@ -148,9 +148,9 @@ docker run --name redis -d -p 6379:6379 redis redis-server
 
 らくちーん！
 
-## Sidekiqで苦しむ
+## Sidekiq で苦しむ
 
-ActiveJobの動作テストをする為に、まずJobを作成する。
+ActiveJob の動作テストをする為に、まず Job を作成する。
 
 ```
 $ bundle exec rails g job encoder
@@ -159,7 +159,7 @@ identical spec/jobs/encoder_job_spec.rb
 create app/jobs/encoder_job.rb
 ```
 
-Jobにはログ出力のみ追記しておく。
+Job にはログ出力のみ追記しておく。
 
 ```
 class EncoderJob < ApplicationJob
@@ -170,7 +170,7 @@ class EncoderJob < ApplicationJob
 end
 ```
 
-そして`rails runner`でActiveJobをキックする。
+そして`rails runner`で ActiveJob をキックする。
 
 ```
 bundle exec rails runner 'EncoderJob.perform_later'
@@ -183,14 +183,14 @@ bundle exec rails runner 'EncoderJob.perform_later'
 [ActiveJob] [Encoder::Job] [2f2f8b9e-ce21-474b-b8d7-152aac0750f2] Performing Encoder::Job (Job ID: 2f2f8b9e-ce21-474b-b8d7-152aac0750f2) from Sidekiq(encoder)
 ```
 
-EnqueueとPerformのログは出ているので実行はされているようだが、肝心の`Rails.logger.debug('do job!')`が出力されない。
-解決... [Railsでバッチ処理を作成してみる（runnerの場合）](http://d.hatena.ne.jp/yk5656/20140804/1407572756) `rails runner`でキックする場合`Logger`を`new`しないとダメなんかい
+Enqueue と Perform のログは出ているので実行はされているようだが、肝心の`Rails.logger.debug('do job!')`が出力されない。
+解決... [Rails でバッチ処理を作成してみる（runner の場合）](http://d.hatena.ne.jp/yk5656/20140804/1407572756) `rails runner`でキックする場合`Logger`を`new`しないとダメなんかい
 
-### queueでさらに詰まる
+### queue でさらに詰まる
 
 `queue_as :default`を`queue_as :encoder`に変えたらまたログが出なくなった。
-起動時に使用するキューの設定を`-q`でする必要があった `bundle exec sidekiq -q default encoder`でOK...ではない`-q`直後のキューしか認識しない
-`-q default`ならdefaultしか動かないし、`-q encoder`ならencoderしか動かない `sidekiq.yml`で設定したら両方動いた、なんでだろ...
+起動時に使用するキューの設定を`-q`でする必要があった `bundle exec sidekiq -q default encoder`で OK...ではない`-q`直後のキューしか認識しない
+`-q default`なら default しか動かないし、`-q encoder`なら encoder しか動かない `sidekiq.yml`で設定したら両方動いた、なんでだろ...
 
 ```
 :verbose: false
@@ -207,11 +207,11 @@ EnqueueとPerformのログは出ているので実行はされているようだ
 bundle exec sidekiq -C config/sidekiq.yml
 ```
 
-これでOK
+これで OK
 
 ### ダッシュボードはいい
 
-Sidekiqにはダッシュボードがついている、これはいいものだ、以下の設定で有効になる。
+Sidekiq にはダッシュボードがついている、これはいいものだ、以下の設定で有効になる。
 
 ```ruby
 # config/routes.rb
@@ -221,11 +221,11 @@ mount Sidekiq::Web => '/sidekiq'
 
 開発環境なら`http://localhost:3000/sidekiq`にアクセスで表示される。
 
-<img src="https://skullware.net/blog/wp-content/uploads/2018/04/66c19942ab4ba346fdb64ccc04cde373-1024x551.png" alt="" width="640" height="344" class="aligncenter size-large wp-image-63" />
+![ダッシュボードの表示例](/images/01-01.png)
 
 ### アダプタ意識しなくていい？
 
-冒頭でActiveJobはジョブ管理フレームワーク（アダプタ）の差異を吸収すると書いたが、結局Sidekiqがっつり覚えなきゃ最低限の動作も難しかった。
-アダプタを変更してもActiveJobより先は修正が必要ないという事だろうけど、アダプタの変更ってそんな発生するものだろうか？ActiveJobのメリットが感じ辛かった、Sidekiq単体でいいんじゃないかと。
+冒頭で ActiveJob はジョブ管理フレームワーク（アダプタ）の差異を吸収すると書いたが、結局 Sidekiq がっつり覚えなきゃ最低限の動作も難しかった。
+アダプタを変更しても ActiveJob より先は修正が必要ないという事だろうけど、アダプタの変更ってそんな発生するものだろうか？ActiveJob のメリットが感じ辛かった、Sidekiq 単体でいいんじゃないかと。
 
-全くの0から導入する場合、`ActiveJob+Sidekiq+Redis`と`Sidekiq+Redis`なら明らかに後者の負荷が低いだろう。
+全くの 0 から導入する場合、`ActiveJob+Sidekiq+Redis`と`Sidekiq+Redis`なら明らかに後者の負荷が低いだろう。
