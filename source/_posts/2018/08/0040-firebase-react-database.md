@@ -10,72 +10,94 @@ Firebase で静的サイトのホスティングと ESLint・Prettier の適用�
 
 ただ実際に写したり動かしたり色々検討しながらなので、内容がかなり乱暴になっているのはご容赦いただきたい。
 
+---
+
+- 9/8 大幅に書き直し、ちゃんとしました。
+
+---
+
 <!-- more -->
 
-# Firebase Database の初期化
+# 前提作業
+
+事前にアプリの雛形の作成と、ESLint・Prettier の設定を行っておく。
+
+- [[Firebase] React を Firebase で Hosting](https://t-kojima.github.io/2018/08/12/0038-firebase-react-hosting/)
+- [[React] ESLint と Prettier を React に適用](https://t-kojima.github.io/2018/08/12/0039-firebase-react-eslint-prettier/)
+
+まあ ESLint・Prettier の設定は必須では無いけど。。。
+
+## Firebase Database の初期化
+
+まずは Firebase Database を扱う為に、設定ファイルの生成や初期化を行う。
 
 ```bash
 firebase init database
 ```
 
-`database.rules.json`が作成され、`firebase.json`に database の設定が追記される。
+すると`database.rules.json`が作成され、`firebase.json`に database の設定が追記される。
 
-# 構成
+# ToDo アプリの作成
 
-ToDo アプリは以下の構成になっている。
+## 構成
+
+ToDo アプリは以下の構成にする。
 
 - index.js : App.js を呼び出すエントリーポイント
 - App.js : アプリ全体のレイアウトを持つコンポーネント
-- TodoList.js : TodoList のコンポーネント
-- Todo.js : Todo1 個に対するコンポーネント
+- TodoList.jsx : TodoList のコンポーネント
+- Todo.jsx : Todo1 個に対するコンポーネント
+- InputForm.jsx : Todo を登録するフォームのコンポーネント
 
-## index.js
+### index.js
 
-index.js はエントリーポイントとなるファイルだ。
+index.js はエントリーポイントとなるファイルになる。
 
 ```js
-import React from 'react'
-import ReactDOM from 'react-dom'
-import './index.css'
-import App from './App'
-import registerServiceWorker from './registerServiceWorker'
+import React from 'react';
+import ReactDOM from 'react-dom';
+import './index.css';
+import App from './App';
+import registerServiceWorker from './registerServiceWorker';
 
-ReactDOM.render(<App />, document.getElementById('root'))
-registerServiceWorker()
+ReactDOM.render(<App />, document.getElementById('root'));
+registerServiceWorker();
 ```
 
 処理としては`#root`の要素に App コンポーネントをレンダリングするのみだ。
+ここはある程度お決まりの記述になる。いわゆる*おまじない*だ。
 
 registerServiceWorker は create-react-app が自動生成したモジュールになる。ぶっちゃけ何をしているのか分かっていないので、近いうちに内容をよく確認したい。。。
 
-## App.js
+### App.js
 
-App.js ではタイトルを表示し、TodoList コンポーネントを読み込んでいる。
+App.js は実質的なルートになるコンポーネントになる。
+ここではタイトルを表示し、TodoList コンポーネントを読み込んでいる。
 
 ```jsx
-import React, { Component } from 'react'
-import TodoList from './TodoList'
-import './App.css'
+import React, { Component } from 'react';
+import TodoList from './TodoList';
+import './App.css';
 
 export default class App extends Component {
   constructor() {
-    super()
+    super();
     this.state = {
       todos: [
         {
           id: 1,
           title: 'Todo その1',
           description: 'Todo その1',
-          done: false
+          done: false,
         },
         {
           id: 2,
           title: 'Todo その2',
           description: 'Todo その2',
-          done: false
-        }
-      ]
-    }
+          done: false,
+        },
+      ],
+    };
   }
   render() {
     return (
@@ -89,7 +111,7 @@ export default class App extends Component {
           <TodoList todos={this.state.todos} />
         </section>
       </div>
-    )
+    );
   }
 }
 ```
@@ -104,13 +126,13 @@ export default class App extends Component {
 
 最初は[Material-ui](https://material-ui.com/)などのコンポーネントセットの利用も検討したが、パラメータなどが多く、React 初心者にはちょっと辛そうだったので今回は CSS フレームワークにした。
 
-## TodoList.js
+### TodoList.jsx
 
 Todo アイテムをリスト保持するコンポーネントだ。
 
 ```jsx
-import React, { Component } from 'react'
-import Todo from './Todo'
+import React, { Component } from 'react';
+import Todo from './Todo';
 
 export default class TodoList extends Component {
   render() {
@@ -120,46 +142,42 @@ export default class TodoList extends Component {
           <Todo key={todo.id} {...todo} />
         ))}
       </ul>
-    )
+    );
   }
 }
 ```
 
 Todo コンポーネントを map で作成し、ul 配下に展開している。ちなみに`{...todo}`は要素を全て Todo コンポーネントに引き継ぐ記述になる。
 
-## Todo.js
+### Todo.js
 
 最後に Todo 1 個あたりのコンポーネントを作る。
 
 ```jsx
-import React, { Component } from 'react'
+import React, { Component } from 'react';
 
 export default class Todo extends Component {
   render() {
-    const className = 'undone'
-    const link = this.props.done ? 'Undo' : 'Completed'
     return (
-      <li className={className}>
+      <li className="todo">
         <nav className="panel">
           <div className="panel-heading">
-            <p>
-              {this.props.id}: {this.props.title}
-            </p>
+            <p>{this.props.title}</p>
           </div>
           <div className="panel-block">
             <p>{this.props.description}</p>
           </div>
           <div className="panel-block">
-            <a href="">{link}</a>
+            <a href="">Completed</a>
           </div>
         </nav>
       </li>
-    )
+    );
   }
 }
 ```
 
-基本的には受け取った props の id や title を表示するだけ。それなりにタグが色々あるように見えるのは Bulma の panel を使っているからだ。
+基本的には受け取った props の title や description を表示するだけ。それなりにタグが色々あるように見えるのは Bulma の panel を使っているからだ。
 
 ここで一度実行(`yarn start`)すると以下のような画面が立ち上がる。
 
@@ -168,6 +186,8 @@ export default class Todo extends Component {
 このようにベタ書きではあるが Todo が表示されれば OK だ。
 
 # Firebase Database 適用
+
+ここまでで静的な Todo アプリ（アプリと言ってよいのだろうか。。。？）が出来たが、ここに Firebase database との連携を追加して動きのあるページにしていく。
 
 まず Firebase SDK をインストールする。前に入れた Firebase CLI とは別物で、Firebase Database 等へのアクセスが可能になる。
 
@@ -180,18 +200,18 @@ yarn add firebase
 初期データのロードということで、Firebase Database に登録されているデータを初回読み込み時にロードする。現時点ではデータを登録していないけど、データ登録処理を入れた時にスムーズにいくよう先にやっとく。
 
 ```jsx
-import React, { Component } from 'react'
-import TodoList from './TodoList'
-import './App.css'
-import firebase from 'firebase/app'
-import 'firebase/database'
+import React, { Component } from 'react';
+import TodoList from './TodoList';
+import './App.css';
+import firebase from 'firebase/app';
+import 'firebase/database';
 
 export default class App extends Component {
   constructor() {
-    super()
+    super();
     this.state = {
-      todos: []
-    }
+      todos: [],
+    };
   }
   componentDidMount() {
     firebase
@@ -199,8 +219,8 @@ export default class App extends Component {
       .ref('todos')
       .once('value')
       .then(snapshot => {
-        this.setState({ todos: Object.values(snapshot.val()) })
-      })
+        this.setState({ todos: Object.values(snapshot.val()) });
+      });
   }
   render() {
     return (
@@ -214,7 +234,7 @@ export default class App extends Component {
           <TodoList todos={this.state.todos} />
         </section>
       </div>
-    )
+    );
   }
 }
 ```
@@ -228,25 +248,25 @@ constructor と componentDidMount で処理を分けているのはデータの�
 ToDo タスクを登録するための入力フォームをコンポーネントで作成する。
 
 ```jsx
-import React, { Component } from 'react'
-import firebase from 'firebase/app'
-import 'firebase/database'
+import React, { Component } from 'react';
+import firebase from 'firebase/app';
+import 'firebase/database';
 
 export default class Todo extends Component {
   constructor(props) {
-    super(props)
+    super(props);
     this.state = {
       text: '',
-      desc: ''
-    }
-    this.onClick = this.onClick.bind(this)
+      desc: '',
+    };
+    this.onClick = this.onClick.bind(this);
   }
 
   onClick() {
     const newKey = firebase
       .database()
       .ref('todos')
-      .push().key
+      .push().key;
     firebase
       .database()
       .ref(`todos/${newKey}`)
@@ -254,9 +274,9 @@ export default class Todo extends Component {
         id: newKey,
         title: this.state.text,
         description: this.state.desc,
-        checked: false
-      })
-    this.setState({ text: '', desc: '' })
+        checked: false,
+      });
+    this.setState({ text: '', desc: '' });
   }
   render() {
     return (
@@ -284,7 +304,7 @@ export default class Todo extends Component {
           </button>
         </div>
       </div>
-    )
+    );
   }
 }
 ```
