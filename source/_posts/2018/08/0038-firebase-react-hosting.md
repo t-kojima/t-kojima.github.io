@@ -1,5 +1,5 @@
 ---
-title: '[Firebase] ReactをFirebaseでHosting'
+title: '[Firebase x React] ReactをFirebaseでHosting'
 date: 2018-08-12 10:00:21
 tags:
   - firebase

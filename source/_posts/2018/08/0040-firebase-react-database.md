@@ -1,5 +1,5 @@
 ---
-title: '[Firebase] ReactをFirebaseでDatabase'
+title: '[Firebase x React] ReactをFirebaseでDatabase'
 date: 2018-08-13 00:00:56
 tags:
   - firebase
@@ -22,8 +22,8 @@ Firebase で静的サイトのホスティングと ESLint・Prettier の適用�
 
 事前にアプリの雛形の作成と、ESLint・Prettier の設定を行っておく。
 
-- [[Firebase] React を Firebase で Hosting](https://t-kojima.github.io/2018/08/12/0038-firebase-react-hosting/)
-- [[React] ESLint と Prettier を React に適用](https://t-kojima.github.io/2018/08/12/0039-firebase-react-eslint-prettier/)
+- [[Firebase x React] React を Firebase で Hosting](https://t-kojima.github.io/2018/08/12/0038-firebase-react-hosting/)
+- [[Firebase x React] ESLint と Prettier を React に適用](https://t-kojima.github.io/2018/08/12/0039-firebase-react-eslint-prettier/)
 
 まあ ESLint・Prettier の設定は必須では無いけど。。。
 
@@ -46,7 +46,7 @@ ToDo アプリは以下の構成にする。
 - index.js : App.js を呼び出すエントリーポイント
 - App.js : アプリ全体のレイアウトを持つコンポーネント
 - TodoList.jsx : TodoList のコンポーネント
-- Todo.jsx : Todo1 個に対するコンポーネント
+- Todo.jsx : Todo 1 個に対するコンポーネント
 - InputForm.jsx : Todo を登録するフォームのコンポーネント
 
 ### index.js
@@ -80,25 +80,6 @@ import TodoList from './TodoList';
 import './App.css';
 
 export default class App extends Component {
-  constructor() {
-    super();
-    this.state = {
-      todos: [
-        {
-          id: 1,
-          title: 'Todo その1',
-          description: 'Todo その1',
-          done: false,
-        },
-        {
-          id: 2,
-          title: 'Todo その2',
-          description: 'Todo その2',
-          done: false,
-        },
-      ],
-    };
-  }
   render() {
     return (
       <div className="app">
@@ -108,7 +89,7 @@ export default class App extends Component {
           </div>
         </section>
         <section className="container">
-          <TodoList todos={this.state.todos} />
+          <TodoList />
         </section>
       </div>
     );
@@ -116,9 +97,7 @@ export default class App extends Component {
 }
 ```
 
-まだ Firebase database と繋いでいないので、とりあえず初期値をベタ書きしている。
-
-`hero`や`container`などのクラスは[Bulma](https://bulma.io/)を利用している。以下のように CDN で利用できるので非常にカンタンだ。
+ちなみに`hero`や`container`などのクラスは[Bulma](https://bulma.io/)を利用している。以下のように CDN で利用できるので非常にカンタンだ。
 
 ```html
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bulma/0.7.1/css/bulma.min.css">
@@ -128,17 +107,38 @@ export default class App extends Component {
 
 ### TodoList.jsx
 
-Todo アイテムをリスト保持するコンポーネントだ。
+次に Todo アイテムをリスト保持するコンポーネントを作成する。
+
+まだ Firebase database と繋いでいないのでとりあえず初期値をベタ書きしているが、このコンポーネントは Todo アイテムのリストを状態（state）として保持する。
 
 ```jsx
 import React, { Component } from 'react';
 import Todo from './Todo';
 
 export default class TodoList extends Component {
+  constructor() {
+    super();
+    this.state = {
+      todos: [
+        {
+          id: 1,
+          title: 'Todo その1',
+          description: 'Todo その1',
+          checked: false,
+        },
+        {
+          id: 2,
+          title: 'Todo その2',
+          description: 'Todo その2',
+          checked: false,
+        },
+      ],
+    };
+  }
   render() {
     return (
       <ul>
-        {this.props.todos.map(todo => (
+        {this.state.todos.map(todo => (
           <Todo key={todo.id} {...todo} />
         ))}
       </ul>
@@ -147,7 +147,7 @@ export default class TodoList extends Component {
 }
 ```
 
-Todo コンポーネントを map で作成し、ul 配下に展開している。ちなみに`{...todo}`は要素を全て Todo コンポーネントに引き継ぐ記述になる。
+Todo コンポーネントを map で作成し、ul 配下に展開している。ちなみに`{...todo}`は要素を全て Todo コンポーネントの props に引き継ぐ記述だ。
 
 ### Todo.js
 
@@ -195,18 +195,62 @@ export default class Todo extends Component {
 yarn add firebase
 ```
 
+## Database アクセス用のモジュール作成
+
+Firebase Database へのアクセスを簡易にするためモジュールを作成します。
+
+- firebase/config.js
+- firebase/index.js
+
+まずは config.js に Firebase へアクセスする為の設定情報を持たせます。
+
+Firebase Concole にアクセスし、以下のボタンから接続情報を確認する。
+
+![ウェブアプリにFirebaseを追加](/images/38-03.png)
+
+確認できた接続情報を以下のように`firebase/config.js`に持たせる。
+
+```js
+export const firebaseConfig = {
+  apiKey: '**********',
+  authDomain: '**********.firebaseapp.com',
+  databaseURL: 'https://**********.firebaseio.com',
+  projectId: '**********',
+  storageBucket: '**********.appspot.com',
+  messagingSenderId: '**********',
+};
+```
+
+続いて`firebase/index.js`で config を読み出し、初期化したうえで export する。
+
+今回は database のみなので、`firebaseDb`のみを export する。
+
+```js
+import firebase from 'firebase';
+import { firebaseConfig } from './config';
+
+firebase.initializeApp(firebaseConfig);
+export const firebaseDb = firebase.database();
+```
+
+これで各コンポーネントからは以下のように呼び出すことで、DB を利用することができるようになる。
+
+```js
+import { firebaseDb } from './firebase';
+```
+
 ## 初期データのロード
 
 初期データのロードということで、Firebase Database に登録されているデータを初回読み込み時にロードする。現時点ではデータを登録していないけど、データ登録処理を入れた時にスムーズにいくよう先にやっとく。
 
+TodoList.jsx を以下のように書き換える。
+
 ```jsx
 import React, { Component } from 'react';
-import TodoList from './TodoList';
-import './App.css';
-import firebase from 'firebase/app';
-import 'firebase/database';
+import Todo from './Todo';
+import { firebaseDb } from './firebase';
 
-export default class App extends Component {
+export default class TodoList extends Component {
   constructor() {
     super();
     this.state = {
@@ -214,26 +258,18 @@ export default class App extends Component {
     };
   }
   componentDidMount() {
-    firebase
-      .database()
+    firebaseDb
       .ref('todos')
       .once('value')
-      .then(snapshot => {
-        this.setState({ todos: Object.values(snapshot.val()) });
-      });
+      .then(snapshot => this.setState({ todos: snapshot.val() || [] }));
   }
   render() {
     return (
-      <div className="app">
-        <section className="hero container is-info">
-          <div className="hero-body">
-            <h1 className="title">ToDo Application.</h1>
-          </div>
-        </section>
-        <section className="container">
-          <TodoList todos={this.state.todos} />
-        </section>
-      </div>
+      <ul>
+        {Object.entries(this.state.todos).map(([key, value]) => (
+          <Todo key={key} id={key} {...value} />
+        ))}
+      </ul>
     );
   }
 }
@@ -243,50 +279,82 @@ state の todos をただの空配列にし、`componentDidMount`メソッドを
 
 constructor と componentDidMount で処理を分けているのはデータのロードが非同期だからで、コンポーネントマウント時に改めて setState している。
 
+### id を key にする
+
+もう一つ変化点として、todos のデータの持ち方を変えている。
+
+データをベタ書きしていた時は、todo 1 件のデータは以下のように id を持っているが
+
+```js
+{
+  id: 1,
+  title: 'Todo その1',
+  description: 'Todo その1',
+  checked: false,
+},
+```
+
+次のようなデータの持ち方に変更する。（次項参照）
+
+```js
+id: {
+  title: 'Todo その1',
+  description: 'Todo その1',
+  checked: false,
+},
+```
+
+何故かというと、id は Firebase Database が一意に作成するものを使用するようにする為、データの中に id というフィールドを持つのではなく、データのキーとして id を持つようになるからだ。（フィールドとして id を持ってもいいけど、冗長になるので排除する）
+
+そのため、todos を map で回す際は以下のように書き換える。key と value に分離して、props の id には明示的に key を設定してあげるようにする。
+
+```js
+{
+  Object.entries(this.state.todos).map(([key, value]) => (
+    <Todo key={key} id={key} {...value} />
+  ));
+}
+```
+
 ## データ登録フォームの作成
 
-ToDo タスクを登録するための入力フォームをコンポーネントで作成する。
+次に新規の ToDo タスクを登録するための入力フォームをコンポーネントで作成する。
+
+InputForm.jsx としよう
 
 ```jsx
 import React, { Component } from 'react';
-import firebase from 'firebase/app';
-import 'firebase/database';
+import { firebaseDb } from './firebase';
 
-export default class Todo extends Component {
+export default class InputForm extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      text: '',
+      title: '',
       desc: '',
     };
     this.onClick = this.onClick.bind(this);
   }
 
   onClick() {
-    const newKey = firebase
-      .database()
-      .ref('todos')
-      .push().key;
-    firebase
-      .database()
-      .ref(`todos/${newKey}`)
-      .set({
-        id: newKey,
-        title: this.state.text,
-        description: this.state.desc,
-        checked: false,
-      });
-    this.setState({ text: '', desc: '' });
+    firebaseDb.ref(`todos`).push({
+      title: this.state.title,
+      description: this.state.desc,
+      checked: false,
+    });
+    this.setState({ title: '', desc: '' });
   }
+
   render() {
+    const { title, desc } = this.state;
     return (
       <div className="container">
         <div className="field">
           <label className="label">Title</label>
           <input
             className="input"
-            value={this.state.text}
-            onChange={e => this.setState({ text: e.target.value })}
+            value={this.state.title}
+            onChange={e => this.setState({ title: e.target.value })}
           />
         </div>
         <div className="field">
@@ -299,9 +367,12 @@ export default class Todo extends Component {
         </div>
 
         <div className="control">
-          <button className="button is-link" onClick={this.onClick}>
-            Submit
-          </button>
+          {title &&
+            desc && (
+              <button className="button is-link" onClick={this.onClick}>
+                Submit
+              </button>
+            )}
         </div>
       </div>
     );
@@ -327,30 +398,24 @@ export default class Todo extends Component {
 submit の onClick で firebase の API を呼び出す。
 
 ```js
- onClick() {
-    const newKey = firebase
-      .database()
-      .ref('todos')
-      .push().key
-    firebase
-      .database()
-      .ref(`todos/${newKey}`)
-      .set({
-        id: newKey,
-        title: this.state.text,
-        description: this.state.desc,
-        checked: false
-      })
-    this.setState({ text: '', desc: '' })
+  onClick() {
+    firebaseDb.ref(`todos`).push({
+      title: this.state.title,
+      description: this.state.desc,
+      checked: false,
+    });
+    this.setState({ title: '', desc: '' });
   }
 ```
 
-このコンポーネントを App.js から呼びだす。
+`.push()`を使ってデータ登録することにより、Todo に対して一意の ID を付与しつつ登録することができる。
+
+そしてこのコンポーネントを App.js から呼びだす。
 
 ```html
         <section className="container">
           <InputForm />
-          <TodoList todos={this.state.todos} />
+          <TodoList />
         </section>
 ```
 
@@ -367,5 +432,3 @@ submit の onClick で firebase の API を呼び出す。
 - [【React】ToDo アプリを作ってみよう【前編】 - Qiita](https://qiita.com/mikan3rd/items/20152cdd63a708264a9e)
 - [React + Redux + Firebase で作る Todo App - Qiita](https://qiita.com/gonta616/items/278a7e81a8b624d9621e#firebase%E3%81%A7%E3%83%97%E3%83%AD%E3%82%B8%E3%82%A7%E3%82%AF%E3%83%88%E3%82%92%E4%BD%9C%E6%88%90%E3%81%99%E3%82%8B)
 - [r-park/todo-react-redux: Todo app with Create-React-App • React-Redux • Firebase • OAuth](https://github.com/r-park/todo-react-redux)
-  <!-- - [Vue.js で ToDo アプリを作る (Firebase Realtime Database 編) - kntmr-blog](https://kntmr.hatenablog.com/entry/2018/06/17/093357)
-- [playground/vue-pwa-examples/todo-app at master · kntmr/playground](https://github.com/kntmr/playground/tree/master/vue-pwa-examples/todo-app) -->

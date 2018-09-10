@@ -1,5 +1,5 @@
 ---
-title: '[React] ESLintとPrettierをReactに適用'
+title: '[Firebase x React] ESLintとPrettierをReactに適用'
 date: 2018-08-12 10:17:55
 tags:
   - firebase
