@@ -1,6 +1,6 @@
 ---
 title: 'WindowsでCmderでVSCodeでPowerline'
-date: 2018-09-09 11:41:19
+date: 2018-09-24 11:41:19
 tags:
   - vscode
   - powerline

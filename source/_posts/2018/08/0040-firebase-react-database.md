@@ -12,7 +12,7 @@ Firebase で静的サイトのホスティングと ESLint・Prettier の適用�
 
 ---
 
-- 9/8 大幅に書き直し、ちゃんとしました。
+- 9/24 大幅に書き直し、ちゃんとしました。
 
 ---
 
@@ -260,8 +260,7 @@ export default class TodoList extends Component {
   componentDidMount() {
     firebaseDb
       .ref('todos')
-      .once('value')
-      .then(snapshot => this.setState({ todos: snapshot.val() || [] }));
+      .on('value', snapshot => this.setState({ todos: snapshot.val() || [] }));
   }
   render() {
     return (
@@ -278,6 +277,49 @@ export default class TodoList extends Component {
 state の todos をただの空配列にし、`componentDidMount`メソッドを追加した。このメソッドで Firebase Database のデータをロードし、state の todos に設定する。
 
 constructor と componentDidMount で処理を分けているのはデータのロードが非同期だからで、コンポーネントマウント時に改めて setState している。
+
+DB のデータを取得するメソッドとして、ここでは`on`を利用している。ざっくり言うとデータに変化がある度にロードする`on`と、一回限りロードする`once`がある。主な違いは以下の通りだ。
+
+### on
+
+on メソッドでは`'value'`とコールバック関数が引数として渡される。
+
+```js
+database.ref('***').on('value', callback);
+```
+
+ここで渡された callback はリスナーに登録され、データの状態を監視するようになり、データに変化があり次第 callback をキックするようになる。
+
+今回の用途では`snapshot => this.setState({ todos: snapshot.val() || [] })`というコールバックを登録しているので、データに変化がある度にこの関数が実行される。
+
+ちなみに on メソッドは戻り値としてリスナーに登録された callback 自体を返す。リスナーの登録を解除したい場合は、この返された callback を利用して off メソッドを呼んでやればいい。
+
+```js
+// onでリスナー登録
+const callback = database
+  .ref('***')
+  .on('value', snapshot => this.setState({ todos: snapshot.val() || [] }));
+// 戻り値のcallbackを利用し、offでリスナー解除
+database.ref('***').off('value', callback);
+```
+
+### once
+
+once メソッドでも`'value'`とコールバック関数が引数として渡されるが、on と異なりリスナーを登録するわけでは無く一度のみデータを取得する。
+
+```js
+database.ref('***').once('value', callback);
+```
+
+また、on ではコールバックとしてでしか関数を呼べなかったが、once は Promise を返すこともできる。
+
+```js
+// これもOK
+database
+  .ref('***')
+  .once('value')
+  .then(callback);
+```
 
 ### id を key にする
 
@@ -423,12 +465,132 @@ submit の onClick で firebase の API を呼び出す。
 
 ![フォームを追加した画面](/images/40-03.png)
 
-しかしこのままだとタスクの登録はできても、画面をリロードしなければ一覧に反映されない。次回はデータベースの変更をフックする機構を追加したい。
+## Todo を消せるようにする
 
-つづく
+最後に Todo を削除できるようにする。
+
+完了のチェックボックスを付けて、チェックしたら削除ボタンが押せるようになる。だと Todo リストっぽい（よね？）
+
+以下のように Todo コンポーネントに処理を追加する。
+
+```jsx
+import React, { Component } from 'react';
+import { firebaseDb } from './firebase';
+
+export default class Todo extends Component {
+  constructor() {
+    super();
+    this.handleCheck = this.handleCheck.bind(this);
+    this.handleDelete = this.handleDelete.bind(this);
+  }
+
+  handleCheck() {
+    firebaseDb.ref(`todos/${this.props.id}`).update({
+      checked: !this.props.checked,
+    });
+  }
+
+  handleDelete() {
+    firebaseDb.ref(`todos/${this.props.id}`).remove();
+  }
+
+  render() {
+    return (
+      <li className="todo">
+        <nav className="panel">
+          <div className="panel-heading">
+            <p>{this.props.title}</p>
+          </div>
+          <div className="panel-block">
+            <label className="checkbox">
+              <input
+                type="checkbox"
+                onChange={this.handleCheck}
+                checked={this.props.checked}
+              />
+              {this.props.description}
+            </label>
+          </div>
+          <div className="panel-block">
+            {this.props.checked && (
+              <button className="button is-link" onClick={this.handleDelete}>
+                Delete
+              </button>
+            )}
+          </div>
+        </nav>
+      </li>
+    );
+  }
+}
+```
+
+### チェックボックスを付ける
+
+チェックボックスを追加する。チェック状態は`this.props.checked`と同期させ、クリックすると`handleCheck`という関数を呼ぶようにする。
+
+```html
+<input
+  type="checkbox"
+  onChange={this.handleCheck}
+  checked={this.props.checked}
+/>
+```
+
+呼ばれる関数は以下のものだ
+
+```js
+  handleCheck() {
+    firebaseDb.ref(`todos/${this.props.id}`).update({
+      checked: !this.props.checked,
+    });
+  }
+```
+
+props の id をキーとして todos からデータを指定し、checked のみを update かける。ここで update を掛けると DB の変更を TodoList.jsx で検知するので、checked が変更されたデータが自動的にロードされる。
+
+これでチェックボックスをクリックする度にチェックが切り替わる動作ができるようになる。
+
+### 削除ボタンを付ける
+
+次に、チェックボックスが ON になったら表示される削除ボタンを追加する。
+
+```jsx
+{
+  this.props.checked && (
+    <button className="button is-link" onClick={this.handleDelete}>
+      Delete
+    </button>
+  );
+}
+```
+
+チェックボックスと同様に、クリックすると`handleDelete`関数を呼ぶ。
+
+```js
+  handleDelete() {
+    firebaseDb.ref(`todos/${this.props.id}`).remove();
+  }
+```
+
+props の id をキーとして DB からデータを削除する。これも update と同様に、データの変更を検知して、画面表示の一覧が自動的に更新される。
+
+# さいごに
+
+Todo リストとして必要最小限の機能は実装することはできたが、React も Firebase も**ギリギリ動かせた**というのが正直なところ。
+
+しかしこのお手軽さでリアルタイムな Web アプリを作れるのは非常に可能性を感じる。もっと色々いじり倒してみたいものだ。
+
+# 環境
+
+- Windows 10
+- React 16.4.2
+- create-react-app 1.5.2
+- Firebase 5.3.1
 
 # 参考
 
 - [【React】ToDo アプリを作ってみよう【前編】 - Qiita](https://qiita.com/mikan3rd/items/20152cdd63a708264a9e)
 - [React + Redux + Firebase で作る Todo App - Qiita](https://qiita.com/gonta616/items/278a7e81a8b624d9621e#firebase%E3%81%A7%E3%83%97%E3%83%AD%E3%82%B8%E3%82%A7%E3%82%AF%E3%83%88%E3%82%92%E4%BD%9C%E6%88%90%E3%81%99%E3%82%8B)
 - [r-park/todo-react-redux: Todo app with Create-React-App • React-Redux • Firebase • OAuth](https://github.com/r-park/todo-react-redux)
+- [ウェブでのデータの読み取りと書き込み  |  Firebase Realtime Database  |  Firebase](https://firebase.google.com/docs/database/web/read-and-write?hl=ja#listen_for_value_events)
