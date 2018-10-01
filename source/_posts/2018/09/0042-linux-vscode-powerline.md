@@ -56,6 +56,8 @@ cd ..
 rm -rf fonts
 ```
 
+これでフォントが追加された。
+
 # VSCode に適用
 
 VSCode の`settings.json`でフォントを設定する。
@@ -66,7 +68,64 @@ VSCode の`settings.json`でフォントを設定する。
 
 カンタン！
 
+ちょっとフォントの大きさが気になる場合は調整すると良い。デフォルトが 14 なので少し小さめの 12 あたりにしてみる。
+
+```json
+"terminal.integrated.fontSize": 12
+```
+
+以下のように VSCode のターミナルに Powerline が適用できた。
+
+![Powerline適用後の画面](/images/42-01.png)
+
 # Powerline-shell の設定
+
+Powerline の適用はできたが、プロンプトにカレントのパスがズラズラ表示されるのは若干イケてない。なので設定を変更してみる。
+
+powerline-shell では設定ファイルを生成し、カスタマイズすることができる。（設定ファイルを生成していない状態では、デフォルトの設定が適用される）
+
+```bash
+powerline-shell --generate-config > ~/.powerline-shell.json
+```
+
+これで`.powerline-shell.json`が生成されるので、それを編集する。
+
+今回はディレクトリを展開せずに現在のディレクトリのみを表示させたいので、以下のオプションを追加する。
+
+```json
+  "cwd": {
+    "mode": "dironly"
+  }
+}
+```
+
+ちなみに json 全体は以下の通りだ。
+
+```json
+{
+  "segments": [
+    "virtual_env",
+    "username",
+    "ssh",
+    "cwd",
+    "git",
+    "hg",
+    "jobs",
+    "root",
+    "read_only"
+  ],
+  "cwd": {
+    "mode": "dironly"
+  },
+  "vcs": {
+    "show_symbol": "true"
+  }
+}
+```
+
+すると以下のように現在のディレクトリしか表示されなくなった。
+
+![設定変更後の画面](/images/42-01.png)
 
 # 環境
 
