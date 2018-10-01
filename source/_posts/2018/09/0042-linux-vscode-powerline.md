@@ -96,7 +96,6 @@ powerline-shell --generate-config > ~/.powerline-shell.json
   "cwd": {
     "mode": "dironly"
   }
-}
 ```
 
 ちなみに json 全体は以下の通りだ。
@@ -125,7 +124,7 @@ powerline-shell --generate-config > ~/.powerline-shell.json
 
 すると以下のように現在のディレクトリしか表示されなくなった。
 
-![設定変更後の画面](/images/42-01.png)
+![設定変更後の画面](/images/42-02.png)
 
 # 環境
 
