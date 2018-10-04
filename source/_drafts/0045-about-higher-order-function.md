@@ -1,6 +1,6 @@
 ---
 title: 'なぜ高階関数を使うのか'
-date: 2018-10-02 00:51:05
+date: 2018-10-05 00:51:05
 tags:
   - javascript
 ---
@@ -9,22 +9,24 @@ tags:
 
 高階関数が優れているのは頭では理解しているが、「じゃあ知らない人に説明してみろよ」と言われると少し詰まってしまうので、改めて書き出してみる。
 
-ちなみに言語は javascript で書くけど、C#なら Linq だったり、Ruby ならブロック構文だったり、様々な言語で高階関数を実現する機構はそれぞれあるので内容は言語を問わない。
+<!-- ちなみに言語は javascript で書くけど、C#なら Linq だったり、Ruby ならブロック構文だったり、様々な言語で高階関数を実現する機構はそれぞれあるので内容は言語を問わない。 -->
 
 <!-- more -->
 
 # map の比較
 
-まずは単純な map 関数について、for 文との違いを見ていく。配列の各要素を2倍する処理を考えてみよう。
+まずは単純な map 関数について、for 文との違いを見ていく。配列の各要素を 2 倍する処理を考えてみよう。
+
+まずは for 文
 
 ```js
-const array = [1, 2, 3]
-const results = []
+const array = [1, 2, 3];
+const results = [];
 for (item of array) {
-    results.push(item * 2)
+  results.push(item * 2);
 }
-console.log(results)
+console.log(results);
 //=> [2, 4, 6]
 ```
 
-宣言的
+# 宣言的
