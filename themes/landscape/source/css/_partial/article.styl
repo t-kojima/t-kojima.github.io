@@ -251,8 +251,8 @@
   line-height: 36px
 
 .article-share-links
-  clearfix()
-  background: color-background
+  float: right
+  margin-left: 20px
 
 $article-share-link
   width: 50px
@@ -268,7 +268,7 @@ $article-share-link
     absolute-center(@font-size)
     text-align: center
   &:hover
-    color: #fff
+    color: #fff !important
 
 .article-share-twitter
   @extend $article-share-link
@@ -301,6 +301,16 @@ $article-share-link
   &:hover
     background: color-google
     text-shadow: 0 1px darken(color-google, 20%)
+
+.article-share-hatebu
+  @extend $article-share-link
+  &:before
+    content: "B!"
+    font-family: Verdana
+    font-weight: bold
+  &:hover
+    background: color-hatebu
+    text-shadow: 0 1px darken(color-hatebu, 20%)
 
 .article-gallery
   background: #000
