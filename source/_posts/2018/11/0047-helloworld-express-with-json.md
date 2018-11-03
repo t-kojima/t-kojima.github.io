@@ -38,20 +38,81 @@ app.listen(3000, () => console.log('http://localhost:3000'));
 
 最後の`console.log`は無くてもいいが、アドレスを入れておくと起動後に即開けるので楽ちん
 
-```js
+```bash
 $ node app
 http://localhost:3000
 ```
 
-実行してブラウザアクセスすると。。。
+実行してアクセスすると。。。
 
 ```bash
-> hello world!
+$ curl http://localhost:3000
+hello world!
 ```
 
 ハロワでた！
 
-## 実行環境
+# JSONで返す
+
+次にレスポンスがjsonで返るようにしよう。
+
+やり方は`response`オブジェクト（下記では`res`）に`Content-Type`を設定すれば良い。
+
+```js
+app.get('/', (req, res) => {
+  res.header('Content-Type', 'application/json; charset=utf-8')
+  res.send('{ "message": "hello world!" }')
+});
+```
+
+これも実行すると。。。
+
+```bash
+$ node app
+http://localhost:3000
+
+$ curl http://localhost:3000
+{ "message": "hello world!" }
+```
+
+jsonキタ！
+
+# URIにパラメータをつける
+
+パラメータありのリクエストにも対応しよう
+
+`http://localhost:3000/<name>`としてnameに入れた名前で`hello <name>!`と返るようにしてみる。
+
+以下のコードを追加する。
+
+```js
+app.get('/:name', (req, res) => {
+  res.header('Content-Type', 'application/json; charset=utf-8')
+  res.send({ message: `hello ${req.params.name}` })
+})
+```
+
+getのURI指定に`:<パラメータ>`と記述することでパラメータと認識され、`req.params.<パラメータ>`で取り出すことができる。
+
+また、`res.send`にはオブジェクトをそのままぶち込める。これでもレスポンスはJSONにパースしてくれるので便利だ。
+
+これを実行すると。。。
+
+```bash
+$ node app
+http://localhost:3000
+
+$ curl http://localhost:3000/hoge
+{ "message": "hello hoge" }
+```
+
+イケるね！
+
+# 参考
+
+- [Node.js + ExpressでREST API開発を体験しよう［作成編］ - Qiita](https://qiita.com/tamura_CD/items/e3abdab9b8c5aa35fa6b)
+
+# 実行環境
 
 - Node 8.11.3
 - Express 4.16.4
