@@ -154,4 +154,25 @@
 
     $container.removeClass('mobile-nav-on');
   });
+
+  // github grass
+  (function() {
+    var html = `<article class="article article-type-post">
+                  <div class="article-inner">
+                    <header class="article-header">
+                      <h1 class="article-title">Github Grass</h1>
+                    </header>
+                    <div class="article-entry">
+                      <p>
+                        <a href="https://github.com/t-kojima" target="_blank">
+                          <img src="https://grass-graph.moshimo.works/images/t-kojima.png">
+                        </a>
+                      </p>
+                    </div>
+                  </div>
+                </article>`;
+    $('section#main').prepend($(html));
+  })();
+
+
 })(jQuery);
