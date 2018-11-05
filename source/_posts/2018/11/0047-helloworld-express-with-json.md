@@ -1,6 +1,8 @@
 ---
 title: '[Node] Expressを使って最速でJSONを返す'
 date: 2018-11-02 17:13:38
+categories:
+  - ['Node', 'Express']
 tags:
   - nodejs
   - express
@@ -26,12 +28,12 @@ yarn add express
 そしたらエントリポイントとなるファイルを作成する。とりあえず`app.js`としとく。
 
 ```js
-const express = require('express');
-const app = express();
+const express = require('express')
+const app = express()
 
-app.get('/', (req, res) => res.send('hello world!'));
+app.get('/', (req, res) => res.send('hello world!'))
 
-app.listen(3000, () => console.log('http://localhost:3000'));
+app.listen(3000, () => console.log('http://localhost:3000'))
 ```
 
 うーん、4 行！かんたん
@@ -52,9 +54,9 @@ hello world!
 
 ハロワでた！
 
-# JSONで返す
+# JSON で返す
 
-次にレスポンスがjsonで返るようにしよう。
+次にレスポンスが json で返るようにしよう。
 
 やり方は`response`オブジェクト（下記では`res`）に`Content-Type`を設定すれば良い。
 
@@ -62,7 +64,7 @@ hello world!
 app.get('/', (req, res) => {
   res.header('Content-Type', 'application/json; charset=utf-8')
   res.send('{ "message": "hello world!" }')
-});
+})
 ```
 
 これも実行すると。。。
@@ -75,13 +77,13 @@ $ curl http://localhost:3000
 { "message": "hello world!" }
 ```
 
-jsonキタ！
+json キタ！
 
-# URIにパラメータをつける
+# URI にパラメータをつける
 
 パラメータありのリクエストにも対応しよう
 
-`http://localhost:3000/<name>`としてnameに入れた名前で`hello <name>!`と返るようにしてみる。
+`http://localhost:3000/<name>`として name に入れた名前で`hello <name>!`と返るようにしてみる。
 
 以下のコードを追加する。
 
@@ -92,9 +94,9 @@ app.get('/:name', (req, res) => {
 })
 ```
 
-getのURI指定に`:<パラメータ>`と記述することでパラメータと認識され、`req.params.<パラメータ>`で取り出すことができる。
+get の URI 指定に`:<パラメータ>`と記述することでパラメータと認識され、`req.params.<パラメータ>`で取り出すことができる。
 
-また、`res.send`にはオブジェクトをそのままぶち込める。これでもレスポンスはJSONにパースしてくれるので便利だ。
+また、`res.send`にはオブジェクトをそのままぶち込める。これでもレスポンスは JSON にパースしてくれるので便利だ。
 
 これを実行すると。。。
 
@@ -110,7 +112,7 @@ $ curl http://localhost:3000/hoge
 
 # 参考
 
-- [Node.js + ExpressでREST API開発を体験しよう［作成編］ - Qiita](https://qiita.com/tamura_CD/items/e3abdab9b8c5aa35fa6b)
+- [Node.js + Express で REST API 開発を体験しよう［作成編］ - Qiita](https://qiita.com/tamura_CD/items/e3abdab9b8c5aa35fa6b)
 
 # 実行環境
 
