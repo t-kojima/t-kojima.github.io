@@ -1,6 +1,8 @@
 ---
 title: '[Node] ExpressでAPIを作ったらログも吐く'
 date: 2018-11-05 11:45:55
+categories:
+  - ['Node', 'Express'] 
 tags:
   - nodejs
   - express
