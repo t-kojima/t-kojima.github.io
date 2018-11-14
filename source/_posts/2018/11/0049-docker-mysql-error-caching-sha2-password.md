@@ -1,5 +1,5 @@
 ---
-title: '[MySQL] Unable to load authentication plugin 'caching_sha2_password'
+title: "[MySQL] Unable to load authentication plugin 'caching_sha2_password'"
 date: 2018-11-14 10:52:38
 categories:
   - MySQL
@@ -58,7 +58,7 @@ docker run --name mysql -e MYSQL_ROOT_PASSWORD=mysql -p 3306:3306 -d mysql --def
 
 そして再度アクセスすると…
 
-![接続成功](/images/49-2.png)
+![接続成功](/images/49-02.png)
 
 いけた！
 
