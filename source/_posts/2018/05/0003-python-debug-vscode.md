@@ -1,6 +1,8 @@
 ---
 title: '[VSCode] Pythonデバッグの挙動 - 2018.3.0 (28 Mar 2018)'
 date: 2018-05-10 00:41:44
+categories:
+  - VSCode
 tags:
   - vscode
   - python

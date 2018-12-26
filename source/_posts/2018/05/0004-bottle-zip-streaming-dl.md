@@ -1,10 +1,12 @@
 ---
 title: '[Python] Bottleでzipをストリーミングダウンロード'
 date: 2018-05-15 20:47:01
+categories:
+  - Python
 tags:
-- python
-- bottle
-- zipstream
+  - python
+  - bottle
+  - zipstream
 ---
 
 ## 適当なキーワードでパッケージを探したら本当にあった

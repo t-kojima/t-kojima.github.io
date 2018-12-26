@@ -1,6 +1,8 @@
 ---
 title: '[Rails] RedisとSidekiqとActiveJobで苦しむ'
 date: 2018-05-10 00:38:03
+categories:
+  - Rails
 tags:
   - ruby
   - rails

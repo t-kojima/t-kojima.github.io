@@ -2,7 +2,7 @@
 title: 'Project Euler # 1'
 date: 2018-05-10 00:40:20
 tags:
-- euler
+  - euler
 ---
 
 Haskell の勉強がてら、[Project Euler](https://projecteuler.net/)を解いてみる。

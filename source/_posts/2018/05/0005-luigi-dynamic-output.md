@@ -1,9 +1,11 @@
 ---
 title: '[Python] luigiで動的アウトプット'
 date: 2018-05-15 20:47:52
+categories:
+  - Python
 tags:
-- python
-- luigi
+  - python
+  - luigi
 ---
 
 <a href="https://github.com/spotify/luigi" class="embedly-card" data-card-image="0" data-card-controls="0" data-card-align="left"></a>
