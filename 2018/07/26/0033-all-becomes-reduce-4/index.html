@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+
+  
+  <title>全てがReduceになる(4) | Today&#39;s Commit</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="前回に続き、Array のメソッドを reduce で再実装していく。なんかだんだんダレてきたけど、もう少しだ。  reduceRight reverse shift slice some  実装及びテストのリポジトリ(practice-all-becomes-reduce)">
+<meta name="keywords" content="javascript,nodejs">
+<meta property="og:type" content="article">
+<meta property="og:title" content="全てがReduceになる(4)">
+<meta property="og:url" content="https://t-kojima.github.io/2018/07/26/0033-all-becomes-reduce-4/index.html">
+<meta property="og:site_name" content="Today&#39;s Commit">
+<meta property="og:description" content="前回に続き、Array のメソッドを reduce で再実装していく。なんかだんだんダレてきたけど、もう少しだ。  reduceRight reverse shift slice some  実装及びテストのリポジトリ(practice-all-becomes-reduce)">
+<meta property="og:locale" content="ja">
+<meta property="og:updated_time" content="2018-12-20T11:07:38.289Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="全てがReduceになる(4)">
+<meta name="twitter:description" content="前回に続き、Array のメソッドを reduce で再実装していく。なんかだんだんダレてきたけど、もう少しだ。  reduceRight reverse shift slice some  実装及びテストのリポジトリ(practice-all-becomes-reduce)">
+  
+    <link rel="alternate" href="/atom.xml" title="Today&#39;s Commit" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  
+    <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
+  
+  <link rel="stylesheet" href="/css/style.css">
+  
+    <link rel="amphtml" href="https://t-kojima.github.io/2018/07/26/0033-all-becomes-reduce-4//amp/index.html">
+  
+</head>
+
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">Today&#39;s Commit</a>
+      </h1>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSSフィード"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="検索"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="https://t-kojima.github.io"></form>
+      </div>
+    </div>
+  </div>
+</header>
+      <div class="outer">
+        <section id="main"><article id="post-0033-all-becomes-reduce-4" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2018/07/26/0033-all-becomes-reduce-4/" class="article-date">
+  <time datetime="2018-07-26T14:09:28.000Z" itemprop="datePublished">2018-07-26</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      全てがReduceになる(4)
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p><a href="https://t-kojima.github.io/2018/07/24/0032-all-becomes-reduce-3/">前回</a>に続き、Array のメソッドを reduce で再実装していく。なんかだんだんダレてきたけど、もう少しだ。</p>
+<ul>
+<li>reduceRight</li>
+<li>reverse</li>
+<li>shift</li>
+<li>slice</li>
+<li>some</li>
+</ul>
+<p><a href="https://github.com/t-kojima/practice-all-becomes-reduce" target="_blank" rel="noopener">実装及びテストのリポジトリ(practice-all-becomes-reduce)</a></p>
+<a id="more"></a>
+<h1><span id="ルール">ルール</span></h1><p>引き続き以下のルールでやっていく。</p>
+<ul>
+<li>for 文禁止</li>
+<li>Array#reduce を必ず使用する</li>
+<li>Array のインスタンスメソッドは reduce 以外使用不可</li>
+<li>Array のプロパティ、クラスメソッドは使用可能</li>
+<li>スプレッド構文は使用不可（reduce すら不要になる場合があるから）</li>
+</ul>
+<hr>
+<h1 style="font-size: 4em;"><span id="reduceright">reduceRight</span></h1>
+
+<p><a href="https://developer.mozilla.org/ja/docs/Web/JavaScript/Reference/Global_Objects/Array/reduceRight" target="_blank" rel="noopener">Array.prototype.reduceRight() - JavaScript | MDN</a></p>
+<p>reduceRight は通常左の要素から順に処理する reduce を右の要素から処理するようにしたもの。</p>
+<h2><span id="構文">構文</span></h2><figure class="highlight js"><table><tr><td class="code"><pre><span class="line">result = array.reduceRight(callback[, initialValue]);</span><br></pre></td></tr></table></figure>
+<p>callback は以下 4 つの引数を取る。</p>
+<ul>
+<li>previousValue : コールバックの戻り値の累積。reduce の accumulator</li>
+<li>currentValue : 現在処理されている配列の要素</li>
+<li>index : 現在処理されている要素のインデックス</li>
+<li>array : レシーバとなる配列</li>
+</ul>
+<p>initialValue を指定すると、それが最初の要素を処理する際の previousValue となる。逆に initialValue が未指定の場合、最初の要素が previousValue となり、インデックスは 1 から始まる。</p>
+<p>そして全ての要素の処理が完了した時、最後の戻り値が reduceRight の戻り値となる。</p>
+<p>しかしこの callback の引数 array は全く使ったことがないな…多分こういう呼び出し方をする時使うんだろうけど、こういう呼び出し方しないからなぁ</p>
+<figure class="highlight js"><table><tr><td class="code"><pre><span class="line">[<span class="number">1</span>,<span class="number">2</span>,<span class="number">3</span>,<span class="number">4</span>].reduceRight(<span class="function">(<span class="params">acc, cur, index, array</span>) =&gt;</span> ...)</span><br></pre></td></tr></table></figure>
+<h2><span id="再実装">再実装</span></h2><p>reduce で reduce を作るなんて頭がフットーしそうだよう</p>
+<figure class="highlight js"><table><tr><td class="code"><pre><span class="line"><span class="built_in">Array</span>.prototype.reduceRight = <span class="function"><span class="keyword">function</span>(<span class="params">...args</span>) </span>&#123;</span><br><span class="line">  <span class="keyword">const</span> reverse = <span class="built_in">Array</span>.from(<span class="keyword">this</span>).reduce(<span class="function">(<span class="params">acc, cur, index</span>) =&gt;</span> &#123;</span><br><span class="line">    <span class="keyword">if</span> (index <span class="keyword">in</span> <span class="keyword">this</span>) &#123;</span><br><span class="line">      acc[<span class="keyword">this</span>.length - index - <span class="number">1</span>] = cur</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> acc</span><br><span class="line">  &#125;, <span class="built_in">Array</span>(<span class="keyword">this</span>.length))</span><br><span class="line"></span><br><span class="line">  <span class="keyword">const</span> callback = <span class="function">(<span class="params">acc, cur, index</span>) =&gt;</span></span><br><span class="line">    args[<span class="number">0</span>].call(<span class="keyword">this</span>, acc, cur, <span class="keyword">this</span>.length - index - <span class="number">1</span>, <span class="keyword">this</span>)</span><br><span class="line"></span><br><span class="line">  <span class="keyword">return</span> args.length &gt; <span class="number">1</span></span><br><span class="line">    ? reverse.reduce(callback, args[<span class="number">1</span>])</span><br><span class="line">    : reverse.reduce(callback)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>それはそうと、元の配列を反転させてから reduce させる形にした。</p>
+<p>initialValue は引数として定義してしまうと純粋な未指定にできない（引数を定義すると未指定にしても undefined になってしまい、initialValue 無しの動作にはならないから）ので、可変引数で受け取り長さをチェックすることで受け取れるようにしている。</p>
+<p>あとは callback 内でインデックスを反転させればいいだけだ。</p>
+<hr>
+<h1 style="font-size: 4em;"><span id="reverse">reverse</span></h1>
+
+<p><a href="https://developer.mozilla.org/ja/docs/Web/JavaScript/Reference/Global_Objects/Array/reverse" target="_blank" rel="noopener">Array.prototype.reverse() - JavaScript | MDN</a></p>
+<h2><span id="構文">構文</span></h2><figure class="highlight js"><table><tr><td class="code"><pre><span class="line">a.reverse()</span><br></pre></td></tr></table></figure>
+<p>戻り値として反転された配列を返すが、レシーバとなる配列も破壊的に反転される。</p>
+<h2><span id="再実装">再実装</span></h2><figure class="highlight js"><table><tr><td class="code"><pre><span class="line"><span class="built_in">Array</span>.prototype.reverse = <span class="function"><span class="keyword">function</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">  <span class="keyword">const</span> copy = <span class="built_in">Array</span>.from(<span class="keyword">this</span>).reduce(<span class="function">(<span class="params">acc, cur, index</span>) =&gt;</span> &#123;</span><br><span class="line">    <span class="keyword">if</span> (index <span class="keyword">in</span> <span class="keyword">this</span>) &#123;</span><br><span class="line">      acc[index] = cur</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> acc</span><br><span class="line">  &#125;, <span class="built_in">Array</span>(<span class="keyword">this</span>.length))</span><br><span class="line"></span><br><span class="line">  <span class="keyword">this</span>.length = <span class="number">0</span></span><br><span class="line">  <span class="keyword">this</span>.length = copy.length</span><br><span class="line"></span><br><span class="line">  <span class="keyword">return</span> <span class="built_in">Array</span>.from(copy).reduce(<span class="function">(<span class="params">acc, cur, index</span>) =&gt;</span> &#123;</span><br><span class="line">    <span class="keyword">if</span> (index <span class="keyword">in</span> copy) &#123;</span><br><span class="line">      acc[copy.length - index - <span class="number">1</span>] = cur</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> acc</span><br><span class="line">  &#125;, <span class="keyword">this</span>)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>反転する処理自体は reduceRight でもやったのでそのまま流用する。ただしレシーバ自身を破壊的に変更するため、一旦コピーの配列を用意し、それを利用して自身を書き換える。</p>
+<p>その為 <code>this.length = 0</code> で一旦レシーバ自身をリセットし、改めて <code>this.length = copy.length</code> で疎な配列に作り変えている。代入が可能であれば <code>this = Array(this.length)</code> に等しい処理だが、this への代入は許されないのでこのような処理になる。</p>
+<p>ただモロに手続き型の記述になっているし、コードだけだと意図が不明瞭なのでちょっとイケてない書き方だなーと思っている。まあ無理やり reduce で処理している以上意図なんて不明瞭もクソもないんだけど…</p>
+<hr>
+<h1 style="font-size: 4em;"><span id="shift">shift</span></h1>
+
+<p><a href="https://developer.mozilla.org/ja/docs/Web/JavaScript/Reference/Global_Objects/Array/shift" target="_blank" rel="noopener">Array.prototype.shift() - JavaScript | MDN</a></p>
+<p>配列の最初の要素を取り除き、その要素を返す。pop の先頭版のようなものだ。</p>
+<h2><span id="構文">構文</span></h2><figure class="highlight js"><table><tr><td class="code"><pre><span class="line">arr.shift()</span><br></pre></td></tr></table></figure>
+<p>戻り値として先頭の要素を返し、元の配列から削除する。空の配列で shift した場合、undefined が返る。</p>
+<h2><span id="再実装">再実装</span></h2><figure class="highlight js"><table><tr><td class="code"><pre><span class="line"><span class="comment">// Array.prototype.shift = にするとmochaが循環する。</span></span><br><span class="line"><span class="built_in">Array</span>.prototype.shift2 = <span class="function"><span class="keyword">function</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">  <span class="keyword">const</span> copy = <span class="built_in">Array</span>.from(<span class="keyword">this</span>).reduce(<span class="function">(<span class="params">acc, cur, index</span>) =&gt;</span> &#123;</span><br><span class="line">    <span class="keyword">if</span> (index <span class="keyword">in</span> <span class="keyword">this</span>) &#123;</span><br><span class="line">      acc[index] = cur</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> acc</span><br><span class="line">  &#125;, <span class="built_in">Array</span>(<span class="keyword">this</span>.length))</span><br><span class="line"></span><br><span class="line">  <span class="keyword">this</span>.length = <span class="number">0</span></span><br><span class="line">  <span class="keyword">this</span>.length = copy.length ? copy.length - <span class="number">1</span> : <span class="number">0</span></span><br><span class="line"></span><br><span class="line">  <span class="keyword">return</span> <span class="built_in">Array</span>.from(<span class="keyword">this</span>).reduce(<span class="function">(<span class="params">acc, cur, index</span>) =&gt;</span> &#123;</span><br><span class="line">    <span class="keyword">if</span> (index + <span class="number">1</span> <span class="keyword">in</span> copy) &#123;</span><br><span class="line">      <span class="keyword">this</span>[index] = copy[index + <span class="number">1</span>]</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> index === <span class="number">0</span> ? copy[index] : acc</span><br><span class="line">  &#125;, <span class="literal">undefined</span>)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>ロジックとは関係ない（？）んだけど、Array.prototype.shift をそのまま上書きすると mocha のテストが循環する自体に陥った。恐らく describe や it の処理中で shift を使っていたのだろう。正確な原因は掴めなかったが、このメソッドのみ <code>shift2</code> とすることで単純な上書きを避ける実装にした。</p>
+<p>pop と違い、先頭の要素を切り出すという処理に結構苦心してしまった。コピー配列を作り、元の配列は長さを 1 切り詰める。そしてコピー配列の要素をインデックスを一つずらして元の配列に詰めなおして行くという流れだ。</p>
+<p>ここでも this を破壊的に書き換える為、length を操作している。ちなみに length をリセットせずに this を書き換えようとしても、プロパティ無しの要素を再現できないため、length をリセットして全ての要素を一度プロパティ無しにする必要がある。</p>
+<hr>
+<h1 style="font-size: 4em;"><span id="slice">slice</span></h1>
+
+<p><a href="https://developer.mozilla.org/ja/docs/Web/JavaScript/Reference/Global_Objects/Array/slice" target="_blank" rel="noopener">Array.prototype.slice() - JavaScript | MDN</a></p>
+<p>slice は配列の一部を切り出すメソッドだ。配列全部を切り出してコピーする用途に使われることが多い。</p>
+<h2><span id="構文">構文</span></h2><figure class="highlight js"><table><tr><td class="code"><pre><span class="line">arr.slice([begin[, end]])</span><br></pre></td></tr></table></figure>
+<p>begin は切り出す開始インデックスを指定し、end は切り出す終了インデックス（の次のインデックス）を指定する。2 と 4 を指定した場合、2 と 3 のインデックスの要素が配列として返される。</p>
+<p>今までのインデックス指定のメソッドがそうだったように、begin、end もマイナス値を許容し、指定された場合配列の終わりからの位置になる。</p>
+<h2><span id="再実装">再実装</span></h2><figure class="highlight js"><table><tr><td class="code"><pre><span class="line"><span class="built_in">Array</span>.prototype.slice = <span class="function"><span class="keyword">function</span>(<span class="params">begin = <span class="number">0</span>, end = this.length</span>) </span>&#123;</span><br><span class="line">  <span class="keyword">const</span> parse = <span class="function"><span class="params">value</span> =&gt;</span></span><br><span class="line">    <span class="built_in">Math</span>.min(</span><br><span class="line">      <span class="built_in">Math</span>.max(<span class="built_in">Number</span>.parseInt(value, <span class="number">10</span>) + (value &lt; <span class="number">0</span> ? <span class="keyword">this</span>.length : <span class="number">0</span>), <span class="number">0</span>),</span><br><span class="line">      <span class="keyword">this</span>.length</span><br><span class="line">    )</span><br><span class="line"></span><br><span class="line">  <span class="keyword">const</span> b = parse(begin)</span><br><span class="line">  <span class="keyword">const</span> e = parse(end)</span><br><span class="line"></span><br><span class="line">  <span class="keyword">const</span> copy = <span class="built_in">Array</span>.from(<span class="keyword">this</span>).reduce(<span class="function">(<span class="params">acc, cur, index</span>) =&gt;</span> &#123;</span><br><span class="line">    <span class="keyword">if</span> (index <span class="keyword">in</span> <span class="keyword">this</span>) &#123;</span><br><span class="line">      acc[index] = cur</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> acc</span><br><span class="line">  &#125;, <span class="built_in">Array</span>(<span class="keyword">this</span>.length))</span><br><span class="line"></span><br><span class="line">  <span class="keyword">return</span> <span class="built_in">Array</span>.from(<span class="keyword">this</span>).reduce(<span class="function">(<span class="params">acc, cur, index</span>) =&gt;</span> &#123;</span><br><span class="line">    <span class="keyword">if</span> (index &gt;= b &amp;&amp; index &lt; e) &#123;</span><br><span class="line">      acc[acc.length] = copy[index]</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> acc</span><br><span class="line">  &#125;, [])</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>再実装自体は何も難しいことはしてない。parse 関数や copy の処理も今まで散々出てきたものだ。そしてメインの reduce では begin 以上・end 以下のインデックスの要素を配列として返している。</p>
+<hr>
+<h1 style="font-size: 4em;"><span id="some">some</span></h1>
+
+<p><a href="https://developer.mozilla.org/ja/docs/Web/JavaScript/Reference/Global_Objects/Array/some" target="_blank" rel="noopener">Array.prototype.some() - JavaScript | MDN</a></p>
+<p>配列の要素に対して渡した関数で検証を行い、１つでも検証をパスするかを判定するメソッドだ。</p>
+<h2><span id="構文">構文</span></h2><figure class="highlight js"><table><tr><td class="code"><pre><span class="line">arr.some(callback[, thisArg])</span><br></pre></td></tr></table></figure>
+<p>callback の引数は以下の 3 つ、このパターンもいい加減飽きたな</p>
+<ul>
+<li>currentValue : 現在の要素値</li>
+<li>index : 現在の要素のインデクス</li>
+<li>array : レシーバ自身</li>
+</ul>
+<p>そして以下の特徴を持つ。</p>
+<ul>
+<li>thisArg が指定される場合、callback 内で this として扱われる。未指定の場合は undefined となる。</li>
+<li>callback は値が代入されている配列のインデックスに対してのみ呼び出される。（疎の要素はスキップされる）</li>
+<li>呼びだされた配列に破壊的変更を加えない。</li>
+<li>callback に対していずれかの要素が truhly を返したら戻り値は true、それ以外の場合は false</li>
+</ul>
+<h2><span id="再実装">再実装</span></h2><figure class="highlight js"><table><tr><td class="code"><pre><span class="line"><span class="built_in">Array</span>.prototype.some = <span class="function"><span class="keyword">function</span>(<span class="params">callback, thisArg</span>) </span>&#123;</span><br><span class="line">  <span class="keyword">return</span> <span class="keyword">this</span>.reduce(</span><br><span class="line">    (acc, cur, index, array) =&gt;</span><br><span class="line">      !acc ? !!callback.call(thisArg, cur, index, array) : acc,</span><br><span class="line">    <span class="literal">false</span></span><br><span class="line">  )</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>はい、every とほとんど同じですね。ちなみに every はこれ。</p>
+<figure class="highlight js"><table><tr><td class="code"><pre><span class="line"><span class="built_in">Array</span>.prototype.every = <span class="function"><span class="keyword">function</span>(<span class="params">callback, thisArgs</span>) </span>&#123;</span><br><span class="line">  <span class="keyword">return</span> <span class="keyword">this</span>.reduce(</span><br><span class="line">    (acc, cur, index, array) =&gt;</span><br><span class="line">      acc ? !!callback.call(thisArgs, cur, index, array) : acc,</span><br><span class="line">    <span class="literal">true</span></span><br><span class="line">  )</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>なんかもう間違い探しみたいだけど、initialValue が <code>true/false</code> の違いと、その違いによる継続条件の判定が <code>acc</code> と <code>!acc</code> になっている点のみが違う。</p>
+<h1><span id="おわりに">おわりに</span></h1><p>実は sort まで再実装しているんだけど、sort の内容がすごい長くなりそうなので一旦ここで切る。</p>
+<p>つづく</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <div data-url="https://t-kojima.github.io/2018/07/26/0033-all-becomes-reduce-4/" data-id="cjq51fi1c005dmtu7s74ij3w7" class="article-share-items"></div>
+      <!-- <a data-url="https://t-kojima.github.io/2018/07/26/0033-all-becomes-reduce-4/" data-id="cjq51fi1c005dmtu7s74ij3w7" class="article-share-link">共有</a> -->
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/javascript/">javascript</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/nodejs/">nodejs</a></li></ul>
+
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+    <a href="/2018/07/28/0034-all-becomes-reduce-5/" id="article-nav-newer" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">次の記事</strong>
+      <div class="article-nav-title">
+        
+          全てがReduceになる(5)
+        
+      </div>
+    </a>
+  
+  
+    <a href="/2018/07/24/0032-all-becomes-reduce-3/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">前の記事</strong>
+      <div class="article-nav-title">全てがReduceになる(3)</div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">カテゴリ</h3>
+    <div class="widget">
+      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/Mac/">Mac</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/MySQL/">MySQL</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Node/">Node</a><span class="category-list-count">2</span><ul class="category-list-child"><li class="category-list-item"><a class="category-list-link" href="/categories/Node/Express/">Express</a><span class="category-list-count">2</span></li></ul></li><li class="category-list-item"><a class="category-list-link" href="/categories/Sinatra/">Sinatra</a><span class="category-list-count">1</span></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">タグ</h3>
+    <div class="widget">
+      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/axios/">axios</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/babel/">babel</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/bottle/">bottle</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/browserify/">browserify</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/csharp/">csharp</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/docker/">docker</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/eslint/">eslint</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/euler/">euler</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/express/">express</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/firebase/">firebase</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/flask/">flask</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/hexo/">hexo</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/javascript/">javascript</a><span class="tag-list-count">8</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/jupyter/">jupyter</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/karma/">karma</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/kintone/">kintone</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/linux/">linux</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/log4js/">log4js</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/luigi/">luigi</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mac/">mac</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mocha/">mocha</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mysql/">mysql</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/node-fetch/">node-fetch</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/nodejs/">nodejs</a><span class="tag-list-count">13</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/powerline/">powerline</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/prettier/">prettier</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/python/">python</a><span class="tag-list-count">8</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/rails/">rails</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/react/">react</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/redis/">redis</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/rpa/">rpa</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/rspec/">rspec</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ruby/">ruby</a><span class="tag-list-count">7</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/sidekiq/">sidekiq</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/sinatra/">sinatra</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/sqlalchemy/">sqlalchemy</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/vagrant/">vagrant</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/virtualbox/">virtualbox</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/vscode/">vscode</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/vue/">vue</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/webpack/">webpack</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/zipstream/">zipstream</a><span class="tag-list-count">1</span></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">タグクラウド</h3>
+    <div class="widget tagcloud">
+      <a href="/tags/axios/" style="font-size: 10px;">axios</a> <a href="/tags/babel/" style="font-size: 10px;">babel</a> <a href="/tags/bottle/" style="font-size: 10px;">bottle</a> <a href="/tags/browserify/" style="font-size: 10px;">browserify</a> <a href="/tags/csharp/" style="font-size: 10px;">csharp</a> <a href="/tags/docker/" style="font-size: 10px;">docker</a> <a href="/tags/eslint/" style="font-size: 11.43px;">eslint</a> <a href="/tags/euler/" style="font-size: 10px;">euler</a> <a href="/tags/express/" style="font-size: 11.43px;">express</a> <a href="/tags/firebase/" style="font-size: 12.86px;">firebase</a> <a href="/tags/flask/" style="font-size: 10px;">flask</a> <a href="/tags/hexo/" style="font-size: 11.43px;">hexo</a> <a href="/tags/javascript/" style="font-size: 18.57px;">javascript</a> <a href="/tags/jupyter/" style="font-size: 10px;">jupyter</a> <a href="/tags/karma/" style="font-size: 11.43px;">karma</a> <a href="/tags/kintone/" style="font-size: 12.86px;">kintone</a> <a href="/tags/linux/" style="font-size: 10px;">linux</a> <a href="/tags/log4js/" style="font-size: 10px;">log4js</a> <a href="/tags/luigi/" style="font-size: 15.71px;">luigi</a> <a href="/tags/mac/" style="font-size: 10px;">mac</a> <a href="/tags/mocha/" style="font-size: 10px;">mocha</a> <a href="/tags/mysql/" style="font-size: 11.43px;">mysql</a> <a href="/tags/node-fetch/" style="font-size: 10px;">node-fetch</a> <a href="/tags/nodejs/" style="font-size: 20px;">nodejs</a> <a href="/tags/powerline/" style="font-size: 11.43px;">powerline</a> <a href="/tags/prettier/" style="font-size: 10px;">prettier</a> <a href="/tags/python/" style="font-size: 18.57px;">python</a> <a href="/tags/rails/" style="font-size: 10px;">rails</a> <a href="/tags/react/" style="font-size: 12.86px;">react</a> <a href="/tags/redis/" style="font-size: 10px;">redis</a> <a href="/tags/rpa/" style="font-size: 10px;">rpa</a> <a href="/tags/rspec/" style="font-size: 10px;">rspec</a> <a href="/tags/ruby/" style="font-size: 17.14px;">ruby</a> <a href="/tags/sidekiq/" style="font-size: 10px;">sidekiq</a> <a href="/tags/sinatra/" style="font-size: 15.71px;">sinatra</a> <a href="/tags/sqlalchemy/" style="font-size: 11.43px;">sqlalchemy</a> <a href="/tags/vagrant/" style="font-size: 10px;">vagrant</a> <a href="/tags/virtualbox/" style="font-size: 10px;">virtualbox</a> <a href="/tags/vscode/" style="font-size: 14.29px;">vscode</a> <a href="/tags/vue/" style="font-size: 12.86px;">vue</a> <a href="/tags/webpack/" style="font-size: 10px;">webpack</a> <a href="/tags/zipstream/" style="font-size: 10px;">zipstream</a>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">アーカイブ</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/12/">12月 2018</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/11/">11月 2018</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/10/">10月 2018</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/09/">9月 2018</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/08/">8月 2018</a><span class="archive-list-count">6</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/07/">7月 2018</a><span class="archive-list-count">11</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/06/">6月 2018</a><span class="archive-list-count">12</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/05/">5月 2018</a><span class="archive-list-count">11</span></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">最近の投稿</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2018/12/20/0051-setup-macbook-pro-2018/">MacBookPro2018のセットアップ</a>
+          </li>
+        
+          <li>
+            <a href="/2018/11/29/0050-about-config-ru/">[Sinatra] config.ruとは</a>
+          </li>
+        
+          <li>
+            <a href="/2018/11/14/0049-docker-mysql-error-caching-sha2-password/">[MySQL] Unable to load authentication plugin &#39;caching_sha2_password&#39;</a>
+          </li>
+        
+          <li>
+            <a href="/2018/11/05/0048-express-with-log4js/">[Node] ExpressでAPIを作ったらログも吐く</a>
+          </li>
+        
+          <li>
+            <a href="/2018/11/02/0047-helloworld-express-with-json/">[Node] Expressを使って最速でJSONを返す</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      &copy; 2018 t-kojima<br>
+      Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+
+
+  <link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
+  <script src="/fancybox/jquery.fancybox.pack.js"></script>
+
+
+<script src="/js/script.js"></script>
+
+
+
+  </div>
+  <script async src="//cdn.embedly.com/widgets/platform.js" charset="UTF-8"></script>
+</body>
+</html>

@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+
+  
+  <title>[Flask] Flaskの基本的な構成（を思い出す） | Today&#39;s Commit</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="久しぶりに Flask のプロジェクトを作成しようとしたらディレクトリ構成からさっぱり忘れていたので、チュートリアルをなぞって思い出してみる。ついでに最新の環境（pipenv とか）を適用する。">
+<meta name="keywords" content="python,flask">
+<meta property="og:type" content="article">
+<meta property="og:title" content="[Flask] Flaskの基本的な構成（を思い出す）">
+<meta property="og:url" content="https://t-kojima.github.io/2018/06/25/0019-flask-tutorial-create-app/index.html">
+<meta property="og:site_name" content="Today&#39;s Commit">
+<meta property="og:description" content="久しぶりに Flask のプロジェクトを作成しようとしたらディレクトリ構成からさっぱり忘れていたので、チュートリアルをなぞって思い出してみる。ついでに最新の環境（pipenv とか）を適用する。">
+<meta property="og:locale" content="ja">
+<meta property="og:image" content="https://t-kojima.github.io/images/19-flask.png">
+<meta property="og:updated_time" content="2018-12-20T11:07:38.284Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="[Flask] Flaskの基本的な構成（を思い出す）">
+<meta name="twitter:description" content="久しぶりに Flask のプロジェクトを作成しようとしたらディレクトリ構成からさっぱり忘れていたので、チュートリアルをなぞって思い出してみる。ついでに最新の環境（pipenv とか）を適用する。">
+<meta name="twitter:image" content="https://t-kojima.github.io/images/19-flask.png">
+  
+    <link rel="alternate" href="/atom.xml" title="Today&#39;s Commit" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  
+    <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
+  
+  <link rel="stylesheet" href="/css/style.css">
+  
+    <link rel="amphtml" href="https://t-kojima.github.io/2018/06/25/0019-flask-tutorial-create-app//amp/index.html">
+  
+</head>
+
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">Today&#39;s Commit</a>
+      </h1>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSSフィード"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="検索"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="https://t-kojima.github.io"></form>
+      </div>
+    </div>
+  </div>
+</header>
+      <div class="outer">
+        <section id="main"><article id="post-0019-flask-tutorial-create-app" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2018/06/25/0019-flask-tutorial-create-app/" class="article-date">
+  <time datetime="2018-06-25T03:13:33.000Z" itemprop="datePublished">2018-06-25</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      [Flask] Flaskの基本的な構成（を思い出す）
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p><img src="/images/19-flask.png" alt="flask logo"></p>
+<p>久しぶりに Flask のプロジェクトを作成しようとしたらディレクトリ構成からさっぱり忘れていたので、チュートリアルをなぞって思い出してみる。ついでに最新の環境（pipenv とか）を適用する。</p>
+<a id="more"></a>
+<h2><span id="参考にしたサイト">参考にしたサイト</span></h2><p><a href="https://www.digitalocean.com/community/tutorials/how-to-structure-large-flask-applications" class="embedly-card" data-card-image="0" data-card-controls="0" data-card-align="left" target="_blank" rel="noopener"></a></p>
+<p>基本的にはここの手順通り、ただディレクトリ構成とか少し直している。</p>
+<h2><span id="環境構築">環境構築</span></h2><p>エディタは VSCode を使い、pipenv でモジュール管理を行う。まずはじめに Linter として flake8 と Formatter として autopep8 をインストールする。</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">pipenv install flake8 autopep8</span><br></pre></td></tr></table></figure>
+<p>続いて Flask 関係のモジュールをインストールする。</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">pipenv install flask flask-sqlalchemy flask-wtf sqlalchemy</span><br></pre></td></tr></table></figure>
+<h3><span id="pipenv-について">pipenv について</span></h3><p>ちょっと余談だけど pipenv は install するとデフォルトで venv 環境（仮想環境）にモジュールがインストールされる。</p>
+<p>Python3 組み込みの venv は Windows 環境だと <code>.venv/Scripts/activate.bat</code> で環境が有効になり、 <code>.venv/Scripts/deactivate.bat</code> で環境から抜ける動きをするはずだが、なぜか deactivate がボクの環境ではうまく動かなく、それが原因で今まで使ってこなかった。（PowerShell を exit すれば仮想環境から抜けれたが、毎回するのはめんどい…）</p>
+<p>pipenv では <code>pipenv shell</code> で仮想環境が有効になり、 <code>exit</code> で抜けることができる。それだけでなく、仮想環境での実行は <code>pipenv run python ****.py</code> という風にアクティベートしなくても実行できたり、分かりやすくやり易いようになっている。モジュールのインストールもアクティベート無しで仮想環境の外から行うことができるので、基本的に仮想環境を無効のまま操作することができていい感じだ。</p>
+<h2><span id="ディレクトリ構成">ディレクトリ構成</span></h2><p>先にディレクトリ構成を晒すと以下のような感じにしていく。</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">.</span><br><span class="line">├── Pipfile</span><br><span class="line">├── Pipfile.lock</span><br><span class="line">├── README.md</span><br><span class="line">├── app</span><br><span class="line">│   ├── __init__.py</span><br><span class="line">│   ├── controllers</span><br><span class="line">│   │   ├── __init__.py</span><br><span class="line">│   │   └── auth_controller.py</span><br><span class="line">│   ├── forms</span><br><span class="line">│   │   ├── __init__.py</span><br><span class="line">│   │   └── auth_form.py</span><br><span class="line">│   ├── models</span><br><span class="line">│   │   ├── __init__.py</span><br><span class="line">│   │   └── auth.py</span><br><span class="line">│   ├── static</span><br><span class="line">│   └── templates</span><br><span class="line">│       ├── 404.html</span><br><span class="line">│       └── auth</span><br><span class="line">│           └── signin.html</span><br><span class="line">├── config.py</span><br><span class="line">└── run.py</span><br></pre></td></tr></table></figure>
+<h2><span id="環境変数の登録">環境変数の登録</span></h2><p>開発環境では以下 2 点の環境変数を設定しておく。</p>
+<table>
+<thead>
+<tr>
+<th>環境変数</th>
+<th>値</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>PIPENV_VENV_IN_PROJECT</td>
+<td>true</td>
+</tr>
+<tr>
+<td>FLASK_ENV</td>
+<td>development</td>
+</tr>
+</tbody>
+</table>
+<h2><span id="ルートのファイル作成">ルートのファイル作成</span></h2><h3><span id="runpy">run.py</span></h3><p>プロジェクトルートに実行の起点となる run.py を作成する。参考サイトでは <code>host=&#39;0.0.0.0&#39;</code> となっているが、実行したとき <a href="http://0.0.0.0:8000/" target="_blank" rel="noopener">http://0.0.0.0:8000/</a>にアクセスしても正常に表示されなかったので、<code>host=&#39;localhost&#39;</code> としている。（<a href="http://localhost:8000/" target="_blank" rel="noopener">http://localhost:8000/</a>なら問題なくアクセスできた。)</p>
+<figure class="highlight py"><table><tr><td class="code"><pre><span class="line"><span class="comment">#!/usr/bin/python3</span></span><br><span class="line"><span class="comment"># coding:UTF-8</span></span><br><span class="line"><span class="string">""" app/run.py """</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">from</span> app <span class="keyword">import</span> app</span><br><span class="line">app.run(host=<span class="string">'localhost'</span>, port=<span class="number">8080</span>, debug=<span class="keyword">True</span>)</span><br></pre></td></tr></table></figure>
+<h3><span id="configpy">config.py</span></h3><p>flask の設定を記述する、これは参考サイトのままだ。DB は sqlite になっているが、まずはそのままにしておく。</p>
+<figure class="highlight py"><table><tr><td class="code"><pre><span class="line"><span class="comment">#!/usr/bin/python3</span></span><br><span class="line"><span class="comment"># coding:UTF-8</span></span><br><span class="line"><span class="string">""" app/config.py """</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> os</span><br><span class="line"><span class="comment"># Statement for enabling the development environment</span></span><br><span class="line">DEBUG = <span class="keyword">True</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># Define the application directory</span></span><br><span class="line">BASE_DIR = os.path.abspath(os.path.dirname(__file__))</span><br><span class="line"></span><br><span class="line"><span class="comment"># Define the database - we are working with</span></span><br><span class="line"><span class="comment"># SQLite for this example</span></span><br><span class="line">SQLALCHEMY_DATABASE_URI = <span class="string">'sqlite:///'</span> + os.path.join(BASE_DIR, <span class="string">'app.db'</span>)</span><br><span class="line">DATABASE_CONNECT_OPTIONS = &#123;&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment"># Application threads. A common general assumption is</span></span><br><span class="line"><span class="comment"># using 2 per available processor cores - to handle</span></span><br><span class="line"><span class="comment"># incoming requests using one and performing background</span></span><br><span class="line"><span class="comment"># operations using the other.</span></span><br><span class="line">THREADS_PER_PAGE = <span class="number">2</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># Enable protection agains *Cross-site Request Forgery (CSRF)*</span></span><br><span class="line">CSRF_ENABLED = <span class="keyword">True</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># Use a secure, unique and absolutely secret key for</span></span><br><span class="line"><span class="comment"># signing the data.</span></span><br><span class="line">CSRF_SESSION_KEY = <span class="string">"secret"</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># Secret key for signing cookies</span></span><br><span class="line">SECRET_KEY = <span class="string">"secret"</span></span><br></pre></td></tr></table></figure>
+<h2><span id="モデルの作成">モデルの作成</span></h2><p>参考サイトではルートの app ディレクトリ配下にはモジュール単位で機能を置くようになっているが、モジュール単位ではなくレイヤー単位で分けたいと思う。ちなみに django もモジュール単位（機能単位？）で分けるのが慣例のようだ。しかし models.py や controllers.py といったファイルがモジュール別とは言え乱立するのはなんか気持ちが悪いし、rails 的なレイヤー単位のディレクトリ構成に慣れているので後者を採用したい。</p>
+<figure class="highlight py"><table><tr><td class="code"><pre><span class="line"><span class="comment">#!/usr/bin/python3</span></span><br><span class="line"><span class="comment"># coding:UTF-8</span></span><br><span class="line"><span class="string">""" app/models/auth.py """</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">from</span> app <span class="keyword">import</span> db</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Base</span><span class="params">(db.Model)</span>:</span></span><br><span class="line"></span><br><span class="line">    __abstract__ = <span class="keyword">True</span></span><br><span class="line"></span><br><span class="line">    id = db.Column(db.Integer, primary_key=<span class="keyword">True</span>)</span><br><span class="line">    date_created = db.Column(db.DateTime,  default=db.func.current_timestamp())</span><br><span class="line">    date_modified = db.Column(db.DateTime,  default=db.func.current_timestamp(), onupdate=db.func.current_timestamp())</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">User</span><span class="params">(Base)</span>:</span></span><br><span class="line"></span><br><span class="line">    __tablename__ = <span class="string">'auth_user'</span></span><br><span class="line"></span><br><span class="line">    <span class="comment"># User Name</span></span><br><span class="line">    name = db.Column(db.String(<span class="number">128</span>),  nullable=<span class="keyword">False</span>)</span><br><span class="line"></span><br><span class="line">    <span class="comment"># Identification Data: email &amp; password</span></span><br><span class="line">    email = db.Column(db.String(<span class="number">128</span>),  nullable=<span class="keyword">False</span>,</span><br><span class="line">                      unique=<span class="keyword">True</span>)</span><br><span class="line">    password = db.Column(db.String(<span class="number">192</span>),  nullable=<span class="keyword">False</span>)</span><br><span class="line"></span><br><span class="line">    <span class="comment"># Authorisation Data: role &amp; status</span></span><br><span class="line">    role = db.Column(db.SmallInteger, nullable=<span class="keyword">False</span>)</span><br><span class="line">    status = db.Column(db.SmallInteger, nullable=<span class="keyword">False</span>)</span><br><span class="line"></span><br><span class="line">    <span class="comment"># New instance instantiation procedure</span></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__init__</span><span class="params">(self, name, email, password)</span>:</span></span><br><span class="line"></span><br><span class="line">        self.name = name</span><br><span class="line">        self.email = email</span><br><span class="line">        self.password = password</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__repr__</span><span class="params">(self)</span>:</span></span><br><span class="line">        <span class="keyword">return</span> <span class="string">'&lt;User %r&gt;'</span> % (self.name)</span><br></pre></td></tr></table></figure>
+<h3><span id="pylint-ではなく-flake8-を使う">pylint ではなく flake8 を使う</span></h3><p>ちなみに Linter として flake8 を採用しているが、flake8 ではなく pylint を使うとこのモデルで大量のエラーを吐く。（<code>db.Column</code>が見つからないよ～というエラーが全ての db 参照に出る）</p>
+<p>pylint 側の問題なのか、VSCode（Python 拡張）の問題なのか微妙だが、<a href="https://github.com/Microsoft/vscode-python/issues/292" target="_blank" rel="noopener">SQLAlchemy intellisense #292</a>に書いてある通り pylint ではなく flake8 を使うことで一応回避はできる。</p>
+<h2><span id="ビューの作成">ビューの作成</span></h2><p>ビューとしてフォームクラス（<code>app/forms/auth_form.py</code>）とテンプレート（<code>app/templates/auth/signin.html</code>）を作成する。</p>
+<figure class="highlight py"><table><tr><td class="code"><pre><span class="line"><span class="comment">#!/usr/bin/python3</span></span><br><span class="line"><span class="comment"># coding:UTF-8</span></span><br><span class="line"><span class="string">""" app/forms/auth_form.py """</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">from</span> flask_wtf <span class="keyword">import</span> Form</span><br><span class="line"><span class="keyword">from</span> wtforms <span class="keyword">import</span> TextField, PasswordField</span><br><span class="line"><span class="keyword">from</span> wtforms.validators <span class="keyword">import</span> Required, Email</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">LoginForm</span><span class="params">(Form)</span>:</span></span><br><span class="line">    email = TextField(<span class="string">'Email Address'</span>, [Email(), Required(message=<span class="string">'Forgot your email address?'</span>)])</span><br><span class="line">    password = PasswordField(<span class="string">'Password'</span>, [</span><br><span class="line">        Required(message=<span class="string">'Must provide a password. ;-)'</span>)])</span><br></pre></td></tr></table></figure>
+<figure class="highlight html"><table><tr><td class="code"><pre><span class="line">&#123;% macro render_field(field, placeholder=None) %&#125; &#123;% if field.errors %&#125;</span><br><span class="line"><span class="tag">&lt;<span class="name">div</span>&gt;</span></span><br><span class="line">  &#123;% elif field.flags.error %&#125;</span><br><span class="line">  <span class="tag">&lt;<span class="name">div</span>&gt;</span></span><br><span class="line">    &#123;% else %&#125;</span><br><span class="line">    <span class="tag">&lt;<span class="name">div</span>&gt;</span></span><br><span class="line">      &#123;% endif %&#125; &#123;% set css_class = 'form-control ' + kwargs.pop('class', '') %&#125; &#123;&#123; field(class=css_class, placeholder=placeholder,</span><br><span class="line">      **kwargs) &#125;&#125;</span><br><span class="line">    <span class="tag">&lt;/<span class="name">div</span>&gt;</span></span><br><span class="line">    &#123;% endmacro %&#125;</span><br><span class="line"></span><br><span class="line">    <span class="tag">&lt;<span class="name">div</span>&gt;</span></span><br><span class="line">      <span class="tag">&lt;<span class="name">div</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">legend</span>&gt;</span>Sign in<span class="tag">&lt;/<span class="name">legend</span>&gt;</span></span><br><span class="line">        &#123;% with errors = get_flashed_messages(category_filter=["error"]) %&#125; &#123;% if errors %&#125;</span><br><span class="line">        <span class="tag">&lt;<span class="name">div</span>&gt;</span></span><br><span class="line">          &#123;% for error in errors %&#125; &#123;&#123; error &#125;&#125;</span><br><span class="line">          <span class="tag">&lt;<span class="name">br</span>&gt;</span> &#123;% endfor %&#125;</span><br><span class="line">        <span class="tag">&lt;/<span class="name">div</span>&gt;</span></span><br><span class="line">        &#123;% endif %&#125; &#123;% endwith %&#125; &#123;% if form.errors %&#125;</span><br><span class="line">        <span class="tag">&lt;<span class="name">div</span>&gt;</span></span><br><span class="line">          &#123;% for field, error in form.errors.items() %&#125; &#123;% for e in error %&#125; &#123;&#123; e &#125;&#125;</span><br><span class="line">          <span class="tag">&lt;<span class="name">br</span>&gt;</span> &#123;% endfor %&#125; &#123;% endfor %&#125;</span><br><span class="line">        <span class="tag">&lt;/<span class="name">div</span>&gt;</span></span><br><span class="line">        &#123;% endif %&#125;</span><br><span class="line">        <span class="tag">&lt;<span class="name">form</span> <span class="attr">method</span>=<span class="string">"POST"</span> <span class="attr">action</span>=<span class="string">"."</span> <span class="attr">accept-charset</span>=<span class="string">"UTF-8"</span> <span class="attr">role</span>=<span class="string">"form"</span>&gt;</span></span><br><span class="line">          &#123;&#123; form.csrf_token &#125;&#125; &#123;&#123; render_field(form.email, placeholder="Your Email Address", autofocus="") &#125;&#125; &#123;&#123; render_field(form.password,</span><br><span class="line">          placeholder="Password") &#125;&#125;</span><br><span class="line">          <span class="tag">&lt;<span class="name">div</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">label</span>&gt;</span></span><br><span class="line">              <span class="tag">&lt;<span class="name">input</span> <span class="attr">type</span>=<span class="string">"checkbox"</span> <span class="attr">name</span>=<span class="string">"remember"</span> <span class="attr">value</span>=<span class="string">"1"</span>&gt;</span> Remember Me</span><br><span class="line">            <span class="tag">&lt;/<span class="name">label</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">a</span> <span class="attr">role</span>=<span class="string">"button"</span> <span class="attr">href</span>=<span class="string">""</span>&gt;</span>Forgot your password?<span class="tag">&lt;/<span class="name">a</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">span</span> <span class="attr">class</span>=<span class="string">"clearfix"</span>&gt;</span><span class="tag">&lt;/<span class="name">span</span>&gt;</span></span><br><span class="line">          <span class="tag">&lt;/<span class="name">div</span>&gt;</span></span><br><span class="line">          <span class="tag">&lt;<span class="name">button</span> <span class="attr">type</span>=<span class="string">"submit"</span> <span class="attr">name</span>=<span class="string">"submit"</span>&gt;</span>Sign in<span class="tag">&lt;/<span class="name">button</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;/<span class="name">form</span>&gt;</span></span><br><span class="line">      <span class="tag">&lt;/<span class="name">div</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;/<span class="name">div</span>&gt;</span></span><br></pre></td></tr></table></figure>
+<p>テンプレートのフォーマットが崩れているのは VSCode のフォーマッタが jinja2 テンプレートを認識していない（サポートされていない）からだ。VSCode 拡張で jinja はあるのだが、コードハイライトしかしてくれないぽい。</p>
+<p>正直これだけの理由で jinja2 じゃないテンプレートにしたいんだけど、他のテンプレートエンジンの情報が無さ過ぎて jinja2 から動けないでいる…</p>
+<h2><span id="コントローラの作成">コントローラの作成</span></h2><p>基本的にアプリ自体はそれほどスケールしないことがほとんどだが、コントローラが 2 つになったらもう必要になることと、使い方を忘れない為に（！）Blueprint で分割を前提につくる。</p>
+<figure class="highlight py"><table><tr><td class="code"><pre><span class="line"><span class="comment">#!/usr/bin/python3</span></span><br><span class="line"><span class="comment"># coding:UTF-8</span></span><br><span class="line"><span class="string">""" app/controllers/auth_controller.py """</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">from</span> flask <span class="keyword">import</span> Blueprint, request, render_template, \</span><br><span class="line">    flash, session, redirect, url_for</span><br><span class="line"><span class="keyword">from</span> werkzeug <span class="keyword">import</span> check_password_hash</span><br><span class="line"><span class="keyword">from</span> app.forms.auth_form <span class="keyword">import</span> LoginForm</span><br><span class="line"><span class="keyword">from</span> app.models.auth <span class="keyword">import</span> User</span><br><span class="line"></span><br><span class="line"><span class="comment"># Define the blueprint: 'auth', set its url prefix: app.url/auth</span></span><br><span class="line">mod_auth = Blueprint(<span class="string">'auth'</span>, __name__, url_prefix=<span class="string">'/auth'</span>)</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="meta">@mod_auth.route('/signin/', methods=['GET', 'POST'])</span></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">signin</span><span class="params">()</span>:</span></span><br><span class="line"></span><br><span class="line">    <span class="comment"># If sign in form is submitted</span></span><br><span class="line">    form = LoginForm(request.form)</span><br><span class="line"></span><br><span class="line">    <span class="comment"># Verify the sign in form</span></span><br><span class="line">    <span class="keyword">if</span> form.validate_on_submit():</span><br><span class="line"></span><br><span class="line">        user = User.query.filter_by(email=form.email.data).first()</span><br><span class="line"></span><br><span class="line">        <span class="keyword">if</span> user <span class="keyword">and</span> check_password_hash(user.password, form.password.data):</span><br><span class="line"></span><br><span class="line">            session[<span class="string">'user_id'</span>] = user.id</span><br><span class="line"></span><br><span class="line">            flash(<span class="string">'Welcome %s'</span> % user.name)</span><br><span class="line"></span><br><span class="line">            <span class="keyword">return</span> redirect(url_for(<span class="string">'auth.home'</span>))</span><br><span class="line"></span><br><span class="line">        flash(<span class="string">'Wrong email or password'</span>, <span class="string">'error-message'</span>)</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> render_template(<span class="string">"auth/signin.html"</span>, form=form)</span><br></pre></td></tr></table></figure>
+<h2><span id="app__init__py-の作成"><code>app/__init__.py</code> の作成</span></h2><p>最後に <code>app/__init__.py</code> を作成し、アプリの初期化や Blueprint へのコントローラ登録を行ったりする。</p>
+<figure class="highlight py"><table><tr><td class="code"><pre><span class="line"><span class="comment">#!/usr/bin/python3</span></span><br><span class="line"><span class="comment"># coding:UTF-8</span></span><br><span class="line"><span class="string">""" app/__init__.py """</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">from</span> flask <span class="keyword">import</span> Flask, render_template</span><br><span class="line"><span class="keyword">from</span> flask_sqlalchemy <span class="keyword">import</span> SQLAlchemy</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="comment"># Define the WSGI application object</span></span><br><span class="line">app = Flask(__name__)</span><br><span class="line"></span><br><span class="line"><span class="comment"># Configurations</span></span><br><span class="line">app.config.from_object(<span class="string">'config'</span>)</span><br><span class="line"></span><br><span class="line"><span class="comment"># Define the database object which is imported</span></span><br><span class="line"><span class="comment"># by modules and controllers</span></span><br><span class="line">db = SQLAlchemy(app)</span><br><span class="line"></span><br><span class="line"><span class="comment"># Sample HTTP error handling</span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="meta">@app.errorhandler(404)</span></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">not_found</span><span class="params">(error)</span>:</span></span><br><span class="line">    <span class="keyword">return</span> render_template(<span class="string">'404.html'</span>), <span class="number">404</span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="comment"># Import a module / component using its blueprint handler variable (mod_auth)</span></span><br><span class="line"><span class="keyword">from</span> app.controllers.auth_controller <span class="keyword">import</span> mod_auth</span><br><span class="line"></span><br><span class="line"><span class="comment"># Register blueprint(s)</span></span><br><span class="line">app.register_blueprint(mod_auth)</span><br><span class="line"><span class="comment"># app.register_blueprint(xyz_module)</span></span><br><span class="line"><span class="comment"># ..</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># Build the database:</span></span><br><span class="line"><span class="comment"># This will create the database file using SQLAlchemy</span></span><br><span class="line">db.create_all()</span><br></pre></td></tr></table></figure>
+<h2><span id="開発サーバーで動作確認">開発サーバーで動作確認</span></h2><p>これで最低限のファイル類は準備できたので、以下コマンドで開発サーバーを立ち上げて動作確認を行う。</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">pipenv run python run.py</span><br></pre></td></tr></table></figure>
+<p><a href="http://localhost:8000/auth/signin/" target="_blank" rel="noopener">http://localhost:8000/auth/signin/</a>にアクセスしてサインインのフォームが表示されれば OK。</p>
+<h2><span id="実行環境">実行環境</span></h2><ul>
+<li>Python 3.6.3</li>
+<li>flask 1.0.2</li>
+<li>sqlalchemy 1.2.8</li>
+</ul>
+
+      
+    </div>
+    <footer class="article-footer">
+      <div data-url="https://t-kojima.github.io/2018/06/25/0019-flask-tutorial-create-app/" data-id="cjq51fi180054mtu7kpw18vk8" class="article-share-items"></div>
+      <!-- <a data-url="https://t-kojima.github.io/2018/06/25/0019-flask-tutorial-create-app/" data-id="cjq51fi180054mtu7kpw18vk8" class="article-share-link">共有</a> -->
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/flask/">flask</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/python/">python</a></li></ul>
+
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+    <a href="/2018/06/26/0020-sinatra-simple-json-api-2/" id="article-nav-newer" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">次の記事</strong>
+      <div class="article-nav-title">
+        
+          [Sinatra] シンプルなJSON API サーバーに手を加える（POSTでDB登録）
+        
+      </div>
+    </a>
+  
+  
+    <a href="/2018/06/22/0018-using-eslint-prettier-in-vue/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">前の記事</strong>
+      <div class="article-nav-title">[VSCode] ESLintとPrettierをVueプロジェクトに適用する</div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">カテゴリ</h3>
+    <div class="widget">
+      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/Mac/">Mac</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/MySQL/">MySQL</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Node/">Node</a><span class="category-list-count">2</span><ul class="category-list-child"><li class="category-list-item"><a class="category-list-link" href="/categories/Node/Express/">Express</a><span class="category-list-count">2</span></li></ul></li><li class="category-list-item"><a class="category-list-link" href="/categories/Sinatra/">Sinatra</a><span class="category-list-count">1</span></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">タグ</h3>
+    <div class="widget">
+      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/axios/">axios</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/babel/">babel</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/bottle/">bottle</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/browserify/">browserify</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/csharp/">csharp</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/docker/">docker</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/eslint/">eslint</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/euler/">euler</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/express/">express</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/firebase/">firebase</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/flask/">flask</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/hexo/">hexo</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/javascript/">javascript</a><span class="tag-list-count">8</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/jupyter/">jupyter</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/karma/">karma</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/kintone/">kintone</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/linux/">linux</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/log4js/">log4js</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/luigi/">luigi</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mac/">mac</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mocha/">mocha</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mysql/">mysql</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/node-fetch/">node-fetch</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/nodejs/">nodejs</a><span class="tag-list-count">13</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/powerline/">powerline</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/prettier/">prettier</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/python/">python</a><span class="tag-list-count">8</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/rails/">rails</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/react/">react</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/redis/">redis</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/rpa/">rpa</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/rspec/">rspec</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ruby/">ruby</a><span class="tag-list-count">7</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/sidekiq/">sidekiq</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/sinatra/">sinatra</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/sqlalchemy/">sqlalchemy</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/vagrant/">vagrant</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/virtualbox/">virtualbox</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/vscode/">vscode</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/vue/">vue</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/webpack/">webpack</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/zipstream/">zipstream</a><span class="tag-list-count">1</span></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">タグクラウド</h3>
+    <div class="widget tagcloud">
+      <a href="/tags/axios/" style="font-size: 10px;">axios</a> <a href="/tags/babel/" style="font-size: 10px;">babel</a> <a href="/tags/bottle/" style="font-size: 10px;">bottle</a> <a href="/tags/browserify/" style="font-size: 10px;">browserify</a> <a href="/tags/csharp/" style="font-size: 10px;">csharp</a> <a href="/tags/docker/" style="font-size: 10px;">docker</a> <a href="/tags/eslint/" style="font-size: 11.43px;">eslint</a> <a href="/tags/euler/" style="font-size: 10px;">euler</a> <a href="/tags/express/" style="font-size: 11.43px;">express</a> <a href="/tags/firebase/" style="font-size: 12.86px;">firebase</a> <a href="/tags/flask/" style="font-size: 10px;">flask</a> <a href="/tags/hexo/" style="font-size: 11.43px;">hexo</a> <a href="/tags/javascript/" style="font-size: 18.57px;">javascript</a> <a href="/tags/jupyter/" style="font-size: 10px;">jupyter</a> <a href="/tags/karma/" style="font-size: 11.43px;">karma</a> <a href="/tags/kintone/" style="font-size: 12.86px;">kintone</a> <a href="/tags/linux/" style="font-size: 10px;">linux</a> <a href="/tags/log4js/" style="font-size: 10px;">log4js</a> <a href="/tags/luigi/" style="font-size: 15.71px;">luigi</a> <a href="/tags/mac/" style="font-size: 10px;">mac</a> <a href="/tags/mocha/" style="font-size: 10px;">mocha</a> <a href="/tags/mysql/" style="font-size: 11.43px;">mysql</a> <a href="/tags/node-fetch/" style="font-size: 10px;">node-fetch</a> <a href="/tags/nodejs/" style="font-size: 20px;">nodejs</a> <a href="/tags/powerline/" style="font-size: 11.43px;">powerline</a> <a href="/tags/prettier/" style="font-size: 10px;">prettier</a> <a href="/tags/python/" style="font-size: 18.57px;">python</a> <a href="/tags/rails/" style="font-size: 10px;">rails</a> <a href="/tags/react/" style="font-size: 12.86px;">react</a> <a href="/tags/redis/" style="font-size: 10px;">redis</a> <a href="/tags/rpa/" style="font-size: 10px;">rpa</a> <a href="/tags/rspec/" style="font-size: 10px;">rspec</a> <a href="/tags/ruby/" style="font-size: 17.14px;">ruby</a> <a href="/tags/sidekiq/" style="font-size: 10px;">sidekiq</a> <a href="/tags/sinatra/" style="font-size: 15.71px;">sinatra</a> <a href="/tags/sqlalchemy/" style="font-size: 11.43px;">sqlalchemy</a> <a href="/tags/vagrant/" style="font-size: 10px;">vagrant</a> <a href="/tags/virtualbox/" style="font-size: 10px;">virtualbox</a> <a href="/tags/vscode/" style="font-size: 14.29px;">vscode</a> <a href="/tags/vue/" style="font-size: 12.86px;">vue</a> <a href="/tags/webpack/" style="font-size: 10px;">webpack</a> <a href="/tags/zipstream/" style="font-size: 10px;">zipstream</a>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">アーカイブ</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/12/">12月 2018</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/11/">11月 2018</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/10/">10月 2018</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/09/">9月 2018</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/08/">8月 2018</a><span class="archive-list-count">6</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/07/">7月 2018</a><span class="archive-list-count">11</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/06/">6月 2018</a><span class="archive-list-count">12</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/05/">5月 2018</a><span class="archive-list-count">11</span></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">最近の投稿</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2018/12/20/0051-setup-macbook-pro-2018/">MacBookPro2018のセットアップ</a>
+          </li>
+        
+          <li>
+            <a href="/2018/11/29/0050-about-config-ru/">[Sinatra] config.ruとは</a>
+          </li>
+        
+          <li>
+            <a href="/2018/11/14/0049-docker-mysql-error-caching-sha2-password/">[MySQL] Unable to load authentication plugin &#39;caching_sha2_password&#39;</a>
+          </li>
+        
+          <li>
+            <a href="/2018/11/05/0048-express-with-log4js/">[Node] ExpressでAPIを作ったらログも吐く</a>
+          </li>
+        
+          <li>
+            <a href="/2018/11/02/0047-helloworld-express-with-json/">[Node] Expressを使って最速でJSONを返す</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      &copy; 2018 t-kojima<br>
+      Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+
+
+  <link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
+  <script src="/fancybox/jquery.fancybox.pack.js"></script>
+
+
+<script src="/js/script.js"></script>
+
+
+
+  </div>
+  <script async src="//cdn.embedly.com/widgets/platform.js" charset="UTF-8"></script>
+</body>
+</html>

@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+
+  
+  <title>[Node] Expressを使って最速でJSONを返す | Today&#39;s Commit</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="皆さん WebAPI で JSON を返したいですよね？Node.js 環境ではjson-serverとかもあるけれど、ベーシックに Express でやってみたい。 ちなみに最速はレスポンスではなくて作業量的な意味。">
+<meta name="keywords" content="nodejs,express">
+<meta property="og:type" content="article">
+<meta property="og:title" content="[Node] Expressを使って最速でJSONを返す">
+<meta property="og:url" content="https://t-kojima.github.io/2018/11/02/0047-helloworld-express-with-json/index.html">
+<meta property="og:site_name" content="Today&#39;s Commit">
+<meta property="og:description" content="皆さん WebAPI で JSON を返したいですよね？Node.js 環境ではjson-serverとかもあるけれど、ベーシックに Express でやってみたい。 ちなみに最速はレスポンスではなくて作業量的な意味。">
+<meta property="og:locale" content="ja">
+<meta property="og:updated_time" content="2018-12-20T11:07:38.293Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="[Node] Expressを使って最速でJSONを返す">
+<meta name="twitter:description" content="皆さん WebAPI で JSON を返したいですよね？Node.js 環境ではjson-serverとかもあるけれど、ベーシックに Express でやってみたい。 ちなみに最速はレスポンスではなくて作業量的な意味。">
+  
+    <link rel="alternate" href="/atom.xml" title="Today&#39;s Commit" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  
+    <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
+  
+  <link rel="stylesheet" href="/css/style.css">
+  
+    <link rel="amphtml" href="https://t-kojima.github.io/2018/11/02/0047-helloworld-express-with-json//amp/index.html">
+  
+</head>
+
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">Today&#39;s Commit</a>
+      </h1>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSSフィード"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="検索"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="https://t-kojima.github.io"></form>
+      </div>
+    </div>
+  </div>
+</header>
+      <div class="outer">
+        <section id="main"><article id="post-0047-helloworld-express-with-json" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2018/11/02/0047-helloworld-express-with-json/" class="article-date">
+  <time datetime="2018-11-02T08:13:38.000Z" itemprop="datePublished">2018-11-02</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/Node/">Node</a>►<a class="article-category-link" href="/categories/Node/Express/">Express</a>
+  </div>
+
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      [Node] Expressを使って最速でJSONを返す
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>皆さん WebAPI で JSON を返したいですよね？Node.js 環境では<a href="https://github.com/typicode/json-server" target="_blank" rel="noopener">json-server</a>とかもあるけれど、ベーシックに Express でやってみたい。</p>
+<p>ちなみに最速はレスポンスではなくて作業量的な意味。</p>
+<a id="more"></a>
+<h1><span id="express-でハロワ">Express でハロワ</span></h1><p>とりあえずハロワ</p>
+<p>yarn で express をインストールする。</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">yarn init -y</span><br><span class="line">yarn add express</span><br></pre></td></tr></table></figure>
+<p>そしたらエントリポイントとなるファイルを作成する。とりあえず<code>app.js</code>としとく。</p>
+<figure class="highlight js"><table><tr><td class="code"><pre><span class="line"><span class="keyword">const</span> express = <span class="built_in">require</span>(<span class="string">'express'</span>)</span><br><span class="line"><span class="keyword">const</span> app = express()</span><br><span class="line"></span><br><span class="line">app.get(<span class="string">'/'</span>, (req, res) =&gt; res.send(<span class="string">'hello world!'</span>))</span><br><span class="line"></span><br><span class="line">app.listen(<span class="number">3000</span>, () =&gt; <span class="built_in">console</span>.log(<span class="string">'http://localhost:3000'</span>))</span><br></pre></td></tr></table></figure>
+<p>うーん、4 行！かんたん</p>
+<p>最後の<code>console.log</code>は無くてもいいが、アドレスを入れておくと起動後に即開けるので楽ちん</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">$ node app</span><br><span class="line">http://localhost:3000</span><br></pre></td></tr></table></figure>
+<p>実行してアクセスすると。。。</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">$ curl http://localhost:3000</span><br><span class="line">hello world!</span><br></pre></td></tr></table></figure>
+<p>ハロワでた！</p>
+<h1><span id="json-で返す">JSON で返す</span></h1><p>次にレスポンスが json で返るようにしよう。</p>
+<p>やり方は<code>response</code>オブジェクト（下記では<code>res</code>）に<code>Content-Type</code>を設定すれば良い。</p>
+<figure class="highlight js"><table><tr><td class="code"><pre><span class="line">app.get(<span class="string">'/'</span>, (req, res) =&gt; &#123;</span><br><span class="line">  res.header(<span class="string">'Content-Type'</span>, <span class="string">'application/json; charset=utf-8'</span>)</span><br><span class="line">  res.send(<span class="string">'&#123; "message": "hello world!" &#125;'</span>)</span><br><span class="line">&#125;)</span><br></pre></td></tr></table></figure>
+<p>これも実行すると。。。</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">$ node app</span><br><span class="line">http://localhost:3000</span><br><span class="line"></span><br><span class="line">$ curl http://localhost:3000</span><br><span class="line">&#123; <span class="string">"message"</span>: <span class="string">"hello world!"</span> &#125;</span><br></pre></td></tr></table></figure>
+<p>json キタ！</p>
+<h1><span id="uri-にパラメータをつける">URI にパラメータをつける</span></h1><p>パラメータありのリクエストにも対応しよう</p>
+<p><code>http://localhost:3000/&lt;name&gt;</code>として name に入れた名前で<code>hello &lt;name&gt;!</code>と返るようにしてみる。</p>
+<p>以下のコードを追加する。</p>
+<figure class="highlight js"><table><tr><td class="code"><pre><span class="line">app.get(<span class="string">'/:name'</span>, (req, res) =&gt; &#123;</span><br><span class="line">  res.header(<span class="string">'Content-Type'</span>, <span class="string">'application/json; charset=utf-8'</span>)</span><br><span class="line">  res.send(&#123; <span class="attr">message</span>: <span class="string">`hello <span class="subst">$&#123;req.params.name&#125;</span>`</span> &#125;)</span><br><span class="line">&#125;)</span><br></pre></td></tr></table></figure>
+<p>get の URI 指定に<code>:&lt;パラメータ&gt;</code>と記述することでパラメータと認識され、<code>req.params.&lt;パラメータ&gt;</code>で取り出すことができる。</p>
+<p>また、<code>res.send</code>にはオブジェクトをそのままぶち込める。これでもレスポンスは JSON にパースしてくれるので便利だ。</p>
+<p>これを実行すると。。。</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">$ node app</span><br><span class="line">http://localhost:3000</span><br><span class="line"></span><br><span class="line">$ curl http://localhost:3000/hoge</span><br><span class="line">&#123; <span class="string">"message"</span>: <span class="string">"hello hoge"</span> &#125;</span><br></pre></td></tr></table></figure>
+<p>イケるね！</p>
+<h1><span id="参考">参考</span></h1><ul>
+<li><a href="https://qiita.com/tamura_CD/items/e3abdab9b8c5aa35fa6b" target="_blank" rel="noopener">Node.js + Express で REST API 開発を体験しよう［作成編］ - Qiita</a></li>
+</ul>
+<h1><span id="実行環境">実行環境</span></h1><ul>
+<li>Node 8.11.3</li>
+<li>Express 4.16.4</li>
+</ul>
+
+      
+    </div>
+    <footer class="article-footer">
+      <div data-url="https://t-kojima.github.io/2018/11/02/0047-helloworld-express-with-json/" data-id="cjq51fhzz0020mtu72muvv17t" class="article-share-items"></div>
+      <!-- <a data-url="https://t-kojima.github.io/2018/11/02/0047-helloworld-express-with-json/" data-id="cjq51fhzz0020mtu72muvv17t" class="article-share-link">共有</a> -->
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/express/">express</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/nodejs/">nodejs</a></li></ul>
+
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+    <a href="/2018/11/05/0048-express-with-log4js/" id="article-nav-newer" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">次の記事</strong>
+      <div class="article-nav-title">
+        
+          [Node] ExpressでAPIを作ったらログも吐く
+        
+      </div>
+    </a>
+  
+  
+    <a href="/2018/10/17/0046-social-button-always-visible/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">前の記事</strong>
+      <div class="article-nav-title">[Hexo] ソーシャルボタンを常に表示</div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">カテゴリ</h3>
+    <div class="widget">
+      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/Mac/">Mac</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/MySQL/">MySQL</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Node/">Node</a><span class="category-list-count">2</span><ul class="category-list-child"><li class="category-list-item"><a class="category-list-link" href="/categories/Node/Express/">Express</a><span class="category-list-count">2</span></li></ul></li><li class="category-list-item"><a class="category-list-link" href="/categories/Sinatra/">Sinatra</a><span class="category-list-count">1</span></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">タグ</h3>
+    <div class="widget">
+      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/axios/">axios</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/babel/">babel</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/bottle/">bottle</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/browserify/">browserify</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/csharp/">csharp</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/docker/">docker</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/eslint/">eslint</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/euler/">euler</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/express/">express</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/firebase/">firebase</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/flask/">flask</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/hexo/">hexo</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/javascript/">javascript</a><span class="tag-list-count">8</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/jupyter/">jupyter</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/karma/">karma</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/kintone/">kintone</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/linux/">linux</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/log4js/">log4js</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/luigi/">luigi</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mac/">mac</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mocha/">mocha</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mysql/">mysql</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/node-fetch/">node-fetch</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/nodejs/">nodejs</a><span class="tag-list-count">13</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/powerline/">powerline</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/prettier/">prettier</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/python/">python</a><span class="tag-list-count">8</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/rails/">rails</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/react/">react</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/redis/">redis</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/rpa/">rpa</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/rspec/">rspec</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ruby/">ruby</a><span class="tag-list-count">7</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/sidekiq/">sidekiq</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/sinatra/">sinatra</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/sqlalchemy/">sqlalchemy</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/vagrant/">vagrant</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/virtualbox/">virtualbox</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/vscode/">vscode</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/vue/">vue</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/webpack/">webpack</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/zipstream/">zipstream</a><span class="tag-list-count">1</span></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">タグクラウド</h3>
+    <div class="widget tagcloud">
+      <a href="/tags/axios/" style="font-size: 10px;">axios</a> <a href="/tags/babel/" style="font-size: 10px;">babel</a> <a href="/tags/bottle/" style="font-size: 10px;">bottle</a> <a href="/tags/browserify/" style="font-size: 10px;">browserify</a> <a href="/tags/csharp/" style="font-size: 10px;">csharp</a> <a href="/tags/docker/" style="font-size: 10px;">docker</a> <a href="/tags/eslint/" style="font-size: 11.43px;">eslint</a> <a href="/tags/euler/" style="font-size: 10px;">euler</a> <a href="/tags/express/" style="font-size: 11.43px;">express</a> <a href="/tags/firebase/" style="font-size: 12.86px;">firebase</a> <a href="/tags/flask/" style="font-size: 10px;">flask</a> <a href="/tags/hexo/" style="font-size: 11.43px;">hexo</a> <a href="/tags/javascript/" style="font-size: 18.57px;">javascript</a> <a href="/tags/jupyter/" style="font-size: 10px;">jupyter</a> <a href="/tags/karma/" style="font-size: 11.43px;">karma</a> <a href="/tags/kintone/" style="font-size: 12.86px;">kintone</a> <a href="/tags/linux/" style="font-size: 10px;">linux</a> <a href="/tags/log4js/" style="font-size: 10px;">log4js</a> <a href="/tags/luigi/" style="font-size: 15.71px;">luigi</a> <a href="/tags/mac/" style="font-size: 10px;">mac</a> <a href="/tags/mocha/" style="font-size: 10px;">mocha</a> <a href="/tags/mysql/" style="font-size: 11.43px;">mysql</a> <a href="/tags/node-fetch/" style="font-size: 10px;">node-fetch</a> <a href="/tags/nodejs/" style="font-size: 20px;">nodejs</a> <a href="/tags/powerline/" style="font-size: 11.43px;">powerline</a> <a href="/tags/prettier/" style="font-size: 10px;">prettier</a> <a href="/tags/python/" style="font-size: 18.57px;">python</a> <a href="/tags/rails/" style="font-size: 10px;">rails</a> <a href="/tags/react/" style="font-size: 12.86px;">react</a> <a href="/tags/redis/" style="font-size: 10px;">redis</a> <a href="/tags/rpa/" style="font-size: 10px;">rpa</a> <a href="/tags/rspec/" style="font-size: 10px;">rspec</a> <a href="/tags/ruby/" style="font-size: 17.14px;">ruby</a> <a href="/tags/sidekiq/" style="font-size: 10px;">sidekiq</a> <a href="/tags/sinatra/" style="font-size: 15.71px;">sinatra</a> <a href="/tags/sqlalchemy/" style="font-size: 11.43px;">sqlalchemy</a> <a href="/tags/vagrant/" style="font-size: 10px;">vagrant</a> <a href="/tags/virtualbox/" style="font-size: 10px;">virtualbox</a> <a href="/tags/vscode/" style="font-size: 14.29px;">vscode</a> <a href="/tags/vue/" style="font-size: 12.86px;">vue</a> <a href="/tags/webpack/" style="font-size: 10px;">webpack</a> <a href="/tags/zipstream/" style="font-size: 10px;">zipstream</a>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">アーカイブ</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/12/">12月 2018</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/11/">11月 2018</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/10/">10月 2018</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/09/">9月 2018</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/08/">8月 2018</a><span class="archive-list-count">6</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/07/">7月 2018</a><span class="archive-list-count">11</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/06/">6月 2018</a><span class="archive-list-count">12</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/05/">5月 2018</a><span class="archive-list-count">11</span></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">最近の投稿</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2018/12/20/0051-setup-macbook-pro-2018/">MacBookPro2018のセットアップ</a>
+          </li>
+        
+          <li>
+            <a href="/2018/11/29/0050-about-config-ru/">[Sinatra] config.ruとは</a>
+          </li>
+        
+          <li>
+            <a href="/2018/11/14/0049-docker-mysql-error-caching-sha2-password/">[MySQL] Unable to load authentication plugin &#39;caching_sha2_password&#39;</a>
+          </li>
+        
+          <li>
+            <a href="/2018/11/05/0048-express-with-log4js/">[Node] ExpressでAPIを作ったらログも吐く</a>
+          </li>
+        
+          <li>
+            <a href="/2018/11/02/0047-helloworld-express-with-json/">[Node] Expressを使って最速でJSONを返す</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      &copy; 2018 t-kojima<br>
+      Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+
+
+  <link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
+  <script src="/fancybox/jquery.fancybox.pack.js"></script>
+
+
+<script src="/js/script.js"></script>
+
+
+
+  </div>
+  <script async src="//cdn.embedly.com/widgets/platform.js" charset="UTF-8"></script>
+</body>
+</html>

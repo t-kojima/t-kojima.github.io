@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+
+  
+  <title>ぼくがRubyを断念した理由 | Today&#39;s Commit</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="6 年ほど前の話です。ぼくは元々 Java の技術者でしたが、転職を機に VB.NET に触れ、その後 C#をよく使うようになっていきました。 C#にだいぶ慣れた頃、「スクリプト言語の一つでも覚えてみようかな？」という軽い動機で Ruby の学習を始めました。 しかしこの時泥沼に嵌るとは思いもよりませんでした…">
+<meta name="keywords" content="ruby">
+<meta property="og:type" content="article">
+<meta property="og:title" content="ぼくがRubyを断念した理由">
+<meta property="og:url" content="https://t-kojima.github.io/2018/05/15/0010-ruby-forgo/index.html">
+<meta property="og:site_name" content="Today&#39;s Commit">
+<meta property="og:description" content="6 年ほど前の話です。ぼくは元々 Java の技術者でしたが、転職を機に VB.NET に触れ、その後 C#をよく使うようになっていきました。 C#にだいぶ慣れた頃、「スクリプト言語の一つでも覚えてみようかな？」という軽い動機で Ruby の学習を始めました。 しかしこの時泥沼に嵌るとは思いもよりませんでした…">
+<meta property="og:locale" content="ja">
+<meta property="og:updated_time" content="2018-12-20T11:07:38.281Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="ぼくがRubyを断念した理由">
+<meta name="twitter:description" content="6 年ほど前の話です。ぼくは元々 Java の技術者でしたが、転職を機に VB.NET に触れ、その後 C#をよく使うようになっていきました。 C#にだいぶ慣れた頃、「スクリプト言語の一つでも覚えてみようかな？」という軽い動機で Ruby の学習を始めました。 しかしこの時泥沼に嵌るとは思いもよりませんでした…">
+  
+    <link rel="alternate" href="/atom.xml" title="Today&#39;s Commit" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  
+    <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
+  
+  <link rel="stylesheet" href="/css/style.css">
+  
+    <link rel="amphtml" href="https://t-kojima.github.io/2018/05/15/0010-ruby-forgo//amp/index.html">
+  
+</head>
+
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">Today&#39;s Commit</a>
+      </h1>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSSフィード"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="検索"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="https://t-kojima.github.io"></form>
+      </div>
+    </div>
+  </div>
+</header>
+      <div class="outer">
+        <section id="main"><article id="post-0010-ruby-forgo" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2018/05/15/0010-ruby-forgo/" class="article-date">
+  <time datetime="2018-05-15T12:45:36.000Z" itemprop="datePublished">2018-05-15</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      ぼくがRubyを断念した理由
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>6 年ほど前の話です。ぼくは元々 Java の技術者でしたが、転職を機に VB.NET に触れ、その後 C#をよく使うようになっていきました。</p>
+<p>C#にだいぶ慣れた頃、「スクリプト言語の一つでも覚えてみようかな？」という軽い動機で Ruby の学習を始めました。</p>
+<p>しかしこの時泥沼に嵌るとは思いもよりませんでした…</p>
+<a id="more"></a>
+<h2><span id="windows-環境の罠">Windows 環境の罠</span></h2><p>家には Windows の PC しか無かったので、Windows に環境を作りました。</p>
+<p>Ruby のインストール自体はうまくいきました。<code>RubyInstaller</code>が既に整備されていたので、Windows での環境構築自体は手順通りで問題なかったんですね。</p>
+<p>その後 Rails のインストールで問題は起きました。<code>therubyracer</code>という gem が動かなかったのです。</p>
+<p>当時は<code>libv8</code>がどうとか、環境毎にコンパイルがどうとか、「オレはこの設定で動いたぜ！」とか、２～３日調べまくった結果、「あぁ…これはぼくの PC じゃ動かないな」という諦めに達してしましました。</p>
+<hr>
+<p>これに関しては現在に至っても根強く残る問題です。（<code>therubyrace</code>の件は<code>Node.js</code>の登場で解決しましたが…）</p>
+<p>今でも「Windows 向けの gem だけ上手く動かない」「バージョンが変わったら動かない」なんてのはよくあることで、1 日～数日がエラーの解消で潰れるなんてことはよくあります。</p>
+<p>Ruby に限らない話ですが、プログラミング界隈はあくまで Unix（Mac）や Linux 中心に回っていて、Windows はあくまで<code>後から移植される環境</code>であるという事を理解させられました。</p>
+<h2><span id="エディタで疲弊">エディタで疲弊</span></h2><p>VB.NET や C#であればエディタは<code>VisualStudio</code>一択です。しかし Ruby のエディタにスタンダードと呼べるものは無く、当時の選択肢としては以下のものが主流（？）でした。</p>
+<ul>
+<li>Eclipse</li>
+<li>RubyMine</li>
+<li>Vim</li>
+</ul>
+<p>もともと Java 技術者だったぼくは、Eclipse に慣れていたのでそのまま Eclipse に Ruby のプラグインを入れて使ってみました。しかし非常に動作が悪く、使い物になりませんでした。</p>
+<p>Eclipse に慣れていたぼくは「まぁ Eclipse だしな」と思い次のエディタを探しました。</p>
+<p>RubyMine は有料だったので一旦選択肢から外し、Vim を使ってみました。というのも、エディタを調べている中で「Vim はなんでもカスタマイズできる」「プログラマなら Vim」「Vim じゃないと死んじゃう」といった声が結構な割合であって、「学習コストは高いらしいけど、長い目で見たら覚えて損は無いかな」と思ったからです。</p>
+<p>Vim の操作自体はチートシートを使って「徐々に慣れていこう」で良かったのですが、まともな Ruby の開発環境を整えるとなると、色々なプラグインを入れなければなりません。</p>
+<p>…が、早々にプラグイン管理で疲弊しきってしまいました。プラグインが動いたり動かなかったり、何故動かないのか調べるのに時間を使っているうちに「あれ…Ruby のコーディング全然できてないぞ！」という気持ちになり、Ruby をやる気力自体が無くなってしまいました。</p>
+<p>実際当時 Ruby のコードを書いた記憶がほとんどありません。</p>
+<p>Ruby をやりたかったのに、Vim の勉強を始めてしまったのが失敗だったのだと思います。</p>
+<h2><span id="そもそもなんで覚えたかったの">そもそもなんで覚えたかったの？</span></h2><p>そもそも「スクリプト言語を覚えたい」という動機は、「JavaScript が苦手」という苦手意識が発端だったと思います。</p>
+<p>当時（10 年くらい前）は JavaScript を取り巻く環境は本当に貧弱で、まともなフレームワークやエディタはほぼほぼなかったと記憶しています。（もしかしたらあったかもしれませんが、今ほど手軽でも一般的でも無かったと思います）</p>
+<p>なのでコードを書いていてもフォーマッタも Linter も無く、テストもまともに書けず、デバッグもブラウザの貧弱なコンソールで行うしかなかったりと、Java と比べて「なんなんだこの言語は！？」という気持ちがあったのです。</p>
+<p>Ruby でその苦手意識を払拭したかったのですが…方向性は違えど JavaScript と同じ末路を辿ってしまったのです。</p>
+<h2><span id="現在の状況">現在の状況</span></h2><p>2018 年現在、環境は驚くほど良くなっています。</p>
+<p>Windows で Ruby を動かす時に上記のようなエラーに当たることは、少なくなってきているとは思いますがまだまだあります。強い心を持ってエラーに立ち向かってもいいんですけど、今は他にも色々な選択肢があります。</p>
+<p>ぼくのおすすめは<code>Windows Subsystem for Linux（WSL）</code>です。ファイルシステムの共有もできるし、切り替えも簡単です。WSL 特有の問題があったり、100%Linux 互換ではありませんが、Windows 上で Ruby を動かすよりははるかにマシです。</p>
+<p>他にも仮想環境で Linux を動かしてもいいです。<code>VirtualBox</code>だったり<code>Hyper-v</code>だったり…あるいは<code>Docker</code>でもいいかもしれません。</p>
+<p>エディタも種類が増えました。既に慣れているのであれば<code>Vim</code>でいいと思いますが、言語の初心者であれば「エディタの習得」よりも「言語の習得」に重きを置きたいはずです。なのでおすすめは<code>Atom</code>か<code>VSCode</code>ですね。どちらもクロスプラットフォームで OS を選びませんし、インストールすればすぐにコードが書き始められます。（Ruby プラグインは入れる必要があるので、オールインワンというわけでは無いですが、数分で出来るので環境構築の負担はほとんど感じません）</p>
+<p>そういえば JavaScript を取り巻く環境も驚くほど良くなっていますね！</p>
+<p><code>ES6</code>に始まり<code>npm</code>で<code>eslint</code>を入れたり、<code>mocha</code>や<code>jasmine</code>でテストしたり、<code>babel</code>や<code>webpack</code>、<code>gulp</code>などなど、久しぶりに触れると覚えることの多さにびっくりしますが、当時の貧弱な環境に比べるとあまりの進化ぷりにびっくりでした。<code>Node.js</code>は偉大です。</p>
+<hr>
+<p>Windows における Ruby の環境はここ数年で大分マシになりました。が、あくまで「Windows という環境は Ruby に向いていない」ということを承知の上で「なんとか頑張ればギリギリ実用に耐えうる環境を作れる」ということでしかないかもしれません。（実行環境なんかは結局 Linux ですし）</p>
+<p>これから Ruby を始めるキミ、素直に Mac か Linux にしとけ！</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <div data-url="https://t-kojima.github.io/2018/05/15/0010-ruby-forgo/" data-id="cjq51fhzb000pmtu7jnfa0qih" class="article-share-items"></div>
+      <!-- <a data-url="https://t-kojima.github.io/2018/05/15/0010-ruby-forgo/" data-id="cjq51fhzb000pmtu7jnfa0qih" class="article-share-link">共有</a> -->
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/ruby/">ruby</a></li></ul>
+
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+    <a href="/2018/05/15/0011-vagrant-virtualbox/" id="article-nav-newer" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">次の記事</strong>
+      <div class="article-nav-title">
+        
+          VirtualBoxとVagrantを試す
+        
+      </div>
+    </a>
+  
+  
+    <a href="/2018/05/15/0009-luigi-task-output-not-open/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">前の記事</strong>
+      <div class="article-nav-title">[Python] luigiのTask#outputをopenで書き込まない場合</div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">カテゴリ</h3>
+    <div class="widget">
+      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/Mac/">Mac</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/MySQL/">MySQL</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Node/">Node</a><span class="category-list-count">2</span><ul class="category-list-child"><li class="category-list-item"><a class="category-list-link" href="/categories/Node/Express/">Express</a><span class="category-list-count">2</span></li></ul></li><li class="category-list-item"><a class="category-list-link" href="/categories/Sinatra/">Sinatra</a><span class="category-list-count">1</span></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">タグ</h3>
+    <div class="widget">
+      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/axios/">axios</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/babel/">babel</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/bottle/">bottle</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/browserify/">browserify</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/csharp/">csharp</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/docker/">docker</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/eslint/">eslint</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/euler/">euler</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/express/">express</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/firebase/">firebase</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/flask/">flask</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/hexo/">hexo</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/javascript/">javascript</a><span class="tag-list-count">8</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/jupyter/">jupyter</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/karma/">karma</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/kintone/">kintone</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/linux/">linux</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/log4js/">log4js</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/luigi/">luigi</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mac/">mac</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mocha/">mocha</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mysql/">mysql</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/node-fetch/">node-fetch</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/nodejs/">nodejs</a><span class="tag-list-count">13</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/powerline/">powerline</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/prettier/">prettier</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/python/">python</a><span class="tag-list-count">8</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/rails/">rails</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/react/">react</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/redis/">redis</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/rpa/">rpa</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/rspec/">rspec</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ruby/">ruby</a><span class="tag-list-count">7</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/sidekiq/">sidekiq</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/sinatra/">sinatra</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/sqlalchemy/">sqlalchemy</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/vagrant/">vagrant</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/virtualbox/">virtualbox</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/vscode/">vscode</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/vue/">vue</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/webpack/">webpack</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/zipstream/">zipstream</a><span class="tag-list-count">1</span></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">タグクラウド</h3>
+    <div class="widget tagcloud">
+      <a href="/tags/axios/" style="font-size: 10px;">axios</a> <a href="/tags/babel/" style="font-size: 10px;">babel</a> <a href="/tags/bottle/" style="font-size: 10px;">bottle</a> <a href="/tags/browserify/" style="font-size: 10px;">browserify</a> <a href="/tags/csharp/" style="font-size: 10px;">csharp</a> <a href="/tags/docker/" style="font-size: 10px;">docker</a> <a href="/tags/eslint/" style="font-size: 11.43px;">eslint</a> <a href="/tags/euler/" style="font-size: 10px;">euler</a> <a href="/tags/express/" style="font-size: 11.43px;">express</a> <a href="/tags/firebase/" style="font-size: 12.86px;">firebase</a> <a href="/tags/flask/" style="font-size: 10px;">flask</a> <a href="/tags/hexo/" style="font-size: 11.43px;">hexo</a> <a href="/tags/javascript/" style="font-size: 18.57px;">javascript</a> <a href="/tags/jupyter/" style="font-size: 10px;">jupyter</a> <a href="/tags/karma/" style="font-size: 11.43px;">karma</a> <a href="/tags/kintone/" style="font-size: 12.86px;">kintone</a> <a href="/tags/linux/" style="font-size: 10px;">linux</a> <a href="/tags/log4js/" style="font-size: 10px;">log4js</a> <a href="/tags/luigi/" style="font-size: 15.71px;">luigi</a> <a href="/tags/mac/" style="font-size: 10px;">mac</a> <a href="/tags/mocha/" style="font-size: 10px;">mocha</a> <a href="/tags/mysql/" style="font-size: 11.43px;">mysql</a> <a href="/tags/node-fetch/" style="font-size: 10px;">node-fetch</a> <a href="/tags/nodejs/" style="font-size: 20px;">nodejs</a> <a href="/tags/powerline/" style="font-size: 11.43px;">powerline</a> <a href="/tags/prettier/" style="font-size: 10px;">prettier</a> <a href="/tags/python/" style="font-size: 18.57px;">python</a> <a href="/tags/rails/" style="font-size: 10px;">rails</a> <a href="/tags/react/" style="font-size: 12.86px;">react</a> <a href="/tags/redis/" style="font-size: 10px;">redis</a> <a href="/tags/rpa/" style="font-size: 10px;">rpa</a> <a href="/tags/rspec/" style="font-size: 10px;">rspec</a> <a href="/tags/ruby/" style="font-size: 17.14px;">ruby</a> <a href="/tags/sidekiq/" style="font-size: 10px;">sidekiq</a> <a href="/tags/sinatra/" style="font-size: 15.71px;">sinatra</a> <a href="/tags/sqlalchemy/" style="font-size: 11.43px;">sqlalchemy</a> <a href="/tags/vagrant/" style="font-size: 10px;">vagrant</a> <a href="/tags/virtualbox/" style="font-size: 10px;">virtualbox</a> <a href="/tags/vscode/" style="font-size: 14.29px;">vscode</a> <a href="/tags/vue/" style="font-size: 12.86px;">vue</a> <a href="/tags/webpack/" style="font-size: 10px;">webpack</a> <a href="/tags/zipstream/" style="font-size: 10px;">zipstream</a>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">アーカイブ</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/12/">12月 2018</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/11/">11月 2018</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/10/">10月 2018</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/09/">9月 2018</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/08/">8月 2018</a><span class="archive-list-count">6</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/07/">7月 2018</a><span class="archive-list-count">11</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/06/">6月 2018</a><span class="archive-list-count">12</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/05/">5月 2018</a><span class="archive-list-count">11</span></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">最近の投稿</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2018/12/20/0051-setup-macbook-pro-2018/">MacBookPro2018のセットアップ</a>
+          </li>
+        
+          <li>
+            <a href="/2018/11/29/0050-about-config-ru/">[Sinatra] config.ruとは</a>
+          </li>
+        
+          <li>
+            <a href="/2018/11/14/0049-docker-mysql-error-caching-sha2-password/">[MySQL] Unable to load authentication plugin &#39;caching_sha2_password&#39;</a>
+          </li>
+        
+          <li>
+            <a href="/2018/11/05/0048-express-with-log4js/">[Node] ExpressでAPIを作ったらログも吐く</a>
+          </li>
+        
+          <li>
+            <a href="/2018/11/02/0047-helloworld-express-with-json/">[Node] Expressを使って最速でJSONを返す</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      &copy; 2018 t-kojima<br>
+      Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+
+
+  <link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
+  <script src="/fancybox/jquery.fancybox.pack.js"></script>
+
+
+<script src="/js/script.js"></script>
+
+
+
+  </div>
+  <script async src="//cdn.embedly.com/widgets/platform.js" charset="UTF-8"></script>
+</body>
+</html>

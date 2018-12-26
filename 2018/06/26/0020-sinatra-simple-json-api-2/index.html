@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+
+  
+  <title>[Sinatra] シンプルなJSON API サーバーに手を加える（POSTでDB登録） | Today&#39;s Commit</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="前の記事（[Sinatra] シンプルな JSON API サーバーを作る）で非常に簡単な API サーバーを作ったが、そこに少し手を加えてより実用的にしてみたい。 おしながき POST でデータを登録できるようにする Rspec でテストする データを JSON Schema でバリデーションする">
+<meta name="keywords" content="ruby,sinatra,mysql">
+<meta property="og:type" content="article">
+<meta property="og:title" content="[Sinatra] シンプルなJSON API サーバーに手を加える（POSTでDB登録）">
+<meta property="og:url" content="https://t-kojima.github.io/2018/06/26/0020-sinatra-simple-json-api-2/index.html">
+<meta property="og:site_name" content="Today&#39;s Commit">
+<meta property="og:description" content="前の記事（[Sinatra] シンプルな JSON API サーバーを作る）で非常に簡単な API サーバーを作ったが、そこに少し手を加えてより実用的にしてみたい。 おしながき POST でデータを登録できるようにする Rspec でテストする データを JSON Schema でバリデーションする">
+<meta property="og:locale" content="ja">
+<meta property="og:image" content="https://t-kojima.github.io/images/20-01.png">
+<meta property="og:updated_time" content="2018-12-20T11:07:38.284Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="[Sinatra] シンプルなJSON API サーバーに手を加える（POSTでDB登録）">
+<meta name="twitter:description" content="前の記事（[Sinatra] シンプルな JSON API サーバーを作る）で非常に簡単な API サーバーを作ったが、そこに少し手を加えてより実用的にしてみたい。 おしながき POST でデータを登録できるようにする Rspec でテストする データを JSON Schema でバリデーションする">
+<meta name="twitter:image" content="https://t-kojima.github.io/images/20-01.png">
+  
+    <link rel="alternate" href="/atom.xml" title="Today&#39;s Commit" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  
+    <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
+  
+  <link rel="stylesheet" href="/css/style.css">
+  
+    <link rel="amphtml" href="https://t-kojima.github.io/2018/06/26/0020-sinatra-simple-json-api-2//amp/index.html">
+  
+</head>
+
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">Today&#39;s Commit</a>
+      </h1>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSSフィード"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="検索"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="https://t-kojima.github.io"></form>
+      </div>
+    </div>
+  </div>
+</header>
+      <div class="outer">
+        <section id="main"><article id="post-0020-sinatra-simple-json-api-2" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2018/06/26/0020-sinatra-simple-json-api-2/" class="article-date">
+  <time datetime="2018-06-25T23:48:14.000Z" itemprop="datePublished">2018-06-26</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      [Sinatra] シンプルなJSON API サーバーに手を加える（POSTでDB登録）
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>前の記事（<a href="https://t-kojima.github.io/2018/06/18/0015-sinatra-simple-json-api/">[Sinatra] シンプルな JSON API サーバーを作る</a>）で非常に簡単な API サーバーを作ったが、そこに少し手を加えてより実用的にしてみたい。</p>
+<h4><span id="おしながき">おしながき</span></h4><ul>
+<li><strong>POST でデータを登録できるようにする</strong></li>
+<li>Rspec でテストする</li>
+<li>データを JSON Schema でバリデーションする</li>
+</ul>
+<a id="more"></a>
+<h2><span id="post-でデータ登録">POST でデータ登録</span></h2><p>まずは前回と同様に GET でデータベースアクセスできるところまで持っていく。</p>
+<p>bundler で gem を入れるが、今回は mysql でやるので <code>activerecord</code>と<code>mysql2</code>を入れる。</p>
+<figure class="highlight rb"><table><tr><td class="code"><pre><span class="line"><span class="comment"># Gemfile</span></span><br><span class="line"></span><br><span class="line">gem <span class="string">'sinatra'</span></span><br><span class="line">gem <span class="string">"activerecord"</span></span><br><span class="line">gem <span class="string">"mysql2"</span></span><br></pre></td></tr></table></figure>
+<p><code>db/database.rb</code> と <code>db/database.yml</code> を用意する。</p>
+<figure class="highlight rb"><table><tr><td class="code"><pre><span class="line"><span class="comment"># database.rb</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">require</span> <span class="string">'bundler/setup'</span></span><br><span class="line"><span class="keyword">require</span> <span class="string">'active_record'</span></span><br><span class="line"><span class="keyword">require</span> <span class="string">'mysql2'</span></span><br><span class="line"></span><br><span class="line">ActiveRecord::Base.configurations = YAML.load_file(<span class="string">'./db/database.yml'</span>)</span><br><span class="line">ActiveRecord::Base.establish_connection(ENV[<span class="string">'SINATRA_ENV'</span>].to_sym)</span><br><span class="line"></span><br><span class="line"><span class="comment"># class</span></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Book</span> &lt; ActiveRecord::Base</span></span><br><span class="line">  <span class="keyword">self</span>.table_name = <span class="string">'books'</span></span><br><span class="line"><span class="keyword">end</span></span><br></pre></td></tr></table></figure>
+<figure class="highlight yml"><table><tr><td class="code"><pre><span class="line"><span class="attr">default:</span> <span class="meta">&amp;default</span></span><br><span class="line"><span class="attr">  adapter:</span> <span class="string">mysql2</span></span><br><span class="line"><span class="attr">  encoding:</span> <span class="string">utf8</span></span><br><span class="line"><span class="attr">  reconnect:</span> <span class="literal">false</span></span><br><span class="line"><span class="attr">  database:</span> <span class="string">bookshelf</span></span><br><span class="line"><span class="attr">  pool:</span> <span class="number">5</span></span><br><span class="line"></span><br><span class="line"><span class="attr">development:</span></span><br><span class="line">  <span class="string">&lt;&lt;:</span> <span class="meta">*default</span></span><br><span class="line"><span class="attr">  username:</span> <span class="string">root</span></span><br><span class="line"><span class="attr">  password:</span> <span class="string">mysql</span></span><br><span class="line"><span class="attr">  host:</span> <span class="string">localhost</span></span><br><span class="line"></span><br><span class="line"><span class="attr">test:</span></span><br><span class="line">  <span class="string">&lt;&lt;:</span> <span class="meta">*default</span></span><br><span class="line"><span class="attr">  username:</span> <span class="string">root</span></span><br><span class="line"><span class="attr">  password:</span> <span class="string">mysql</span></span><br><span class="line"><span class="attr">  host:</span> <span class="string">localhost</span></span><br><span class="line"></span><br><span class="line"><span class="attr">production:</span></span><br><span class="line">  <span class="string">&lt;&lt;:</span> <span class="meta">*default</span></span><br><span class="line"><span class="attr">  username:</span> <span class="string">&lt;******&gt;</span></span><br><span class="line"><span class="attr">  password:</span> <span class="string">&lt;******&gt;</span></span><br><span class="line"><span class="attr">  host:</span> <span class="string">localhost</span></span><br></pre></td></tr></table></figure>
+<p>今回は database.yml で接続環境毎に設定を分け、<code>SINATRA_ENV</code> 環境変数で切り替えるようにした。開発環境では<code>export SINATRA_ENV=development</code>としている。</p>
+<h3><span id="ソケットの罠">ソケットの罠</span></h3><p><code>index.rb</code> を作成し、実行したうえで<a href="http://localhost:4567/books/1" target="_blank" rel="noopener">http://localhost:4567/books/1</a>にアクセスする。</p>
+<figure class="highlight rb"><table><tr><td class="code"><pre><span class="line"><span class="comment"># index.rb</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">require</span> <span class="string">'bundler/setup'</span></span><br><span class="line"><span class="keyword">require</span> <span class="string">'sinatra'</span></span><br><span class="line"><span class="keyword">require</span> <span class="string">'json'</span></span><br><span class="line"><span class="keyword">require</span> <span class="string">'./db/database'</span></span><br><span class="line"></span><br><span class="line">get <span class="string">'/'</span> <span class="keyword">do</span></span><br><span class="line">  content_type <span class="symbol">:json</span></span><br><span class="line">  response = &#123;</span><br><span class="line">    <span class="symbol">message:</span> <span class="string">'welcome to sinatra'</span>,</span><br><span class="line">  &#125;</span><br><span class="line">  response.to_json</span><br><span class="line"><span class="keyword">end</span></span><br><span class="line"></span><br><span class="line">get <span class="string">'/books/:id'</span> <span class="keyword">do</span></span><br><span class="line">  content_type <span class="symbol">:json</span></span><br><span class="line">  response = &#123;</span><br><span class="line">    <span class="symbol">record:</span> Book.find(params[<span class="symbol">:id</span>])</span><br><span class="line">  &#125;</span><br><span class="line">  response.to_json</span><br><span class="line"><span class="keyword">end</span></span><br></pre></td></tr></table></figure>
+<p>しかしアクセスすると以下のエラーになった。</p>
+<p><img src="/images/20-01.png" alt="Mysql2::Error::ConnectionErrorが発生した"></p>
+<p><code>※ 実際開発していた API サーバーでのキャプチャなので、アドレスが違うのは勘弁してホシイ</code></p>
+<p>今回開発環境用の DB として docker で mysql サーバーをローカルに立てていた。しかし mysql2 はソケット接続しようとしていてエラーになっているらしい。解決策はここ（<a href="https://qiita.com/benzookapi/items/07b658700a53155a6263" target="_blank" rel="noopener">Ruby On Rails で MySQL の Socket エラーが出た時は素直に localhost を 127.0.0.1 に直すのが一番いいと思う</a>）にある通り、接続先を<code>localhost</code>から<code>127.0.0.1</code>に変更することで対応した。</p>
+<figure class="highlight yml"><table><tr><td class="code"><pre><span class="line"><span class="attr">development:</span></span><br><span class="line">  <span class="string">&lt;&lt;:</span> <span class="meta">*default</span></span><br><span class="line"><span class="attr">  username:</span> <span class="string">root</span></span><br><span class="line"><span class="attr">  password:</span> <span class="string">mysql</span></span><br><span class="line"><span class="attr">  host:</span> <span class="number">127.0</span><span class="number">.0</span><span class="number">.1</span></span><br></pre></td></tr></table></figure>
+<p>これで正常にアクセスできることは確認できた。</p>
+<h3><span id="hash-とシンボルの罠">Hash とシンボルの罠</span></h3><p>続いて POST メソッドを追加していく、こんな感じかな</p>
+<figure class="highlight rb"><table><tr><td class="code"><pre><span class="line">post <span class="string">'/books'</span>, <span class="symbol">provides:</span> <span class="symbol">:json</span> <span class="keyword">do</span></span><br><span class="line">  params = JSON.parse request.body.read</span><br><span class="line">  book = Book.new <span class="keyword">do</span> <span class="params">|b|</span></span><br><span class="line">    b.title = params[<span class="symbol">:title</span>]</span><br><span class="line">    b.author = params[<span class="symbol">:author</span>]</span><br><span class="line">    b.pages = params[<span class="symbol">:pages</span>]</span><br><span class="line">  <span class="keyword">end</span></span><br><span class="line">  book.save</span><br><span class="line"><span class="keyword">end</span></span><br></pre></td></tr></table></figure>
+<p>ところがここにデータを POST すると 500 エラーになる</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">curl -v -H <span class="string">"Content-type: application/json"</span> -X POST -d <span class="string">'&#123;"title":"すごいHaskellたのしく学ぼう!","author":"Miran Lipovaca","pages":391&#125;'</span> http://localhost:4567/books/</span><br><span class="line"></span><br><span class="line">=&gt; 500 Internal Server Error</span><br></pre></td></tr></table></figure>
+<p>原因は <code>params[:title]</code> などが nil になることだった。「Hash のキーはシンボルと文字列を区別する」というすごい単純なオチだったんだけど、ここ（<a href="https://qiita.com/QUANON/items/169c73425a6bc50dee51" target="_blank" rel="noopener">Hash から文字列でもシンボルでも値を取り出す</a>）を参考にシンボルのまま取り出せるようにしてみる。</p>
+<figure class="highlight rb"><table><tr><td class="code"><pre><span class="line">params = JSON.parse request.body.read</span><br></pre></td></tr></table></figure>
+<p>を</p>
+<figure class="highlight rb"><table><tr><td class="code"><pre><span class="line">params = JSON.parse(request.body.read).with_indifferent_access</span><br></pre></td></tr></table></figure>
+<p>にするだけで正常に登録されるようになった。</p>
+<p>ちなみに <code>with_indifferent_access</code> は本来 <code>active_support</code> と <code>active_support/core_ext</code> を require しなければ呼べないが、今回は特に意識することなく呼ぶことができている。</p>
+<p>事前に <code>ActiveRecord::Base.configurations</code> を実行しているのだが、（たぶん）この中で <code>active_support</code> を require しているので、後続の処理では明示的に <code>active_support</code> を require しなくても <code>with_indifferent_access</code> を呼ぶことができる。</p>
+<h2><span id="実行環境">実行環境</span></h2><ul>
+<li>Ruby 2.3.3</li>
+<li>Sinatra 2.0.3</li>
+<li>activerecord 5.2.0</li>
+<li>mysql2 0.5.1</li>
+</ul>
+<h2><span id="参考">参考</span></h2><ul>
+<li><a href="https://qiita.com/izumin5210/items/ca f66ece1f67a0fd6a4c" target="_blank" rel="noopener">【Sinatra】POST メソッドで JSON を受け取りたい - Qiita</a></li>
+<li><a href="https://qiita.com/benzookapi/items/07b658700a53155a6263" target="_blank" rel="noopener">Ruby On Rails で MySQL の Socket エラーが出た時は素直に localhost を 127.0.0.1 に直すのが一番いいと思う - Qiita</a></li>
+<li><a href="https://qiita.com/QUANON/items/169c73425a6bc50dee51" target="_blank" rel="noopener">Hash から文字列でもシンボルでも値を取り出す - Qiita</a></li>
+</ul>
+
+      
+    </div>
+    <footer class="article-footer">
+      <div data-url="https://t-kojima.github.io/2018/06/26/0020-sinatra-simple-json-api-2/" data-id="cjq51fhzh000ymtu7d3x0eo0y" class="article-share-items"></div>
+      <!-- <a data-url="https://t-kojima.github.io/2018/06/26/0020-sinatra-simple-json-api-2/" data-id="cjq51fhzh000ymtu7d3x0eo0y" class="article-share-link">共有</a> -->
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/mysql/">mysql</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/ruby/">ruby</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/sinatra/">sinatra</a></li></ul>
+
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+    <a href="/2018/06/26/0021-sinatra-simple-json-api-3/" id="article-nav-newer" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">次の記事</strong>
+      <div class="article-nav-title">
+        
+          [Sinatra] シンプルなJSON API サーバーに手を加える（RSpecでテスト）
+        
+      </div>
+    </a>
+  
+  
+    <a href="/2018/06/25/0019-flask-tutorial-create-app/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">前の記事</strong>
+      <div class="article-nav-title">[Flask] Flaskの基本的な構成（を思い出す）</div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">カテゴリ</h3>
+    <div class="widget">
+      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/Mac/">Mac</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/MySQL/">MySQL</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Node/">Node</a><span class="category-list-count">2</span><ul class="category-list-child"><li class="category-list-item"><a class="category-list-link" href="/categories/Node/Express/">Express</a><span class="category-list-count">2</span></li></ul></li><li class="category-list-item"><a class="category-list-link" href="/categories/Sinatra/">Sinatra</a><span class="category-list-count">1</span></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">タグ</h3>
+    <div class="widget">
+      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/axios/">axios</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/babel/">babel</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/bottle/">bottle</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/browserify/">browserify</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/csharp/">csharp</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/docker/">docker</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/eslint/">eslint</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/euler/">euler</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/express/">express</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/firebase/">firebase</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/flask/">flask</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/hexo/">hexo</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/javascript/">javascript</a><span class="tag-list-count">8</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/jupyter/">jupyter</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/karma/">karma</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/kintone/">kintone</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/linux/">linux</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/log4js/">log4js</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/luigi/">luigi</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mac/">mac</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mocha/">mocha</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mysql/">mysql</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/node-fetch/">node-fetch</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/nodejs/">nodejs</a><span class="tag-list-count">13</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/powerline/">powerline</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/prettier/">prettier</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/python/">python</a><span class="tag-list-count">8</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/rails/">rails</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/react/">react</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/redis/">redis</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/rpa/">rpa</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/rspec/">rspec</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ruby/">ruby</a><span class="tag-list-count">7</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/sidekiq/">sidekiq</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/sinatra/">sinatra</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/sqlalchemy/">sqlalchemy</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/vagrant/">vagrant</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/virtualbox/">virtualbox</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/vscode/">vscode</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/vue/">vue</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/webpack/">webpack</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/zipstream/">zipstream</a><span class="tag-list-count">1</span></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">タグクラウド</h3>
+    <div class="widget tagcloud">
+      <a href="/tags/axios/" style="font-size: 10px;">axios</a> <a href="/tags/babel/" style="font-size: 10px;">babel</a> <a href="/tags/bottle/" style="font-size: 10px;">bottle</a> <a href="/tags/browserify/" style="font-size: 10px;">browserify</a> <a href="/tags/csharp/" style="font-size: 10px;">csharp</a> <a href="/tags/docker/" style="font-size: 10px;">docker</a> <a href="/tags/eslint/" style="font-size: 11.43px;">eslint</a> <a href="/tags/euler/" style="font-size: 10px;">euler</a> <a href="/tags/express/" style="font-size: 11.43px;">express</a> <a href="/tags/firebase/" style="font-size: 12.86px;">firebase</a> <a href="/tags/flask/" style="font-size: 10px;">flask</a> <a href="/tags/hexo/" style="font-size: 11.43px;">hexo</a> <a href="/tags/javascript/" style="font-size: 18.57px;">javascript</a> <a href="/tags/jupyter/" style="font-size: 10px;">jupyter</a> <a href="/tags/karma/" style="font-size: 11.43px;">karma</a> <a href="/tags/kintone/" style="font-size: 12.86px;">kintone</a> <a href="/tags/linux/" style="font-size: 10px;">linux</a> <a href="/tags/log4js/" style="font-size: 10px;">log4js</a> <a href="/tags/luigi/" style="font-size: 15.71px;">luigi</a> <a href="/tags/mac/" style="font-size: 10px;">mac</a> <a href="/tags/mocha/" style="font-size: 10px;">mocha</a> <a href="/tags/mysql/" style="font-size: 11.43px;">mysql</a> <a href="/tags/node-fetch/" style="font-size: 10px;">node-fetch</a> <a href="/tags/nodejs/" style="font-size: 20px;">nodejs</a> <a href="/tags/powerline/" style="font-size: 11.43px;">powerline</a> <a href="/tags/prettier/" style="font-size: 10px;">prettier</a> <a href="/tags/python/" style="font-size: 18.57px;">python</a> <a href="/tags/rails/" style="font-size: 10px;">rails</a> <a href="/tags/react/" style="font-size: 12.86px;">react</a> <a href="/tags/redis/" style="font-size: 10px;">redis</a> <a href="/tags/rpa/" style="font-size: 10px;">rpa</a> <a href="/tags/rspec/" style="font-size: 10px;">rspec</a> <a href="/tags/ruby/" style="font-size: 17.14px;">ruby</a> <a href="/tags/sidekiq/" style="font-size: 10px;">sidekiq</a> <a href="/tags/sinatra/" style="font-size: 15.71px;">sinatra</a> <a href="/tags/sqlalchemy/" style="font-size: 11.43px;">sqlalchemy</a> <a href="/tags/vagrant/" style="font-size: 10px;">vagrant</a> <a href="/tags/virtualbox/" style="font-size: 10px;">virtualbox</a> <a href="/tags/vscode/" style="font-size: 14.29px;">vscode</a> <a href="/tags/vue/" style="font-size: 12.86px;">vue</a> <a href="/tags/webpack/" style="font-size: 10px;">webpack</a> <a href="/tags/zipstream/" style="font-size: 10px;">zipstream</a>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">アーカイブ</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/12/">12月 2018</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/11/">11月 2018</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/10/">10月 2018</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/09/">9月 2018</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/08/">8月 2018</a><span class="archive-list-count">6</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/07/">7月 2018</a><span class="archive-list-count">11</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/06/">6月 2018</a><span class="archive-list-count">12</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/05/">5月 2018</a><span class="archive-list-count">11</span></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">最近の投稿</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2018/12/20/0051-setup-macbook-pro-2018/">MacBookPro2018のセットアップ</a>
+          </li>
+        
+          <li>
+            <a href="/2018/11/29/0050-about-config-ru/">[Sinatra] config.ruとは</a>
+          </li>
+        
+          <li>
+            <a href="/2018/11/14/0049-docker-mysql-error-caching-sha2-password/">[MySQL] Unable to load authentication plugin &#39;caching_sha2_password&#39;</a>
+          </li>
+        
+          <li>
+            <a href="/2018/11/05/0048-express-with-log4js/">[Node] ExpressでAPIを作ったらログも吐く</a>
+          </li>
+        
+          <li>
+            <a href="/2018/11/02/0047-helloworld-express-with-json/">[Node] Expressを使って最速でJSONを返す</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      &copy; 2018 t-kojima<br>
+      Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+
+
+  <link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
+  <script src="/fancybox/jquery.fancybox.pack.js"></script>
+
+
+<script src="/js/script.js"></script>
+
+
+
+  </div>
+  <script async src="//cdn.embedly.com/widgets/platform.js" charset="UTF-8"></script>
+</body>
+</html>

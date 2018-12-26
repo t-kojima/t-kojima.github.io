@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+
+  
+  <title>[VSCode] ESLintとPrettierをVueプロジェクトに適用する | Today&#39;s Commit</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="vue-cli でテンプレートからプロジェクトを作成すると、大体 ESLint のプラグインを自動でチョイスしてくれて設定ファイルまで用意してくれている。そこに乗っかっていると非常に楽なんだけど、どこがどう動いているか理解する為に 0 から自力で環境を作ってみる。">
+<meta name="keywords" content="vscode,vue,eslint,prettier">
+<meta property="og:type" content="article">
+<meta property="og:title" content="[VSCode] ESLintとPrettierをVueプロジェクトに適用する">
+<meta property="og:url" content="https://t-kojima.github.io/2018/06/22/0018-using-eslint-prettier-in-vue/index.html">
+<meta property="og:site_name" content="Today&#39;s Commit">
+<meta property="og:description" content="vue-cli でテンプレートからプロジェクトを作成すると、大体 ESLint のプラグインを自動でチョイスしてくれて設定ファイルまで用意してくれている。そこに乗っかっていると非常に楽なんだけど、どこがどう動いているか理解する為に 0 から自力で環境を作ってみる。">
+<meta property="og:locale" content="ja">
+<meta property="og:image" content="https://t-kojima.github.io/images/18-01.png">
+<meta property="og:image" content="https://t-kojima.github.io/images/18-02.png">
+<meta property="og:updated_time" content="2018-12-20T11:07:38.283Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="[VSCode] ESLintとPrettierをVueプロジェクトに適用する">
+<meta name="twitter:description" content="vue-cli でテンプレートからプロジェクトを作成すると、大体 ESLint のプラグインを自動でチョイスしてくれて設定ファイルまで用意してくれている。そこに乗っかっていると非常に楽なんだけど、どこがどう動いているか理解する為に 0 から自力で環境を作ってみる。">
+<meta name="twitter:image" content="https://t-kojima.github.io/images/18-01.png">
+  
+    <link rel="alternate" href="/atom.xml" title="Today&#39;s Commit" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  
+    <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
+  
+  <link rel="stylesheet" href="/css/style.css">
+  
+    <link rel="amphtml" href="https://t-kojima.github.io/2018/06/22/0018-using-eslint-prettier-in-vue//amp/index.html">
+  
+</head>
+
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">Today&#39;s Commit</a>
+      </h1>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSSフィード"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="検索"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="https://t-kojima.github.io"></form>
+      </div>
+    </div>
+  </div>
+</header>
+      <div class="outer">
+        <section id="main"><article id="post-0018-using-eslint-prettier-in-vue" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2018/06/22/0018-using-eslint-prettier-in-vue/" class="article-date">
+  <time datetime="2018-06-22T04:41:53.000Z" itemprop="datePublished">2018-06-22</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      [VSCode] ESLintとPrettierをVueプロジェクトに適用する
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>vue-cli でテンプレートからプロジェクトを作成すると、大体 ESLint のプラグインを自動でチョイスしてくれて設定ファイルまで用意してくれている。そこに乗っかっていると非常に楽なんだけど、どこがどう動いているか理解する為に 0 から自力で環境を作ってみる。</p>
+<a id="more"></a>
+<p>vue-cli の webpack-simple テンプレートを基に ESLint(+Prettier)環境を作っていく。</p>
+<h2><span id="プロジェクト作成">プロジェクト作成</span></h2><p>vue の webpack-simple テンプレートからプロジェクトを作成する。</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">yarn vue init webpack-simple .</span><br></pre></td></tr></table></figure>
+<p>テンプレートを読み込むと、main.js と App.vue が作成される。<br>この 2 つのファイルに eslint と format を当てることをゴールとしよう。</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">// main.js</span><br><span class="line"></span><br><span class="line">import Vue from &apos;vue&apos;</span><br><span class="line">import App from &apos;./App.vue&apos;</span><br><span class="line"></span><br><span class="line">new Vue(&#123;</span><br><span class="line">  el: &apos;#app&apos;,</span><br><span class="line">  render: h =&gt; h(App)</span><br><span class="line">&#125;)</span><br></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">&lt;!-- App.vue --&gt;</span><br><span class="line"></span><br><span class="line">&lt;template&gt;</span><br><span class="line">  &lt;div id=&quot;app&quot;&gt;</span><br><span class="line">    &lt;img src=&quot;./assets/logo.png&quot;&gt;</span><br><span class="line">    &lt;h1&gt;&#123;&#123; msg &#125;&#125;&lt;/h1&gt;</span><br><span class="line">    &lt;h2&gt;Essential Links&lt;/h2&gt;</span><br><span class="line">    &lt;ul&gt;</span><br><span class="line">      &lt;li&gt;&lt;a href=&quot;https://vuejs.org&quot; target=&quot;_blank&quot;&gt;Core Docs&lt;/a&gt;&lt;/li&gt;</span><br><span class="line">      &lt;li&gt;&lt;a href=&quot;https://forum.vuejs.org&quot; target=&quot;_blank&quot;&gt;Forum&lt;/a&gt;&lt;/li&gt;</span><br><span class="line">      &lt;li&gt;&lt;a href=&quot;https://chat.vuejs.org&quot; target=&quot;_blank&quot;&gt;Community Chat&lt;/a&gt;&lt;/li&gt;</span><br><span class="line">      &lt;li&gt;&lt;a href=&quot;https://twitter.com/vuejs&quot; target=&quot;_blank&quot;&gt;Twitter&lt;/a&gt;&lt;/li&gt;</span><br><span class="line">    &lt;/ul&gt;</span><br><span class="line">    &lt;h2&gt;Ecosystem&lt;/h2&gt;</span><br><span class="line">    &lt;ul&gt;</span><br><span class="line">      &lt;li&gt;&lt;a href=&quot;http://router.vuejs.org/&quot; target=&quot;_blank&quot;&gt;vue-router&lt;/a&gt;&lt;/li&gt;</span><br><span class="line">      &lt;li&gt;&lt;a href=&quot;http://vuex.vuejs.org/&quot; target=&quot;_blank&quot;&gt;vuex&lt;/a&gt;&lt;/li&gt;</span><br><span class="line">      &lt;li&gt;&lt;a href=&quot;http://vue-loader.vuejs.org/&quot; target=&quot;_blank&quot;&gt;vue-loader&lt;/a&gt;&lt;/li&gt;</span><br><span class="line">      &lt;li&gt;&lt;a href=&quot;https://github.com/vuejs/awesome-vue&quot; target=&quot;_blank&quot;&gt;awesome-vue&lt;/a&gt;&lt;/li&gt;</span><br><span class="line">    &lt;/ul&gt;</span><br><span class="line">  &lt;/div&gt;</span><br><span class="line">&lt;/template&gt;</span><br><span class="line"></span><br><span class="line">&lt;script&gt;</span><br><span class="line">export default &#123;</span><br><span class="line">  name: &apos;app&apos;,</span><br><span class="line">  data () &#123;</span><br><span class="line">    return &#123;</span><br><span class="line">      msg: &apos;Welcome to Your Vue.js App&apos;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line">&lt;/script&gt;</span><br><span class="line"></span><br><span class="line">&lt;style&gt;</span><br><span class="line">#app &#123;</span><br><span class="line">  font-family: &apos;Avenir&apos;, Helvetica, Arial, sans-serif;</span><br><span class="line">  -webkit-font-smoothing: antialiased;</span><br><span class="line">  -moz-osx-font-smoothing: grayscale;</span><br><span class="line">  text-align: center;</span><br><span class="line">  color: #2c3e50;</span><br><span class="line">  margin-top: 60px;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">h1, h2 &#123;</span><br><span class="line">  font-weight: normal;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">ul &#123;</span><br><span class="line">  list-style-type: none;</span><br><span class="line">  padding: 0;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">li &#123;</span><br><span class="line">  display: inline-block;</span><br><span class="line">  margin: 0 10px;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">a &#123;</span><br><span class="line">  color: #42b983;</span><br><span class="line">&#125;</span><br><span class="line">&lt;/style&gt;</span><br></pre></td></tr></table></figure>
+<h2><span id="eslint-を当てる">ESLint を当てる</span></h2><p>まずデフォルトでも 2 つのファイルはそこそこ整形されてるので、eslint に怒られる形に書き換える。</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">// main.js</span><br><span class="line"></span><br><span class="line">import Vue from &quot;vue&quot;;</span><br><span class="line">import App from &quot;./App.vue&quot;;</span><br><span class="line"></span><br><span class="line">new Vue(&#123;</span><br><span class="line">  el: &quot;#app&quot;,</span><br><span class="line">  render: h =&gt; h(App)</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">// App.vue</span><br><span class="line"></span><br><span class="line">&lt;script&gt;</span><br><span class="line">export default &#123;</span><br><span class="line">  name: &quot;app&quot;,</span><br><span class="line">  data () &#123;</span><br><span class="line">    return &#123;</span><br><span class="line">      msg: &apos;Welcome to Your Vue.js App&apos;</span><br><span class="line">    &#125;;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;;</span><br><span class="line">&lt;/script&gt;</span><br></pre></td></tr></table></figure>
+<ul>
+<li>シングルクォートをダブルクォートに</li>
+<li>セミコロンを追加</li>
+</ul>
+<p>今の段階では何もエラーにならないし、フォーマットを掛けても変わらない。</p>
+<h3><span id="eslint-をインストール">ESLint をインストール</span></h3><p>eslint-config-standard をインストールする。他にも色々あるけど、これは eslint-config-standard が依存しているパッケージなのでまとめて入れてしまう。</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">yarn add --dev eslint eslint-config-standard eslint-plugin-standard eslint-plugin-promise eslint-plugin-import eslint-plugin-node</span><br></pre></td></tr></table></figure>
+<p>また、VSCode の <code>ESLint</code> Extension をインストールして有効にする。</p>
+<p>この段階ではまだ何も変化は無い。続いて.eslintrc を作成を作成する。</p>
+<figure class="highlight js"><table><tr><td class="code"><pre><span class="line"><span class="built_in">module</span>.exports = &#123;</span><br><span class="line">  root: <span class="literal">true</span>,</span><br><span class="line">  extends: <span class="string">'standard'</span>,</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>ここで main.js に対してズラズラっとエラーが出てきた。</p>
+<p><img src="/images/18-01.png" alt=""></p>
+<p>主にダブルクォートとセミコロンで怒られている。ちなみに App.vue には一切エラーが出ていない。そもそもコードハイライトも効いていないので、.vue ファイルをちゃんと認識してないみたいだ。</p>
+<h3><span id="vetur-をインストール">Vetur をインストール</span></h3><p>App.vue にも ESLint を効かせたい。VSCode の <code>Vetur</code> Extension をインストールして有効にする。</p>
+<p>App.vue にコードハイライトが効くようになったが、ESLint はまだ効いていないみたいだ。</p>
+<h3><span id="eslint-plugin-vue-をインストール">eslint-plugin-vue をインストール</span></h3><p>vue 用の eslint-plugin をインストールする。</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">yarn add --dev eslint-plugin-vue</span><br></pre></td></tr></table></figure>
+<p>有効にするには.eslintrc.js に追記が必要だ</p>
+<figure class="highlight js"><table><tr><td class="code"><pre><span class="line"><span class="built_in">module</span>.exports = &#123;</span><br><span class="line">  root: <span class="literal">true</span>,</span><br><span class="line">  extends: [<span class="string">'standard'</span>, <span class="string">'plugin:vue/essential'</span>],</span><br><span class="line">  plugins: [<span class="string">'vue'</span>],</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>さらに VSCode で有効にするには設定（settings.json）に以下を追記する。</p>
+<figure class="highlight json"><table><tr><td class="code"><pre><span class="line">&#123;</span><br><span class="line">  <span class="attr">"eslint.validate"</span>: [</span><br><span class="line">    <span class="string">"javascript"</span>,</span><br><span class="line">    &#123;</span><br><span class="line">      <span class="attr">"language"</span>: <span class="string">"vue"</span>,</span><br><span class="line">      <span class="attr">"autoFix"</span>: <span class="literal">true</span></span><br><span class="line">    &#125;</span><br><span class="line">  ]</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>これで App.vue にも ESLint が効き、エラーが表示された！</p>
+<p><img src="/images/18-02.png" alt=""></p>
+<h2><span id="prettier-を当てる">Prettier を当てる</span></h2><p>ESLint を当てることができたので、次はフォーマッターだ。今エラーが出ている個所をフォーマッターが自動で修正してくれたらイケてますよね？</p>
+<p>ところが VSCode 上でフォーマットを掛けても main.js は何も変わらないし、App.vue に至ってはシングルクォートがダブルクォートに変換されてしまい、逆にエラーが増えてしまった。</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">// App.vue</span><br><span class="line">// 「ドキュメントのフォーマット」をすると悪化してしまう。</span><br><span class="line"></span><br><span class="line">&lt;script&gt;</span><br><span class="line">export default &#123;</span><br><span class="line">  name: &quot;app&quot;,</span><br><span class="line">  data() &#123;</span><br><span class="line">    return &#123;</span><br><span class="line">      msg: &quot;Welcome to Your Vue.js App&quot;</span><br><span class="line">    &#125;;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;;</span><br><span class="line">&lt;/script&gt;</span><br></pre></td></tr></table></figure>
+<p>ESLint の設定を変えて <code>eslint --fix</code> でフォーマットと自動修正もできるみたいだけど、Prettier を使ってフォーマットをしてみたい</p>
+<h3><span id="prettier-をインストール">Prettier をインストール</span></h3><figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">yarn add --dev prettier eslint-config-prettier eslint-plugin-prettier</span><br></pre></td></tr></table></figure>
+<p>eslint-config-prettier は ESLint のフォーマット関連のルールを無効にし、eslint-plugin-prettier で ESLint 上で Prettier を動くようにする。つまり ESLint のフォーマット機能を Prettier に変更するということだろう。</p>
+<p>.eslintrc.js の修正も必要だ</p>
+<figure class="highlight js"><table><tr><td class="code"><pre><span class="line"><span class="built_in">module</span>.exports = &#123;</span><br><span class="line">  root: <span class="literal">true</span>,</span><br><span class="line">  extends: [<span class="string">'standard'</span>, <span class="string">'plugin:vue/essential'</span>, <span class="string">'plugin:prettier/recommended'</span>],</span><br><span class="line">  plugins: [<span class="string">'vue'</span>],</span><br><span class="line">  rules: &#123;</span><br><span class="line">    <span class="string">'prettier/prettier'</span>: [</span><br><span class="line">      <span class="string">'error'</span>,</span><br><span class="line">      &#123;</span><br><span class="line">        semi: <span class="literal">false</span>,</span><br><span class="line">        singleQuote: <span class="literal">true</span>,</span><br><span class="line">        trailingComma: <span class="string">'es5'</span>,</span><br><span class="line">      &#125;,</span><br><span class="line">    ],</span><br><span class="line">  &#125;,</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>さらに VSCode に <code>Prettier</code> Extension をインストールし、 設定で prettier.eslintIntegration を有効にする。</p>
+<figure class="highlight"><table><tr><td class="code"><pre><span class="line">"prettier.eslintIntegration": true,</span><br></pre></td></tr></table></figure>
+<p>そして main.js にフォーマットを掛けると、エラーが軒並み消えるようになる。（ついでに.eslintrc.js 自体もフォーマットが掛かるようになる）</p>
+<p>しかし main.js にはエラーが 1 個残るだろう、これはフォーマッタで自動修正できないエラーだ。</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">Do not use &apos;new&apos; for side effects. (no-new)</span><br></pre></td></tr></table></figure>
+<p>これは修正できず不可避なので、コメントで無効化する。</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">import Vue from &apos;vue&apos;</span><br><span class="line">import App from &apos;./App.vue&apos;</span><br><span class="line"></span><br><span class="line">/* eslint-disable no-new */</span><br><span class="line">new Vue(&#123;</span><br><span class="line">  el: &apos;#app&apos;,</span><br><span class="line">  render: h =&gt; h(App),</span><br><span class="line">&#125;)</span><br></pre></td></tr></table></figure>
+<p>ちなみに vue の webpack テンプレートを使うと最初からこの状態の main.js が生成される。</p>
+<p>これで完了！と思いきや、App.vue にフォーマットを掛けても修正されない。以下のコマンドで<code>eslint --fix</code>を掛けるとキレイに直るので VSCode 側の問題のようだ</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">yarn eslint src/App.vue --fix</span><br></pre></td></tr></table></figure>
+<h3><span id="prettier-は-vetur-で動かない">Prettier は Vetur で動かない</span></h3><p>動かないらしい</p>
+<p><a href="https://github.com/prettier/prettier-vscode/issues/338" class="embedly-card" data-card-image="0" data-card-controls="0" data-card-align="left" target="_blank" rel="noopener"></a></p>
+<p>VSCode の設定で、vetur.format.defaultFormatter.js が prettier になっているが</p>
+<figure class="highlight"><table><tr><td class="code"><pre><span class="line">"vetur.format.defaultFormatter.js": "prettier",</span><br></pre></td></tr></table></figure>
+<p>prettier 側の設定で無効化されているようだ</p>
+<figure class="highlight"><table><tr><td class="code"><pre><span class="line">"prettier.disableLanguages": [</span><br><span class="line">  <span class="string">"vue"</span></span><br><span class="line">],</span><br></pre></td></tr></table></figure>
+<p>ただし以下の設定をしておくと<code>&lt;script&gt;</code>タグ内には効かないが<code>&lt;style&gt;</code>タグ内や html 自体のフォーマットは多少効くようだ</p>
+<figure class="highlight"><table><tr><td class="code"><pre><span class="line">"prettier.singleQuote": true,</span><br><span class="line">"vetur.format.defaultFormatter.html": "js-beautify-html",</span><br></pre></td></tr></table></figure>
+<p><code>&lt;script&gt;</code>タグ部分は<code>eslint --fix</code>を自動で行う設定で対応する。</p>
+<figure class="highlight"><table><tr><td class="code"><pre><span class="line">"eslint.autoFixOnSave": true,</span><br></pre></td></tr></table></figure>
+<p>これは VSCode の自動保存では効かないが、手動で<code>Ctrl + S</code>すると効くので逆に丁度いい。</p>
+<h2><span id="感想">感想</span></h2><p>すんげえめんどくさい。とにかく登場人物が多すぎる</p>
+<ul>
+<li>eslint</li>
+<li>eslint-config-standard</li>
+<li>eslint-plugin-standard</li>
+<li>eslint-plugin-promise</li>
+<li>eslint-plugin-import</li>
+<li>eslint-plugin-node</li>
+<li>eslint-plugin-vue</li>
+<li>prettier</li>
+<li>eslint-config-prettier</li>
+<li>eslint-plugin-prettier</li>
+<li>eslint extension</li>
+<li>prettier extension</li>
+<li>vuter extension</li>
+</ul>
+<p>例えば python なら、lint モジュールと公式の python 拡張だけで済んでしまう。</p>
+<ul>
+<li>pylint (もしくは autopep8 とか flake8 とか…)</li>
+<li>python extension</li>
+</ul>
+<p>そもそも babel+webpack の開発環境の時点でかなりしんどいので、その上に成り立ってる vue で環境構築がしんどいのは必然なのかもしれない…</p>
+<p>まあ、その為のプロジェクトテンプレートなんだろうね。ある程度理屈がわかったので、次からは気兼ねなくテンプレートの ESLint 設定に乗っかろう。</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <div data-url="https://t-kojima.github.io/2018/06/22/0018-using-eslint-prettier-in-vue/" data-id="cjq51fi170052mtu78fs1wt7u" class="article-share-items"></div>
+      <!-- <a data-url="https://t-kojima.github.io/2018/06/22/0018-using-eslint-prettier-in-vue/" data-id="cjq51fi170052mtu78fs1wt7u" class="article-share-link">共有</a> -->
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/eslint/">eslint</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/prettier/">prettier</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/vscode/">vscode</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/vue/">vue</a></li></ul>
+
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+    <a href="/2018/06/25/0019-flask-tutorial-create-app/" id="article-nav-newer" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">次の記事</strong>
+      <div class="article-nav-title">
+        
+          [Flask] Flaskの基本的な構成（を思い出す）
+        
+      </div>
+    </a>
+  
+  
+    <a href="/2018/06/21/0017-created-blackjack-vue/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">前の記事</strong>
+      <div class="article-nav-title">Vue.jsでブラックジャックを作ってみた</div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">カテゴリ</h3>
+    <div class="widget">
+      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/Mac/">Mac</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/MySQL/">MySQL</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Node/">Node</a><span class="category-list-count">2</span><ul class="category-list-child"><li class="category-list-item"><a class="category-list-link" href="/categories/Node/Express/">Express</a><span class="category-list-count">2</span></li></ul></li><li class="category-list-item"><a class="category-list-link" href="/categories/Sinatra/">Sinatra</a><span class="category-list-count">1</span></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">タグ</h3>
+    <div class="widget">
+      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/axios/">axios</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/babel/">babel</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/bottle/">bottle</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/browserify/">browserify</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/csharp/">csharp</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/docker/">docker</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/eslint/">eslint</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/euler/">euler</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/express/">express</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/firebase/">firebase</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/flask/">flask</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/hexo/">hexo</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/javascript/">javascript</a><span class="tag-list-count">8</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/jupyter/">jupyter</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/karma/">karma</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/kintone/">kintone</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/linux/">linux</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/log4js/">log4js</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/luigi/">luigi</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mac/">mac</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mocha/">mocha</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mysql/">mysql</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/node-fetch/">node-fetch</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/nodejs/">nodejs</a><span class="tag-list-count">13</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/powerline/">powerline</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/prettier/">prettier</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/python/">python</a><span class="tag-list-count">8</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/rails/">rails</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/react/">react</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/redis/">redis</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/rpa/">rpa</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/rspec/">rspec</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ruby/">ruby</a><span class="tag-list-count">7</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/sidekiq/">sidekiq</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/sinatra/">sinatra</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/sqlalchemy/">sqlalchemy</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/vagrant/">vagrant</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/virtualbox/">virtualbox</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/vscode/">vscode</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/vue/">vue</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/webpack/">webpack</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/zipstream/">zipstream</a><span class="tag-list-count">1</span></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">タグクラウド</h3>
+    <div class="widget tagcloud">
+      <a href="/tags/axios/" style="font-size: 10px;">axios</a> <a href="/tags/babel/" style="font-size: 10px;">babel</a> <a href="/tags/bottle/" style="font-size: 10px;">bottle</a> <a href="/tags/browserify/" style="font-size: 10px;">browserify</a> <a href="/tags/csharp/" style="font-size: 10px;">csharp</a> <a href="/tags/docker/" style="font-size: 10px;">docker</a> <a href="/tags/eslint/" style="font-size: 11.43px;">eslint</a> <a href="/tags/euler/" style="font-size: 10px;">euler</a> <a href="/tags/express/" style="font-size: 11.43px;">express</a> <a href="/tags/firebase/" style="font-size: 12.86px;">firebase</a> <a href="/tags/flask/" style="font-size: 10px;">flask</a> <a href="/tags/hexo/" style="font-size: 11.43px;">hexo</a> <a href="/tags/javascript/" style="font-size: 18.57px;">javascript</a> <a href="/tags/jupyter/" style="font-size: 10px;">jupyter</a> <a href="/tags/karma/" style="font-size: 11.43px;">karma</a> <a href="/tags/kintone/" style="font-size: 12.86px;">kintone</a> <a href="/tags/linux/" style="font-size: 10px;">linux</a> <a href="/tags/log4js/" style="font-size: 10px;">log4js</a> <a href="/tags/luigi/" style="font-size: 15.71px;">luigi</a> <a href="/tags/mac/" style="font-size: 10px;">mac</a> <a href="/tags/mocha/" style="font-size: 10px;">mocha</a> <a href="/tags/mysql/" style="font-size: 11.43px;">mysql</a> <a href="/tags/node-fetch/" style="font-size: 10px;">node-fetch</a> <a href="/tags/nodejs/" style="font-size: 20px;">nodejs</a> <a href="/tags/powerline/" style="font-size: 11.43px;">powerline</a> <a href="/tags/prettier/" style="font-size: 10px;">prettier</a> <a href="/tags/python/" style="font-size: 18.57px;">python</a> <a href="/tags/rails/" style="font-size: 10px;">rails</a> <a href="/tags/react/" style="font-size: 12.86px;">react</a> <a href="/tags/redis/" style="font-size: 10px;">redis</a> <a href="/tags/rpa/" style="font-size: 10px;">rpa</a> <a href="/tags/rspec/" style="font-size: 10px;">rspec</a> <a href="/tags/ruby/" style="font-size: 17.14px;">ruby</a> <a href="/tags/sidekiq/" style="font-size: 10px;">sidekiq</a> <a href="/tags/sinatra/" style="font-size: 15.71px;">sinatra</a> <a href="/tags/sqlalchemy/" style="font-size: 11.43px;">sqlalchemy</a> <a href="/tags/vagrant/" style="font-size: 10px;">vagrant</a> <a href="/tags/virtualbox/" style="font-size: 10px;">virtualbox</a> <a href="/tags/vscode/" style="font-size: 14.29px;">vscode</a> <a href="/tags/vue/" style="font-size: 12.86px;">vue</a> <a href="/tags/webpack/" style="font-size: 10px;">webpack</a> <a href="/tags/zipstream/" style="font-size: 10px;">zipstream</a>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">アーカイブ</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/12/">12月 2018</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/11/">11月 2018</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/10/">10月 2018</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/09/">9月 2018</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/08/">8月 2018</a><span class="archive-list-count">6</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/07/">7月 2018</a><span class="archive-list-count">11</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/06/">6月 2018</a><span class="archive-list-count">12</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/05/">5月 2018</a><span class="archive-list-count">11</span></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">最近の投稿</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2018/12/20/0051-setup-macbook-pro-2018/">MacBookPro2018のセットアップ</a>
+          </li>
+        
+          <li>
+            <a href="/2018/11/29/0050-about-config-ru/">[Sinatra] config.ruとは</a>
+          </li>
+        
+          <li>
+            <a href="/2018/11/14/0049-docker-mysql-error-caching-sha2-password/">[MySQL] Unable to load authentication plugin &#39;caching_sha2_password&#39;</a>
+          </li>
+        
+          <li>
+            <a href="/2018/11/05/0048-express-with-log4js/">[Node] ExpressでAPIを作ったらログも吐く</a>
+          </li>
+        
+          <li>
+            <a href="/2018/11/02/0047-helloworld-express-with-json/">[Node] Expressを使って最速でJSONを返す</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      &copy; 2018 t-kojima<br>
+      Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+
+
+  <link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
+  <script src="/fancybox/jquery.fancybox.pack.js"></script>
+
+
+<script src="/js/script.js"></script>
+
+
+
+  </div>
+  <script async src="//cdn.embedly.com/widgets/platform.js" charset="UTF-8"></script>
+</body>
+</html>

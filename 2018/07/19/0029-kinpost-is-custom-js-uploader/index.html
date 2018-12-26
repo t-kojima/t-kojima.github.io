@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+
+  
+  <title>[Kintone] カスタムJS（CSS)ファイルのアップロードモジュールを作った | Today&#39;s Commit</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="Kintone のカスタム JavaScript ファイルを開発する際、Dropbox の共有リンクを使うと反映が簡単になるという Tips がある。しかしいくつか問題点（？）があるので、ファイルのアップロードモジュールを作成した。">
+<meta name="keywords" content="kintone">
+<meta property="og:type" content="article">
+<meta property="og:title" content="[Kintone] カスタムJS（CSS)ファイルのアップロードモジュールを作った">
+<meta property="og:url" content="https://t-kojima.github.io/2018/07/19/0029-kinpost-is-custom-js-uploader/index.html">
+<meta property="og:site_name" content="Today&#39;s Commit">
+<meta property="og:description" content="Kintone のカスタム JavaScript ファイルを開発する際、Dropbox の共有リンクを使うと反映が簡単になるという Tips がある。しかしいくつか問題点（？）があるので、ファイルのアップロードモジュールを作成した。">
+<meta property="og:locale" content="ja">
+<meta property="og:image" content="https://t-kojima.github.io/images/29-01.png">
+<meta property="og:updated_time" content="2018-12-20T11:07:38.288Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="[Kintone] カスタムJS（CSS)ファイルのアップロードモジュールを作った">
+<meta name="twitter:description" content="Kintone のカスタム JavaScript ファイルを開発する際、Dropbox の共有リンクを使うと反映が簡単になるという Tips がある。しかしいくつか問題点（？）があるので、ファイルのアップロードモジュールを作成した。">
+<meta name="twitter:image" content="https://t-kojima.github.io/images/29-01.png">
+  
+    <link rel="alternate" href="/atom.xml" title="Today&#39;s Commit" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  
+    <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
+  
+  <link rel="stylesheet" href="/css/style.css">
+  
+    <link rel="amphtml" href="https://t-kojima.github.io/2018/07/19/0029-kinpost-is-custom-js-uploader//amp/index.html">
+  
+</head>
+
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">Today&#39;s Commit</a>
+      </h1>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSSフィード"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="検索"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="https://t-kojima.github.io"></form>
+      </div>
+    </div>
+  </div>
+</header>
+      <div class="outer">
+        <section id="main"><article id="post-0029-kinpost-is-custom-js-uploader" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2018/07/19/0029-kinpost-is-custom-js-uploader/" class="article-date">
+  <time datetime="2018-07-18T15:07:37.000Z" itemprop="datePublished">2018-07-19</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      [Kintone] カスタムJS（CSS)ファイルのアップロードモジュールを作った
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>Kintone のカスタム JavaScript ファイルを開発する際、Dropbox の共有リンクを使うと反映が簡単になるという <a href="https://developer.cybozu.io/hc/ja/articles/201308690-JavaScript%E3%82%AB%E3%82%B9%E3%82%BF%E3%83%9E%E3%82%A4%E3%82%BA%E3%81%AE%E3%83%87%E3%83%90%E3%83%83%E3%82%B0%E3%82%92%E3%81%8B%E3%82%93%E3%81%9F%E3%82%93%E3%81%AB%E3%81%99%E3%82%8B%E3%82%A6%E3%83%A9%E3%83%AF%E3%82%B6" target="_blank" rel="noopener">Tips</a> がある。<br>しかしいくつか問題点（？）があるので、ファイルのアップロードモジュールを作成した。</p>
+<p><a href="https://github.com/t-kojima/kinpost" class="embedly-card" data-card-image="0" data-card-controls="0" data-card-align="left" target="_blank" rel="noopener"></a></p>
+<a id="more"></a>
+<h1><span id="dropbox-共有リンクの問題点">Dropbox 共有リンクの問題点</span></h1><p>正直クリティカルではない問題点ばかりだが、いくつかある。</p>
+<ul>
+<li>共有リンクはインターネット上に公開されてしまう。</li>
+<li>Dropbox サービスに依存している。サービスダウン等で使用不可能になる。</li>
+<li>アップロードするファイル毎にリンクを発行する必要があるので、ファイルが段階的に増えると都度のリンク発行が面倒。</li>
+</ul>
+<h1><span id="kinpost">kinpost</span></h1><p>「外部サービスを経由するのが嫌なら、直接アップロードしちゃえばいいじゃない」の精神で、カスタム JavaScript ファイルを Kintone アプリに直接アップロードできるようにしたのが kinpost だ。</p>
+<p>kinpost を使うと Dropbox を介さないので、上記共有リンク問題点を気にしなくても良くなる。</p>
+<p>…というのは後付けで、本当は「スペースとスペース外でアプリをデータごとコピーする」というモジュールを作っていたのだけど、その中のカスタム JavaScript/CSS ファイルをコピーする箇所が単一のモジュールとして成り立ちそうだったから作ってみた。</p>
+<p>当初はコマンドでも実行できるようにしようとしていたが、どうしてもファイルの指定が複雑になりそうだったので取り止めた。</p>
+<h1><span id="使い方">使い方</span></h1><p>kinpost モジュールは以下のような形で利用できる。</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">yarn add --dev kinpost</span><br></pre></td></tr></table></figure>
+<figure class="highlight js"><table><tr><td class="code"><pre><span class="line"><span class="comment">// upload.js</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">const</span> kinpost = <span class="built_in">require</span>(<span class="string">'kinpost'</span>)</span><br><span class="line"></span><br><span class="line">kinpost(&#123;</span><br><span class="line">  domain: <span class="string">'example.cybozu.com'</span>,</span><br><span class="line">  app: <span class="number">1</span>,</span><br><span class="line">  username: <span class="string">'user@example.com'</span>,</span><br><span class="line">  password: <span class="string">'**********'</span>,</span><br><span class="line">  files: [</span><br><span class="line">    &#123; <span class="attr">path</span>: <span class="string">'./js/sample.js'</span> &#125;,</span><br><span class="line">    &#123; <span class="attr">path</span>: <span class="string">'./js/mobile.js'</span>, <span class="attr">platform</span>: <span class="string">'mobile'</span> &#125;,</span><br><span class="line">    &#123; <span class="attr">path</span>: <span class="string">'./css/global.css'</span>, <span class="attr">type</span>: <span class="string">'css'</span> &#125;</span><br><span class="line">  ]</span><br><span class="line">&#125;)</span><br></pre></td></tr></table></figure>
+<p>このファイルをそのまま実行すると、3 つのファイルがアップロードされる。</p>
+<ul>
+<li>PC 用 JavaScript ファイルに <code>sample.js</code></li>
+<li>スマートフォン用 JavaScript ファイルに <code>mobile.js</code></li>
+<li>PC 用 CSS ファイルに <code>global.css</code></li>
+</ul>
+<p>素の実行と手間はほとんど変わらないけど、npm スクリプトとして登録しておいても良い。</p>
+<figure class="highlight js"><table><tr><td class="code"><pre><span class="line"><span class="string">"scripts"</span>: &#123;</span><br><span class="line">  <span class="string">"upload"</span>: <span class="string">"node upload.js"</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h2><span id="処理内容">処理内容</span></h2><p>基本的に Kintone REST API の組み合わせで実装している。</p>
+<ol>
+<li>JavaScript/CSS カスタマイズ設定の取得</li>
+<li>アップロードするファイルを読み込み</li>
+<li>ファイルをアップロードして、ファイルキーを取得</li>
+<li>読み込んだカスタマイズ設定の書き換え</li>
+<li>JavaScript/CSS カスタマイズ設定の変更</li>
+<li>アプリの設定の運用環境への反映</li>
+</ol>
+<h1><span id="テスト環境と本番環境">テスト環境と本番環境</span></h1><p>ファイルのアップロードをテスト環境に留めるか、それとも本番環境まで反映させてしまうかは悩んだ（というか今でも迷っている）が、結局本番環境まで反映させている。</p>
+<p>テスト環境に留めたほうが良いと思った点は</p>
+<ul>
+<li>deploy の API を叩いてしまうと、他にもテスト環境で止めてある変更点があった場合、それらも巻き添えで公開してしまう。</li>
+</ul>
+<p>本番環境まで反映させたほうが良いと思った点は</p>
+<ul>
+<li>一見ファイルがアップロードされている（Kintone の設定画面を見てもファイルはあるように見える）けど、実際のアプリに反映されてい状態になるので、紛らわしい。</li>
+</ul>
+<p>余談だけど、テスト環境にアップロードして deploy API を叩かないでおくと、Kintone の画面では以下のような状態（設定を変更して、「アプリを更新」ボタンを押す直前）になる。</p>
+<p><img src="/images/29-01.png" alt=""></p>
+<h1><span id="考えていること">考えていること</span></h1><h2><span id="本番環境反映について">本番環境反映について</span></h2><p>本番デプロイの強制はやはりまずい気がしてきた。</p>
+<p>本番デプロイはオプションにして、基本はテスト環境への反映にしたほうがいいかもしれない…</p>
+<h3><span id="追記">追記</span></h3><p>v1.0.1 で本番デプロイをオプションにした。</p>
+<h2><span id="ファイル指定方法">ファイル指定方法</span></h2><p>kinpost のファイルの指定方法を見てたらこれはこれで面倒くさい気がしてきた。ファイル指定じゃなくて、ディレクトリ指定もできるようにすると楽かも</p>
+<p>こんな感じで</p>
+<figure class="highlight js"><table><tr><td class="code"><pre><span class="line">kinpost(&#123;</span><br><span class="line">  domain: <span class="string">'example.cybozu.com'</span>,</span><br><span class="line">  app: <span class="number">1</span>,</span><br><span class="line">  username: <span class="string">'user@example.com'</span>,</span><br><span class="line">  password: <span class="string">'**********'</span>,</span><br><span class="line">  files: [],</span><br><span class="line">  dirs: [&#123; <span class="attr">path</span>: <span class="string">'./js'</span> &#125;] <span class="comment">// jsディレクトリ配下の全ファイルをdesktop/jsとしてアップロード</span></span><br><span class="line">&#125;)</span><br></pre></td></tr></table></figure>
+
+      
+    </div>
+    <footer class="article-footer">
+      <div data-url="https://t-kojima.github.io/2018/07/19/0029-kinpost-is-custom-js-uploader/" data-id="cjq51fhzs001hmtu7i9veip6y" class="article-share-items"></div>
+      <!-- <a data-url="https://t-kojima.github.io/2018/07/19/0029-kinpost-is-custom-js-uploader/" data-id="cjq51fhzs001hmtu7i9veip6y" class="article-share-link">共有</a> -->
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/kintone/">kintone</a></li></ul>
+
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+    <a href="/2018/07/21/0030-all-becomes-reduce-1/" id="article-nav-newer" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">次の記事</strong>
+      <div class="article-nav-title">
+        
+          全てがReduceになる(1)
+        
+      </div>
+    </a>
+  
+  
+    <a href="/2018/07/18/0028-async-await-in-loop/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">前の記事</strong>
+      <div class="article-nav-title">[Node] 高階関数内での非同期処理（async/await）をどう書くか</div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">カテゴリ</h3>
+    <div class="widget">
+      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/Mac/">Mac</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/MySQL/">MySQL</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Node/">Node</a><span class="category-list-count">2</span><ul class="category-list-child"><li class="category-list-item"><a class="category-list-link" href="/categories/Node/Express/">Express</a><span class="category-list-count">2</span></li></ul></li><li class="category-list-item"><a class="category-list-link" href="/categories/Sinatra/">Sinatra</a><span class="category-list-count">1</span></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">タグ</h3>
+    <div class="widget">
+      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/axios/">axios</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/babel/">babel</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/bottle/">bottle</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/browserify/">browserify</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/csharp/">csharp</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/docker/">docker</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/eslint/">eslint</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/euler/">euler</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/express/">express</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/firebase/">firebase</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/flask/">flask</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/hexo/">hexo</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/javascript/">javascript</a><span class="tag-list-count">8</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/jupyter/">jupyter</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/karma/">karma</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/kintone/">kintone</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/linux/">linux</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/log4js/">log4js</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/luigi/">luigi</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mac/">mac</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mocha/">mocha</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mysql/">mysql</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/node-fetch/">node-fetch</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/nodejs/">nodejs</a><span class="tag-list-count">13</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/powerline/">powerline</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/prettier/">prettier</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/python/">python</a><span class="tag-list-count">8</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/rails/">rails</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/react/">react</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/redis/">redis</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/rpa/">rpa</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/rspec/">rspec</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ruby/">ruby</a><span class="tag-list-count">7</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/sidekiq/">sidekiq</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/sinatra/">sinatra</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/sqlalchemy/">sqlalchemy</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/vagrant/">vagrant</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/virtualbox/">virtualbox</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/vscode/">vscode</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/vue/">vue</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/webpack/">webpack</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/zipstream/">zipstream</a><span class="tag-list-count">1</span></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">タグクラウド</h3>
+    <div class="widget tagcloud">
+      <a href="/tags/axios/" style="font-size: 10px;">axios</a> <a href="/tags/babel/" style="font-size: 10px;">babel</a> <a href="/tags/bottle/" style="font-size: 10px;">bottle</a> <a href="/tags/browserify/" style="font-size: 10px;">browserify</a> <a href="/tags/csharp/" style="font-size: 10px;">csharp</a> <a href="/tags/docker/" style="font-size: 10px;">docker</a> <a href="/tags/eslint/" style="font-size: 11.43px;">eslint</a> <a href="/tags/euler/" style="font-size: 10px;">euler</a> <a href="/tags/express/" style="font-size: 11.43px;">express</a> <a href="/tags/firebase/" style="font-size: 12.86px;">firebase</a> <a href="/tags/flask/" style="font-size: 10px;">flask</a> <a href="/tags/hexo/" style="font-size: 11.43px;">hexo</a> <a href="/tags/javascript/" style="font-size: 18.57px;">javascript</a> <a href="/tags/jupyter/" style="font-size: 10px;">jupyter</a> <a href="/tags/karma/" style="font-size: 11.43px;">karma</a> <a href="/tags/kintone/" style="font-size: 12.86px;">kintone</a> <a href="/tags/linux/" style="font-size: 10px;">linux</a> <a href="/tags/log4js/" style="font-size: 10px;">log4js</a> <a href="/tags/luigi/" style="font-size: 15.71px;">luigi</a> <a href="/tags/mac/" style="font-size: 10px;">mac</a> <a href="/tags/mocha/" style="font-size: 10px;">mocha</a> <a href="/tags/mysql/" style="font-size: 11.43px;">mysql</a> <a href="/tags/node-fetch/" style="font-size: 10px;">node-fetch</a> <a href="/tags/nodejs/" style="font-size: 20px;">nodejs</a> <a href="/tags/powerline/" style="font-size: 11.43px;">powerline</a> <a href="/tags/prettier/" style="font-size: 10px;">prettier</a> <a href="/tags/python/" style="font-size: 18.57px;">python</a> <a href="/tags/rails/" style="font-size: 10px;">rails</a> <a href="/tags/react/" style="font-size: 12.86px;">react</a> <a href="/tags/redis/" style="font-size: 10px;">redis</a> <a href="/tags/rpa/" style="font-size: 10px;">rpa</a> <a href="/tags/rspec/" style="font-size: 10px;">rspec</a> <a href="/tags/ruby/" style="font-size: 17.14px;">ruby</a> <a href="/tags/sidekiq/" style="font-size: 10px;">sidekiq</a> <a href="/tags/sinatra/" style="font-size: 15.71px;">sinatra</a> <a href="/tags/sqlalchemy/" style="font-size: 11.43px;">sqlalchemy</a> <a href="/tags/vagrant/" style="font-size: 10px;">vagrant</a> <a href="/tags/virtualbox/" style="font-size: 10px;">virtualbox</a> <a href="/tags/vscode/" style="font-size: 14.29px;">vscode</a> <a href="/tags/vue/" style="font-size: 12.86px;">vue</a> <a href="/tags/webpack/" style="font-size: 10px;">webpack</a> <a href="/tags/zipstream/" style="font-size: 10px;">zipstream</a>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">アーカイブ</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/12/">12月 2018</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/11/">11月 2018</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/10/">10月 2018</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/09/">9月 2018</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/08/">8月 2018</a><span class="archive-list-count">6</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/07/">7月 2018</a><span class="archive-list-count">11</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/06/">6月 2018</a><span class="archive-list-count">12</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/05/">5月 2018</a><span class="archive-list-count">11</span></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">最近の投稿</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2018/12/20/0051-setup-macbook-pro-2018/">MacBookPro2018のセットアップ</a>
+          </li>
+        
+          <li>
+            <a href="/2018/11/29/0050-about-config-ru/">[Sinatra] config.ruとは</a>
+          </li>
+        
+          <li>
+            <a href="/2018/11/14/0049-docker-mysql-error-caching-sha2-password/">[MySQL] Unable to load authentication plugin &#39;caching_sha2_password&#39;</a>
+          </li>
+        
+          <li>
+            <a href="/2018/11/05/0048-express-with-log4js/">[Node] ExpressでAPIを作ったらログも吐く</a>
+          </li>
+        
+          <li>
+            <a href="/2018/11/02/0047-helloworld-express-with-json/">[Node] Expressを使って最速でJSONを返す</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      &copy; 2018 t-kojima<br>
+      Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+
+
+  <link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
+  <script src="/fancybox/jquery.fancybox.pack.js"></script>
+
+
+<script src="/js/script.js"></script>
+
+
+
+  </div>
+  <script async src="//cdn.embedly.com/widgets/platform.js" charset="UTF-8"></script>
+</body>
+</html>

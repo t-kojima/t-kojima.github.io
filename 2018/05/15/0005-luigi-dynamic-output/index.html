@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+
+  
+  <title>[Python] luigiで動的アウトプット | Today&#39;s Commit</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="最近luigiというワークフローフレームワークで Python のバッチ処理を書いている。 この luigi の特徴として複数のタスクで依存関係を持たせることができ、以下のような流れで依存関係を解決する。">
+<meta name="keywords" content="python,luigi">
+<meta property="og:type" content="article">
+<meta property="og:title" content="[Python] luigiで動的アウトプット">
+<meta property="og:url" content="https://t-kojima.github.io/2018/05/15/0005-luigi-dynamic-output/index.html">
+<meta property="og:site_name" content="Today&#39;s Commit">
+<meta property="og:description" content="最近luigiというワークフローフレームワークで Python のバッチ処理を書いている。 この luigi の特徴として複数のタスクで依存関係を持たせることができ、以下のような流れで依存関係を解決する。">
+<meta property="og:locale" content="ja">
+<meta property="og:updated_time" content="2018-12-20T11:07:38.280Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="[Python] luigiで動的アウトプット">
+<meta name="twitter:description" content="最近luigiというワークフローフレームワークで Python のバッチ処理を書いている。 この luigi の特徴として複数のタスクで依存関係を持たせることができ、以下のような流れで依存関係を解決する。">
+  
+    <link rel="alternate" href="/atom.xml" title="Today&#39;s Commit" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  
+    <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
+  
+  <link rel="stylesheet" href="/css/style.css">
+  
+    <link rel="amphtml" href="https://t-kojima.github.io/2018/05/15/0005-luigi-dynamic-output//amp/index.html">
+  
+</head>
+
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">Today&#39;s Commit</a>
+      </h1>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSSフィード"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="検索"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="https://t-kojima.github.io"></form>
+      </div>
+    </div>
+  </div>
+</header>
+      <div class="outer">
+        <section id="main"><article id="post-0005-luigi-dynamic-output" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2018/05/15/0005-luigi-dynamic-output/" class="article-date">
+  <time datetime="2018-05-15T11:47:52.000Z" itemprop="datePublished">2018-05-15</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      [Python] luigiで動的アウトプット
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p><a href="https://github.com/spotify/luigi" class="embedly-card" data-card-image="0" data-card-controls="0" data-card-align="left" target="_blank" rel="noopener"></a></p>
+<p>最近<a href="https://github.com/spotify/luigi" target="_blank" rel="noopener">luigi</a>というワークフローフレームワークで Python のバッチ処理を書いている。</p>
+<p>この luigi の特徴として複数のタスクで依存関係を持たせることができ、以下のような流れで依存関係を解決する。</p>
+<a id="more"></a>
+<ul>
+<li>タスクは完了すると<code>output</code>としてファイルを出力する。</li>
+<li>タスクは起動の条件となる前提タスク（<code>requires</code>）がある場合、前提タスクが先に走る。</li>
+<li>前提タスクの<code>output</code>が既に存在する場合は、前提タスクが走らずにタスクが起動する。</li>
+</ul>
+<p>つまり<code>output</code>のファイルでタスクの動きを制御しているのだ。</p>
+<h2><span id="今回やりたかったこと">今回やりたかったこと</span></h2><p>今回やりたかったことは以下 3 点</p>
+<ul>
+<li>ターゲットフォルダからファイルを 1 個自動で選ぶ</li>
+<li>バックアップフォルダへコピーする</li>
+<li>コピー先のパスを DB に登録する</li>
+</ul>
+<p>これだけ、内容自体はよくある処理で、個別に実装する分にはイージーだ。</p>
+<p>それぞれを<code>Pickup</code>,<code>FileCopy</code>,<code>Archive</code>という名前でタスクを作成する。</p>
+<ul>
+<li>ターゲットフォルダからファイルを 1 個自動で選ぶ -&gt; <code>Pickup</code></li>
+<li>バックアップフォルダへコピーする -&gt; <code>FileCopy</code></li>
+<li>コピー先のパスを DB に登録する -&gt; <code>Archive</code></li>
+</ul>
+<p>処理の流れは<code>Pickup</code>-&gt;<code>FileCopy</code>-&gt;<code>Archive</code>なんだけど、依存関係を遡って処理していくので最初に動かすタスクは<code>Archive</code>になる。</p>
+<p>こんな感じで流れる</p>
+<ol>
+<li><code>Archive</code>の<code>output</code>を確認、ファイルがあれば何もせず終了、無ければ次へ</li>
+<li><code>Archive</code>の<code>requires</code>を確認、あれば依存タスク（<code>FileCopy</code>）へ</li>
+<li><code>FileCopy</code>の<code>output</code>を確認、ファイルがあれば<code>Archive</code>だけ<code>run</code>して終了、無ければ次へ</li>
+<li><code>FileCopy</code>の<code>requires</code>を確認、あれば依存タスク（<code>Pickup</code>）へ</li>
+<li><code>Pickup</code>の<code>output</code>を確認、ファイルがあれば<code>FileCopy</code>-&gt;<code>Archive</code>の順で<code>run</code>して終了、無ければ次へ</li>
+<li><code>Pickup</code>の<code>requires</code>を確認、依存タスクが無ければ<code>Pickup</code>-&gt;<code>FileCopy</code>-&gt;<code>Archive</code>の順で<code>run</code>して終了</li>
+</ol>
+<p>コードはこんな感じになるだろう</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="comment">#!/usr/bin/env python</span></span><br><span class="line"><span class="comment"># coding: utf-8</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> luigi</span><br><span class="line"><span class="keyword">import</span> shutil</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Pickup</span><span class="params">(luigi.Task)</span>:</span></span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">run</span><span class="params">(self)</span>:</span></span><br><span class="line">        <span class="comment"># ファイルピックアップ処理</span></span><br><span class="line">        <span class="keyword">with</span> self.output().open(<span class="string">'w'</span>) <span class="keyword">as</span> f:</span><br><span class="line">            f.write(<span class="string">'&lt;ピックアップ結果のファイルパス&gt;'</span>)</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">output</span><span class="params">(self)</span>:</span></span><br><span class="line">        <span class="keyword">return</span> luigi.LocalTarget(<span class="string">'pickup-output-file'</span>)</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">FileCopy</span><span class="params">(luigi.Task)</span>:</span></span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">requires</span><span class="params">(self)</span>:</span></span><br><span class="line">        <span class="keyword">return</span> Pickup()</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">run</span><span class="params">(self)</span>:</span></span><br><span class="line">        <span class="keyword">with</span> self.input().open(<span class="string">'r'</span>) <span class="keyword">as</span> f:</span><br><span class="line">            input_path = f.read()</span><br><span class="line">        shutil.copy2(input_path, <span class="string">'&lt;アウトプットパス&gt;'</span>)</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">output</span><span class="params">(self)</span>:</span></span><br><span class="line">        <span class="keyword">return</span> luigi.LocalTarget(<span class="string">'&lt;アウトプットパス&gt;'</span>)</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Archive</span><span class="params">(luigi.Task)</span>:</span></span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">requires</span><span class="params">(self)</span>:</span></span><br><span class="line">        <span class="keyword">return</span> FileCopy()</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">run</span><span class="params">(self)</span>:</span></span><br><span class="line">        <span class="comment"># ファイルアーカイブ処理</span></span><br><span class="line">        <span class="keyword">with</span> self.output().open(<span class="string">'w'</span>) <span class="keyword">as</span> f:</span><br><span class="line">            f.write(<span class="string">'Archive done'</span>)</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">output</span><span class="params">(self)</span>:</span></span><br><span class="line">        <span class="keyword">return</span> luigi.LocalTarget(<span class="string">'archive-output-file'</span>)</span><br></pre></td></tr></table></figure>
+<h2><span id="output-をどうするか">output をどうするか</span></h2><p>上記のコードで<code>output</code>で出力するファイルをどうするか考える</p>
+<p><code>Archive</code>と<code>Pickup</code>のようにファイル名が決まっている場合（<code>requires</code>で呼ばれたタイミングでは決まっている場合）は問題ないが、<code>FileCopy</code>のように動的にファイルを決めたい場合（<code>requires</code>時点ではまだファイル名が決定できない場合）は途端に難しくなる。</p>
+<p>上記のコードでは<code>Archive</code>から依存タスクを遡っていって、実際は<code>Pickup</code>が最初に<code>run</code>される。この時に処理するファイルが<strong>自動</strong>でピックアップされる（っていう仕様）ので、ここで初めてコピー・DB 登録されるファイルが決まるのである。<br>しかし luigi では依存タスクの解決をする時点でファイル名は定まっていなければならない。<code>Archive</code>が<code>FileCopy</code>に依存しているとチェックする一番最初の箇所で、<code>FileCopy</code>の<code>output</code>は何というファイルなのかを求められてしまうのだ。</p>
+<p>処理されるファイル名が動的に決定するというパターンは決してレアケースではなく、むしろありふれた処理だと思う。しかし luigi ではタスクの依存性を解決していく中でファイル名を動的に取得するという動きができない。</p>
+<p>依存性を解決する為にファイル名が必要、ファイル名を決める為には依存性の解決が必要、ルイージのジレンマだ。</p>
+<h2><span id="ではどうするの">ではどうするの？</span></h2><p>そもそも<code>requires</code>と<code>output</code>で連鎖的に依存関係を解決していく方法では、<code>output</code>の出力ファイルは<code>requires</code>時点で決定していなければならない」という制約があることを理解することだ。<br>今回のように動的に<code>output</code>を定めたい場合は<code>requires</code>を用いらずに動的に依存関係を解決する方法が luigi から提供されている。</p>
+<h3><span id="dynamic-dependencies-を使う">Dynamic dependencies を使う</span></h3><p><a href="http://luigi.readthedocs.io/en/stable/tasks.html#dynamic-dependencies" target="_blank" rel="noopener">Dynamic dependencies（動的依存関係）</a>を使うと<code>run</code>した際に動的に依存関係を解決できる。</p>
+<p><a href="https://github.com/spotify/luigi/blob/master/examples/dynamic_requirements.py" target="_blank" rel="noopener">このサンプルコード</a>も併せて確認するとよい</p>
+<p>書き換えたコードが以下のものだ</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="comment">#!/usr/bin/env python</span></span><br><span class="line"><span class="comment"># coding: utf-8</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> luigi</span><br><span class="line"><span class="keyword">import</span> shutil</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Pickup</span><span class="params">(luigi.Task)</span>:</span></span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">run</span><span class="params">(self)</span>:</span></span><br><span class="line">        <span class="comment"># ファイルピックアップ処理</span></span><br><span class="line">        <span class="keyword">with</span> self.output().open(<span class="string">'w'</span>) <span class="keyword">as</span> f:</span><br><span class="line">            f.write(<span class="string">'&lt;ピックアップ結果のファイルパス&gt;'</span>)</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">output</span><span class="params">(self)</span>:</span></span><br><span class="line">        <span class="keyword">return</span> luigi.LocalTarget(<span class="string">'pickup-output-file'</span>)</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">FileCopy</span><span class="params">(luigi.Task)</span>:</span></span><br><span class="line">    input_path = luigi.Parameter()</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">run</span><span class="params">(self)</span>:</span></span><br><span class="line">        shutil.copy2(self.input_path, <span class="string">'&lt;アウトプットパス&gt;'</span>)</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">output</span><span class="params">(self)</span>:</span></span><br><span class="line">        <span class="keyword">return</span> luigi.LocalTarget(<span class="string">'&lt;アウトプットパス&gt;'</span>)</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Archive</span><span class="params">(luigi.Task)</span>:</span></span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">run</span><span class="params">(self)</span>:</span></span><br><span class="line"></span><br><span class="line">        pickup = Pickup()</span><br><span class="line">        <span class="keyword">yield</span> pickup</span><br><span class="line">        <span class="keyword">with</span> pickup.output().open(<span class="string">'r'</span>) <span class="keyword">as</span> f:</span><br><span class="line">            input_path = f.read()</span><br><span class="line"></span><br><span class="line">        filecopy = FileCopy(input_path)</span><br><span class="line">        <span class="keyword">yield</span> filecopy</span><br><span class="line">        output_path = filecopy.output()</span><br><span class="line"></span><br><span class="line">        <span class="comment"># ファイルアーカイブ処理</span></span><br><span class="line"></span><br><span class="line">        <span class="keyword">with</span> self.output().open(<span class="string">'w'</span>) <span class="keyword">as</span> f:</span><br><span class="line">            f.write(<span class="string">'Archive done'</span>)</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">output</span><span class="params">(self)</span>:</span></span><br><span class="line">        <span class="keyword">return</span> luigi.LocalTarget(<span class="string">'archive-output-file'</span>)</span><br></pre></td></tr></table></figure>
+<p><code>requires</code>が全てのタスクから消えて、依存関係を示す処理が<code>Archive</code>の<code>run</code>に取り込まれていることがわかる。</p>
+<p>このタスクを実施すると以下の流れで実行される。</p>
+<ol>
+<li><code>Archive</code>の<code>output</code>を確認、ファイルがあれば何もせず終了、無ければ次へ</li>
+<li><code>Archive</code>の<code>run</code>を実行</li>
+<li><code>Pickup</code>タスクを作成</li>
+<li><code>Pickup</code>の<code>output</code>を確認、ファイルが無ければ<code>run</code>を実行（<code>yield pickup</code>部分）</li>
+<li><code>Pickup</code>の<code>output</code>を引数として、<code>FileCopy</code>タスクを作成</li>
+<li><code>FileCopy</code>の<code>output</code>を確認、ファイルが無ければ<code>run</code>を実行（<code>yield filecopy</code>部分）</li>
+<li><code>FileCopy</code>の<code>output</code>を引数として、ファイルアーカイブ処理を実施</li>
+<li><code>Archive</code>の<code>output</code>を出力して終了</li>
+</ol>
+<p><code>Archive</code>の<code>run</code>がちょっとごちゃっとなってしまったけど、目的は達成できた！</p>
+<p>ただ<code>Archive</code>からみた依存関係は<code>Pickup</code>も<code>FileCopy</code>も同じレベルに変わったことは注意したい。<code>Pickup</code>と<code>FileCopy</code>の間に依存関係はないのだ。<br>だから<code>FileCopy</code>の<code>output</code>が存在していても、無関係に<code>Pickup</code>は毎回実行される。<br>まあ、<code>FileCopy</code>は動的に処理したいのだから<code>Pickup</code>に依存してなくていい、望んでいた形ではある。</p>
+<h2><span id="残課題">残課題</span></h2><ul>
+<li><code>Archive</code>は DB 登録する処理だから、<code>output</code>は<a href="http://luigi.readthedocs.io/en/stable/api/luigi.contrib.mysqldb.html" target="_blank" rel="noopener">MySqlTarget</a>にしたほうがいい</li>
+<li><code>Pickup</code>は毎回無条件に実施するのであればタスクでなくてよかったかも？以下のコードはその場で処理してしまっていいかもしれない</li>
+</ul>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line">pickup = Pickup()</span><br><span class="line"><span class="keyword">yield</span> pickup</span><br><span class="line"><span class="keyword">with</span> pickup.output().open(<span class="string">'r'</span>) <span class="keyword">as</span> f:</span><br><span class="line">    input_path = f.read()</span><br></pre></td></tr></table></figure>
+<h2><span id="実行環境">実行環境</span></h2><ul>
+<li>Windows 10</li>
+<li>Python 3.6.3</li>
+<li>luigi 2.7.2</li>
+</ul>
+
+      
+    </div>
+    <footer class="article-footer">
+      <div data-url="https://t-kojima.github.io/2018/05/15/0005-luigi-dynamic-output/" data-id="cjq51fi160050mtu7kfwht28s" class="article-share-items"></div>
+      <!-- <a data-url="https://t-kojima.github.io/2018/05/15/0005-luigi-dynamic-output/" data-id="cjq51fi160050mtu7kfwht28s" class="article-share-link">共有</a> -->
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/luigi/">luigi</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/python/">python</a></li></ul>
+
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+    <a href="/2018/05/15/0006-luigi-dynamic-output-db/" id="article-nav-newer" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">次の記事</strong>
+      <div class="article-nav-title">
+        
+          [Python] luigiで動的アウトプット（DB登録）
+        
+      </div>
+    </a>
+  
+  
+    <a href="/2018/05/15/0004-bottle-zip-streaming-dl/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">前の記事</strong>
+      <div class="article-nav-title">[Python] Bottleでzipをストリーミングダウンロード</div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">カテゴリ</h3>
+    <div class="widget">
+      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/Mac/">Mac</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/MySQL/">MySQL</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Node/">Node</a><span class="category-list-count">2</span><ul class="category-list-child"><li class="category-list-item"><a class="category-list-link" href="/categories/Node/Express/">Express</a><span class="category-list-count">2</span></li></ul></li><li class="category-list-item"><a class="category-list-link" href="/categories/Sinatra/">Sinatra</a><span class="category-list-count">1</span></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">タグ</h3>
+    <div class="widget">
+      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/axios/">axios</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/babel/">babel</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/bottle/">bottle</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/browserify/">browserify</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/csharp/">csharp</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/docker/">docker</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/eslint/">eslint</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/euler/">euler</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/express/">express</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/firebase/">firebase</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/flask/">flask</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/hexo/">hexo</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/javascript/">javascript</a><span class="tag-list-count">8</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/jupyter/">jupyter</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/karma/">karma</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/kintone/">kintone</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/linux/">linux</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/log4js/">log4js</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/luigi/">luigi</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mac/">mac</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mocha/">mocha</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mysql/">mysql</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/node-fetch/">node-fetch</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/nodejs/">nodejs</a><span class="tag-list-count">13</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/powerline/">powerline</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/prettier/">prettier</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/python/">python</a><span class="tag-list-count">8</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/rails/">rails</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/react/">react</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/redis/">redis</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/rpa/">rpa</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/rspec/">rspec</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ruby/">ruby</a><span class="tag-list-count">7</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/sidekiq/">sidekiq</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/sinatra/">sinatra</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/sqlalchemy/">sqlalchemy</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/vagrant/">vagrant</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/virtualbox/">virtualbox</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/vscode/">vscode</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/vue/">vue</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/webpack/">webpack</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/zipstream/">zipstream</a><span class="tag-list-count">1</span></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">タグクラウド</h3>
+    <div class="widget tagcloud">
+      <a href="/tags/axios/" style="font-size: 10px;">axios</a> <a href="/tags/babel/" style="font-size: 10px;">babel</a> <a href="/tags/bottle/" style="font-size: 10px;">bottle</a> <a href="/tags/browserify/" style="font-size: 10px;">browserify</a> <a href="/tags/csharp/" style="font-size: 10px;">csharp</a> <a href="/tags/docker/" style="font-size: 10px;">docker</a> <a href="/tags/eslint/" style="font-size: 11.43px;">eslint</a> <a href="/tags/euler/" style="font-size: 10px;">euler</a> <a href="/tags/express/" style="font-size: 11.43px;">express</a> <a href="/tags/firebase/" style="font-size: 12.86px;">firebase</a> <a href="/tags/flask/" style="font-size: 10px;">flask</a> <a href="/tags/hexo/" style="font-size: 11.43px;">hexo</a> <a href="/tags/javascript/" style="font-size: 18.57px;">javascript</a> <a href="/tags/jupyter/" style="font-size: 10px;">jupyter</a> <a href="/tags/karma/" style="font-size: 11.43px;">karma</a> <a href="/tags/kintone/" style="font-size: 12.86px;">kintone</a> <a href="/tags/linux/" style="font-size: 10px;">linux</a> <a href="/tags/log4js/" style="font-size: 10px;">log4js</a> <a href="/tags/luigi/" style="font-size: 15.71px;">luigi</a> <a href="/tags/mac/" style="font-size: 10px;">mac</a> <a href="/tags/mocha/" style="font-size: 10px;">mocha</a> <a href="/tags/mysql/" style="font-size: 11.43px;">mysql</a> <a href="/tags/node-fetch/" style="font-size: 10px;">node-fetch</a> <a href="/tags/nodejs/" style="font-size: 20px;">nodejs</a> <a href="/tags/powerline/" style="font-size: 11.43px;">powerline</a> <a href="/tags/prettier/" style="font-size: 10px;">prettier</a> <a href="/tags/python/" style="font-size: 18.57px;">python</a> <a href="/tags/rails/" style="font-size: 10px;">rails</a> <a href="/tags/react/" style="font-size: 12.86px;">react</a> <a href="/tags/redis/" style="font-size: 10px;">redis</a> <a href="/tags/rpa/" style="font-size: 10px;">rpa</a> <a href="/tags/rspec/" style="font-size: 10px;">rspec</a> <a href="/tags/ruby/" style="font-size: 17.14px;">ruby</a> <a href="/tags/sidekiq/" style="font-size: 10px;">sidekiq</a> <a href="/tags/sinatra/" style="font-size: 15.71px;">sinatra</a> <a href="/tags/sqlalchemy/" style="font-size: 11.43px;">sqlalchemy</a> <a href="/tags/vagrant/" style="font-size: 10px;">vagrant</a> <a href="/tags/virtualbox/" style="font-size: 10px;">virtualbox</a> <a href="/tags/vscode/" style="font-size: 14.29px;">vscode</a> <a href="/tags/vue/" style="font-size: 12.86px;">vue</a> <a href="/tags/webpack/" style="font-size: 10px;">webpack</a> <a href="/tags/zipstream/" style="font-size: 10px;">zipstream</a>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">アーカイブ</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/12/">12月 2018</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/11/">11月 2018</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/10/">10月 2018</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/09/">9月 2018</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/08/">8月 2018</a><span class="archive-list-count">6</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/07/">7月 2018</a><span class="archive-list-count">11</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/06/">6月 2018</a><span class="archive-list-count">12</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/05/">5月 2018</a><span class="archive-list-count">11</span></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">最近の投稿</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2018/12/20/0051-setup-macbook-pro-2018/">MacBookPro2018のセットアップ</a>
+          </li>
+        
+          <li>
+            <a href="/2018/11/29/0050-about-config-ru/">[Sinatra] config.ruとは</a>
+          </li>
+        
+          <li>
+            <a href="/2018/11/14/0049-docker-mysql-error-caching-sha2-password/">[MySQL] Unable to load authentication plugin &#39;caching_sha2_password&#39;</a>
+          </li>
+        
+          <li>
+            <a href="/2018/11/05/0048-express-with-log4js/">[Node] ExpressでAPIを作ったらログも吐く</a>
+          </li>
+        
+          <li>
+            <a href="/2018/11/02/0047-helloworld-express-with-json/">[Node] Expressを使って最速でJSONを返す</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      &copy; 2018 t-kojima<br>
+      Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+
+
+  <link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
+  <script src="/fancybox/jquery.fancybox.pack.js"></script>
+
+
+<script src="/js/script.js"></script>
+
+
+
+  </div>
+  <script async src="//cdn.embedly.com/widgets/platform.js" charset="UTF-8"></script>
+</body>
+</html>

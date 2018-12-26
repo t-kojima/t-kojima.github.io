@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+
+  
+  <title>[JavaScript] Arrayのメソッドはまだまだ貧弱問題 | Today&#39;s Commit</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="JavaScript で配列を操作する機会は多いけど、目的にドンピシャなメソッドが無いことが多々ある。 今回は以下のことがやりたい。  インデックスを指定して要素を追加 インデックスを指定して要素を削除 インデックスを指定して要素の書き換え">
+<meta name="keywords" content="javascript">
+<meta property="og:type" content="article">
+<meta property="og:title" content="[JavaScript] Arrayのメソッドはまだまだ貧弱問題">
+<meta property="og:url" content="https://t-kojima.github.io/2018/10/17/0045-js-array-is-still-a-weak-problem/index.html">
+<meta property="og:site_name" content="Today&#39;s Commit">
+<meta property="og:description" content="JavaScript で配列を操作する機会は多いけど、目的にドンピシャなメソッドが無いことが多々ある。 今回は以下のことがやりたい。  インデックスを指定して要素を追加 インデックスを指定して要素を削除 インデックスを指定して要素の書き換え">
+<meta property="og:locale" content="ja">
+<meta property="og:updated_time" content="2018-12-20T11:07:38.292Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="[JavaScript] Arrayのメソッドはまだまだ貧弱問題">
+<meta name="twitter:description" content="JavaScript で配列を操作する機会は多いけど、目的にドンピシャなメソッドが無いことが多々ある。 今回は以下のことがやりたい。  インデックスを指定して要素を追加 インデックスを指定して要素を削除 インデックスを指定して要素の書き換え">
+  
+    <link rel="alternate" href="/atom.xml" title="Today&#39;s Commit" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  
+    <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
+  
+  <link rel="stylesheet" href="/css/style.css">
+  
+    <link rel="amphtml" href="https://t-kojima.github.io/2018/10/17/0045-js-array-is-still-a-weak-problem//amp/index.html">
+  
+</head>
+
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">Today&#39;s Commit</a>
+      </h1>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSSフィード"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="検索"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="https://t-kojima.github.io"></form>
+      </div>
+    </div>
+  </div>
+</header>
+      <div class="outer">
+        <section id="main"><article id="post-0045-js-array-is-still-a-weak-problem" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2018/10/17/0045-js-array-is-still-a-weak-problem/" class="article-date">
+  <time datetime="2018-10-17T01:43:31.000Z" itemprop="datePublished">2018-10-17</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      [JavaScript] Arrayのメソッドはまだまだ貧弱問題
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>JavaScript で配列を操作する機会は多いけど、目的にドンピシャなメソッドが無いことが多々ある。</p>
+<p>今回は以下のことがやりたい。</p>
+<ul>
+<li>インデックスを指定して要素を追加</li>
+<li>インデックスを指定して要素を削除</li>
+<li>インデックスを指定して要素の書き換え</li>
+</ul>
+<a id="more"></a>
+<h1><span id="insertdelete-ないの">Insert/Delete ないの？</span></h1><p>例えば Ruby だと<a href="https://docs.ruby-lang.org/ja/latest/method/Array/i/insert.html" target="_blank" rel="noopener">Array#insert</a>や<a href="https://docs.ruby-lang.org/ja/latest/method/Array/i/delete_at.html" target="_blank" rel="noopener">Array#delete_at</a>のようなメソッドが今回は欲しい。（これも破壊的なメソッドなのでドンピシャではないけど）</p>
+<p>しかし JavaScript の Array に insert/delete はなく、「インデックスを指定して要素を追加」できそうなメソッドは<code>Array#splice</code>しかなさそうだ。</p>
+<h2><span id="arraysplice-ではダメなのか">Array#splice ではダメなのか</span></h2><p>「要素の追加」と「要素の削除（取り出し）」を一度にやろうとしているメソッドなので、あまり好きではない。</p>
+<p>一見して何をしているのか分かり辛いのもポイント低い、これ瞬時にどうなるか分かります？</p>
+<figure class="highlight js"><table><tr><td class="code"><pre><span class="line"><span class="keyword">const</span> array = [<span class="number">0</span>, <span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>, <span class="number">4</span>];</span><br><span class="line"><span class="keyword">const</span> p = array.splice(<span class="number">1</span>, <span class="number">2</span>, <span class="number">0</span>);</span><br></pre></td></tr></table></figure>
+<p>正解は以下のようになる。…分かり辛い。</p>
+<figure class="highlight js"><table><tr><td class="code"><pre><span class="line">array =&gt; [<span class="number">0</span>, <span class="number">0</span>, <span class="number">3</span>, <span class="number">4</span>];</span><br><span class="line">p =&gt; [<span class="number">1</span>, <span class="number">2</span>];</span><br></pre></td></tr></table></figure>
+<p>ちなみに「インデックスを指定して要素を追加」と「インデックスを指定して要素を削除」ならこうなる。</p>
+<figure class="highlight js"><table><tr><td class="code"><pre><span class="line"><span class="comment">// insert</span></span><br><span class="line">array.splice(index, <span class="number">0</span>, <span class="string">'value'</span>);</span><br><span class="line"><span class="comment">// delete</span></span><br><span class="line">array.splice(index, <span class="number">1</span>);</span><br></pre></td></tr></table></figure>
+<p>慣れなのかもしれないけど、上が insert で下が delete だと瞬時に判断は難しいと感じる。</p>
+<p>そもそも破壊的なメソッドなので、あまり良くは無いです。はい。</p>
+<h2><span id="lodash-なら">lodash なら…？</span></h2><p>ネイティブ Array にないなら lodash だ！</p>
+<p>と、思ったけど lodash にも insert/delete 相当の関数は無いみたいだ。<a href="https://github.com/lodash/lodash/issues/89" target="_blank" rel="noopener">過去に機能要求はあったよう</a>だが、reject されている。</p>
+<p>しかし後半に<code>Array#slice</code>を利用した代替案が提示されている。</p>
+<figure class="highlight js"><table><tr><td class="code"><pre><span class="line"><span class="keyword">const</span> newArray = [...array.slice(<span class="number">0</span>, index), <span class="string">'value'</span>, ...arr.slice(index)];</span><br></pre></td></tr></table></figure>
+<p><code>Array#splice</code>より分かりやすいか？と言えば微妙な感じしかないが、非破壊的な insert/delete としてはこれくらいしか無いのかなとも思う。</p>
+<p>ちなみに以下のようになる。</p>
+<figure class="highlight js"><table><tr><td class="code"><pre><span class="line"><span class="comment">// insert</span></span><br><span class="line"><span class="keyword">const</span> insertedArray = [</span><br><span class="line">  ...array.slice(<span class="number">0</span>, index),</span><br><span class="line">  <span class="string">'value'</span>,</span><br><span class="line">  ...array.slice(index),</span><br><span class="line">];</span><br><span class="line"><span class="comment">// delete</span></span><br><span class="line"><span class="keyword">const</span> deletedArray = [...array.slice(<span class="number">0</span>, index), ...array.slice(index + <span class="number">1</span>)];</span><br></pre></td></tr></table></figure>
+<h1><span id="インデックスを指定して要素の書き換え">インデックスを指定して要素の書き換え</span></h1><p><code>[0, 1, 2, 3, 4]</code>に対して、<code>2</code>を<code>hoge</code>に書き換えたい…としよう。</p>
+<p>単純に考えると以下のようになる。</p>
+<figure class="highlight js"><table><tr><td class="code"><pre><span class="line"><span class="keyword">const</span> array = [<span class="number">0</span>, <span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>, <span class="number">4</span>];</span><br><span class="line">array[<span class="number">2</span>] = <span class="string">'hoge'</span>;</span><br></pre></td></tr></table></figure>
+<p>しかし要素を書き換えてしまっているので、イミュータブルにやってみよう。</p>
+<figure class="highlight js"><table><tr><td class="code"><pre><span class="line"><span class="keyword">const</span> array = [<span class="number">0</span>, <span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>, <span class="number">4</span>];</span><br><span class="line"><span class="comment">// update</span></span><br><span class="line"><span class="keyword">const</span> updatedArray = [</span><br><span class="line">  ...array.slice(<span class="number">0</span>, index),</span><br><span class="line">  <span class="string">'hoge'</span>,</span><br><span class="line">  ...array.slice(index + <span class="number">1</span>),</span><br><span class="line">];</span><br></pre></td></tr></table></figure>
+<p>前述の insert/delete と仕組みは同じだ。やっぱり冗長な感じはするけど…もっといい方法ないだろうか。</p>
+<h1><span id="まとめ">まとめ</span></h1><p>思っていたよりもスッキリ書けなかったので若干モヤモヤが残るが、一応目的は達成できた。言語ごとの思想の違いではあると思うけど、もっと便利なメソッドがネイティブに追加されればいいなと思う。</p>
+<p>あと「イミュータブルにする」ということについて、有意性は理解しているがそれを上手く言語化できないことに気付いたので、別途エントリにしたいなと思う。</p>
+<h1><span id="環境">環境</span></h1><ul>
+<li>Windows 10</li>
+<li>Node v8.11.3</li>
+</ul>
+
+      
+    </div>
+    <footer class="article-footer">
+      <div data-url="https://t-kojima.github.io/2018/10/17/0045-js-array-is-still-a-weak-problem/" data-id="cjq51fhzx001vmtu7k2y0jh8y" class="article-share-items"></div>
+      <!-- <a data-url="https://t-kojima.github.io/2018/10/17/0045-js-array-is-still-a-weak-problem/" data-id="cjq51fhzx001vmtu7k2y0jh8y" class="article-share-link">共有</a> -->
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/javascript/">javascript</a></li></ul>
+
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+    <a href="/2018/10/17/0046-social-button-always-visible/" id="article-nav-newer" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">次の記事</strong>
+      <div class="article-nav-title">
+        
+          [Hexo] ソーシャルボタンを常に表示
+        
+      </div>
+    </a>
+  
+  
+    <a href="/2018/10/04/0044-wpf-anonymous-binding/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">前の記事</strong>
+      <div class="article-nav-title">[WPF] Bindingに匿名クラスを使う</div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">カテゴリ</h3>
+    <div class="widget">
+      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/Mac/">Mac</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/MySQL/">MySQL</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Node/">Node</a><span class="category-list-count">2</span><ul class="category-list-child"><li class="category-list-item"><a class="category-list-link" href="/categories/Node/Express/">Express</a><span class="category-list-count">2</span></li></ul></li><li class="category-list-item"><a class="category-list-link" href="/categories/Sinatra/">Sinatra</a><span class="category-list-count">1</span></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">タグ</h3>
+    <div class="widget">
+      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/axios/">axios</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/babel/">babel</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/bottle/">bottle</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/browserify/">browserify</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/csharp/">csharp</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/docker/">docker</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/eslint/">eslint</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/euler/">euler</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/express/">express</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/firebase/">firebase</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/flask/">flask</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/hexo/">hexo</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/javascript/">javascript</a><span class="tag-list-count">8</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/jupyter/">jupyter</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/karma/">karma</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/kintone/">kintone</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/linux/">linux</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/log4js/">log4js</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/luigi/">luigi</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mac/">mac</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mocha/">mocha</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mysql/">mysql</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/node-fetch/">node-fetch</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/nodejs/">nodejs</a><span class="tag-list-count">13</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/powerline/">powerline</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/prettier/">prettier</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/python/">python</a><span class="tag-list-count">8</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/rails/">rails</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/react/">react</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/redis/">redis</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/rpa/">rpa</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/rspec/">rspec</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ruby/">ruby</a><span class="tag-list-count">7</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/sidekiq/">sidekiq</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/sinatra/">sinatra</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/sqlalchemy/">sqlalchemy</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/vagrant/">vagrant</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/virtualbox/">virtualbox</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/vscode/">vscode</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/vue/">vue</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/webpack/">webpack</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/zipstream/">zipstream</a><span class="tag-list-count">1</span></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">タグクラウド</h3>
+    <div class="widget tagcloud">
+      <a href="/tags/axios/" style="font-size: 10px;">axios</a> <a href="/tags/babel/" style="font-size: 10px;">babel</a> <a href="/tags/bottle/" style="font-size: 10px;">bottle</a> <a href="/tags/browserify/" style="font-size: 10px;">browserify</a> <a href="/tags/csharp/" style="font-size: 10px;">csharp</a> <a href="/tags/docker/" style="font-size: 10px;">docker</a> <a href="/tags/eslint/" style="font-size: 11.43px;">eslint</a> <a href="/tags/euler/" style="font-size: 10px;">euler</a> <a href="/tags/express/" style="font-size: 11.43px;">express</a> <a href="/tags/firebase/" style="font-size: 12.86px;">firebase</a> <a href="/tags/flask/" style="font-size: 10px;">flask</a> <a href="/tags/hexo/" style="font-size: 11.43px;">hexo</a> <a href="/tags/javascript/" style="font-size: 18.57px;">javascript</a> <a href="/tags/jupyter/" style="font-size: 10px;">jupyter</a> <a href="/tags/karma/" style="font-size: 11.43px;">karma</a> <a href="/tags/kintone/" style="font-size: 12.86px;">kintone</a> <a href="/tags/linux/" style="font-size: 10px;">linux</a> <a href="/tags/log4js/" style="font-size: 10px;">log4js</a> <a href="/tags/luigi/" style="font-size: 15.71px;">luigi</a> <a href="/tags/mac/" style="font-size: 10px;">mac</a> <a href="/tags/mocha/" style="font-size: 10px;">mocha</a> <a href="/tags/mysql/" style="font-size: 11.43px;">mysql</a> <a href="/tags/node-fetch/" style="font-size: 10px;">node-fetch</a> <a href="/tags/nodejs/" style="font-size: 20px;">nodejs</a> <a href="/tags/powerline/" style="font-size: 11.43px;">powerline</a> <a href="/tags/prettier/" style="font-size: 10px;">prettier</a> <a href="/tags/python/" style="font-size: 18.57px;">python</a> <a href="/tags/rails/" style="font-size: 10px;">rails</a> <a href="/tags/react/" style="font-size: 12.86px;">react</a> <a href="/tags/redis/" style="font-size: 10px;">redis</a> <a href="/tags/rpa/" style="font-size: 10px;">rpa</a> <a href="/tags/rspec/" style="font-size: 10px;">rspec</a> <a href="/tags/ruby/" style="font-size: 17.14px;">ruby</a> <a href="/tags/sidekiq/" style="font-size: 10px;">sidekiq</a> <a href="/tags/sinatra/" style="font-size: 15.71px;">sinatra</a> <a href="/tags/sqlalchemy/" style="font-size: 11.43px;">sqlalchemy</a> <a href="/tags/vagrant/" style="font-size: 10px;">vagrant</a> <a href="/tags/virtualbox/" style="font-size: 10px;">virtualbox</a> <a href="/tags/vscode/" style="font-size: 14.29px;">vscode</a> <a href="/tags/vue/" style="font-size: 12.86px;">vue</a> <a href="/tags/webpack/" style="font-size: 10px;">webpack</a> <a href="/tags/zipstream/" style="font-size: 10px;">zipstream</a>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">アーカイブ</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/12/">12月 2018</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/11/">11月 2018</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/10/">10月 2018</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/09/">9月 2018</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/08/">8月 2018</a><span class="archive-list-count">6</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/07/">7月 2018</a><span class="archive-list-count">11</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/06/">6月 2018</a><span class="archive-list-count">12</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/05/">5月 2018</a><span class="archive-list-count">11</span></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">最近の投稿</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2018/12/20/0051-setup-macbook-pro-2018/">MacBookPro2018のセットアップ</a>
+          </li>
+        
+          <li>
+            <a href="/2018/11/29/0050-about-config-ru/">[Sinatra] config.ruとは</a>
+          </li>
+        
+          <li>
+            <a href="/2018/11/14/0049-docker-mysql-error-caching-sha2-password/">[MySQL] Unable to load authentication plugin &#39;caching_sha2_password&#39;</a>
+          </li>
+        
+          <li>
+            <a href="/2018/11/05/0048-express-with-log4js/">[Node] ExpressでAPIを作ったらログも吐く</a>
+          </li>
+        
+          <li>
+            <a href="/2018/11/02/0047-helloworld-express-with-json/">[Node] Expressを使って最速でJSONを返す</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      &copy; 2018 t-kojima<br>
+      Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+
+
+  <link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
+  <script src="/fancybox/jquery.fancybox.pack.js"></script>
+
+
+<script src="/js/script.js"></script>
+
+
+
+  </div>
+  <script async src="//cdn.embedly.com/widgets/platform.js" charset="UTF-8"></script>
+</body>
+</html>

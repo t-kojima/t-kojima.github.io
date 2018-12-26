@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+
+  
+  <title>[Python] luigiで動的アウトプット（DB登録） | Today&#39;s Commit</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="前回の残課題  Archiveは DB 登録する処理だから、outputはMySqlTargetにしたほうがいい  どうやってoutputを DB 登録にするか、普段SQLAlchemyを使っているのでSQLAlchemyとの連携をやりたいと思う。">
+<meta name="keywords" content="python,luigi,sqlalchemy">
+<meta property="og:type" content="article">
+<meta property="og:title" content="[Python] luigiで動的アウトプット（DB登録）">
+<meta property="og:url" content="https://t-kojima.github.io/2018/05/15/0006-luigi-dynamic-output-db/index.html">
+<meta property="og:site_name" content="Today&#39;s Commit">
+<meta property="og:description" content="前回の残課題  Archiveは DB 登録する処理だから、outputはMySqlTargetにしたほうがいい  どうやってoutputを DB 登録にするか、普段SQLAlchemyを使っているのでSQLAlchemyとの連携をやりたいと思う。">
+<meta property="og:locale" content="ja">
+<meta property="og:updated_time" content="2018-12-20T11:07:38.280Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="[Python] luigiで動的アウトプット（DB登録）">
+<meta name="twitter:description" content="前回の残課題  Archiveは DB 登録する処理だから、outputはMySqlTargetにしたほうがいい  どうやってoutputを DB 登録にするか、普段SQLAlchemyを使っているのでSQLAlchemyとの連携をやりたいと思う。">
+  
+    <link rel="alternate" href="/atom.xml" title="Today&#39;s Commit" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  
+    <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
+  
+  <link rel="stylesheet" href="/css/style.css">
+  
+    <link rel="amphtml" href="https://t-kojima.github.io/2018/05/15/0006-luigi-dynamic-output-db//amp/index.html">
+  
+</head>
+
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">Today&#39;s Commit</a>
+      </h1>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSSフィード"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="検索"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="https://t-kojima.github.io"></form>
+      </div>
+    </div>
+  </div>
+</header>
+      <div class="outer">
+        <section id="main"><article id="post-0006-luigi-dynamic-output-db" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2018/05/15/0006-luigi-dynamic-output-db/" class="article-date">
+  <time datetime="2018-05-15T11:57:14.000Z" itemprop="datePublished">2018-05-15</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      [Python] luigiで動的アウトプット（DB登録）
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>前回の残課題</p>
+<ul>
+<li><code>Archive</code>は DB 登録する処理だから、<code>output</code>は<a href="http://luigi.readthedocs.io/en/stable/api/luigi.contrib.mysqldb.html" target="_blank" rel="noopener">MySqlTarget</a>にしたほうがいい</li>
+</ul>
+<p>どうやって<code>output</code>を DB 登録にするか、普段<code>SQLAlchemy</code>を使っているので<code>SQLAlchemy</code>との連携をやりたいと思う。</p>
+<a id="more"></a>
+<h2><span id="前回のコード">前回のコード</span></h2><p>前回のコードは以下のものだ、<code>output</code>がファイル出力になっているのでこれを DB 登録に対応させていく</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="keyword">import</span> luigi</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Archive</span><span class="params">(luigi.Task)</span>:</span></span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">run</span><span class="params">(self)</span>:</span></span><br><span class="line">        pickup = Pickup()</span><br><span class="line">        <span class="keyword">yield</span> pickup</span><br><span class="line">        <span class="keyword">with</span> pickup.output().open(<span class="string">'r'</span>) <span class="keyword">as</span> f:</span><br><span class="line">            input_path = f.read()</span><br><span class="line"></span><br><span class="line">        filecopy = FileCopy(input_path)</span><br><span class="line">        <span class="keyword">yield</span> filecopy</span><br><span class="line">        output_path = filecopy.output()</span><br><span class="line"></span><br><span class="line">        <span class="comment"># ファイルアーカイブ処理</span></span><br><span class="line"></span><br><span class="line">        <span class="keyword">with</span> self.output().open(<span class="string">'w'</span>) <span class="keyword">as</span> f:</span><br><span class="line">            f.write(<span class="string">'Archive done'</span>)</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">output</span><span class="params">(self)</span>:</span></span><br><span class="line">        <span class="keyword">return</span> luigi.LocalTarget(<span class="string">'archive-output-file'</span>)</span><br></pre></td></tr></table></figure>
+<p>参考にしたのは以下</p>
+<ul>
+<li><a href="http://blog.amedama.jp/entry/2017/05/13/203907" target="_blank" rel="noopener">Python: データパイプライン構築用フレームワーク Luigi を使ってみる</a></li>
+<li><a href="http://gouthamanbalaraman.com/blog/sqlalchemy-luigi-workflow-pipeline.html" target="_blank" rel="noopener">Using SQLAlchemy in Luigi Workflow Pipeline</a></li>
+<li><a href="http://luigi.readthedocs.io/en/stable/api/luigi.contrib.sqla.html" target="_blank" rel="noopener">公式ドキュメント</a></li>
+</ul>
+<h2><span id="データベースの準備">データベースの準備</span></h2><p><a href="https://sqlalchemy-migrate.readthedocs.io/en/latest/" target="_blank" rel="noopener">SQLAlchemy Migrate</a>を使って<code>MySQL</code>のデータベースを準備する。<br>テーブル定義はこんな感じ</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="keyword">from</span> sqlalchemy <span class="keyword">import</span> *</span><br><span class="line"><span class="keyword">from</span> migrate <span class="keyword">import</span> *</span><br><span class="line"><span class="keyword">from</span> sqlalchemy.dialects.mysql <span class="keyword">import</span> BIGINT, DATETIME, TEXT</span><br><span class="line"></span><br><span class="line">meta = MetaData()</span><br><span class="line">table = Table(</span><br><span class="line">    <span class="string">'archives'</span>, meta,</span><br><span class="line">    Column(<span class="string">'id'</span>, BIGINT(unsigned=<span class="keyword">True</span>), primary_key=<span class="keyword">True</span>),</span><br><span class="line">    Column(<span class="string">'filename'</span>, TEXT, nullable=<span class="keyword">False</span>, unique=<span class="keyword">True</span>),</span><br><span class="line">    Column(<span class="string">'filepath'</span>, TEXT, nullable=<span class="keyword">False</span>),</span><br><span class="line">    Column(<span class="string">'created_at'</span>, DATETIME, nullable=<span class="keyword">False</span>),</span><br><span class="line">    Column(<span class="string">'updated_at'</span>, DATETIME, nullable=<span class="keyword">False</span>),</span><br><span class="line">    mysql_charset=<span class="string">'utf8'</span>)</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">upgrade</span><span class="params">(migrate_engine)</span>:</span></span><br><span class="line">    meta.bind = migrate_engine</span><br><span class="line">    table.create()</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">downgrade</span><span class="params">(migrate_engine)</span>:</span></span><br><span class="line">    meta.bind = migrate_engine</span><br><span class="line">    table.drop()</span><br></pre></td></tr></table></figure>
+<h2><span id="dynamic-dependencies">Dynamic dependencies</span></h2><p>ベーシックなサンプルは以下の通りだ（テーブルは既にあるので<code>reflect = True</code>のパターン）</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">SQLATask</span><span class="params">(sqla.CopyToTable)</span>:</span></span><br><span class="line">    reflect = <span class="keyword">True</span></span><br><span class="line">    connection_string = <span class="string">"sqlite://"</span></span><br><span class="line">    table = <span class="string">"item_property"</span></span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">rows</span><span class="params">(self)</span>:</span></span><br><span class="line">        <span class="keyword">for</span> row <span class="keyword">in</span> [(<span class="string">"item1"</span> <span class="string">"property1"</span>), (<span class="string">"item2"</span>, <span class="string">"property2"</span>)]:</span><br><span class="line">            <span class="keyword">yield</span> row</span><br></pre></td></tr></table></figure>
+<p>しかしこのサンプルをそのまま適用することはできない…動的依存関係の解決の為に<code>run()</code>を定義する必要があるからだ。</p>
+<p>なので、ここでは<strong>データを登録するタスク</strong>と<strong>データを準備するタスク</strong>を分けるサンプルが参考になる。<br><strong>データを準備するタスク</strong>として<code>BuildRecord</code>タスクを定義し、動的依存関係の解決はそのタスクの<code>run()</code>で行うのだ。</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="keyword">import</span> luigi</span><br><span class="line"><span class="keyword">from</span> luigi.contrib <span class="keyword">import</span> sqla</span><br><span class="line"><span class="keyword">from</span> luigi.mock <span class="keyword">import</span> MockTarget</span><br><span class="line"><span class="keyword">from</span> pathlib <span class="keyword">import</span> Path</span><br><span class="line"><span class="keyword">from</span> datetime <span class="keyword">import</span> datetime</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">BuildRecord</span><span class="params">(luigi.Task)</span>:</span></span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">run</span><span class="params">(self)</span>:</span></span><br><span class="line">        pickup = Pickup()</span><br><span class="line">        <span class="keyword">yield</span> pickup</span><br><span class="line">        <span class="keyword">with</span> pickup.output().open(<span class="string">'r'</span>) <span class="keyword">as</span> f:</span><br><span class="line">            input_path = f.read()</span><br><span class="line"></span><br><span class="line">        filecopy = FileCopy(input_path)</span><br><span class="line">        <span class="keyword">yield</span> filecopy</span><br><span class="line">        output_path = Path(filecopy.output().path)</span><br><span class="line"></span><br><span class="line">        <span class="keyword">with</span> self.output().open(<span class="string">'w'</span>) <span class="keyword">as</span> f:</span><br><span class="line">            f.write(<span class="string">'0\t&#123;0&#125;\t&#123;1&#125;\t&#123;2&#125;\t&#123;3&#125;'</span>.format(</span><br><span class="line">                output_path.name, output_path.as_posix(), datetime.now(), datetime.now()))</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">output</span><span class="params">(self)</span>:</span></span><br><span class="line">        <span class="keyword">return</span> MockTarget(<span class="string">"BuildRecord"</span>)</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Archive</span><span class="params">(sqla.CopyToTable)</span>:</span></span><br><span class="line"></span><br><span class="line">    reflect = <span class="keyword">True</span></span><br><span class="line">    connection_string = <span class="string">'mysql://&lt;user&gt;:&lt;password&gt;@&lt;server&gt;/&lt;db_name&gt;?charset=utf8'</span></span><br><span class="line">    table = <span class="string">"archives"</span></span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">requires</span><span class="params">(self)</span>:</span></span><br><span class="line">        <span class="keyword">return</span> BuildRecord()</span><br></pre></td></tr></table></figure>
+<p>これで DB 登録できるようなった！</p>
+<p>基本的な流れは今まで通り、<code>Archive</code>タスクを実行すると<code>requires</code>で<code>BuildRecord</code>を呼び、<code>BuildRecord</code>の<code>run</code>でデータを作成、<code>Archive</code>に戻って SQLAlchemy で DB 登録という形だ。</p>
+<p>細かな注意点は以下の通りだ</p>
+<ul>
+<li>登録するデータは<code>\t</code>で区切った文字列で渡す。今回は 1 行のみだが、複数行渡す場合は<code>\n</code>で改行する。</li>
+<li>区切り文字<code>\t</code>は<code>column_separator</code>オプションで変更可能</li>
+<li><code>id</code>は<em>AUTO INCREMENT</em>だが、登録データを空白にするとカラムがずれるので<code>0</code>を指定してあげる。そうすると Insert する時にちゃんと<em>AUTO INCREMENT</em>してくれる。</li>
+</ul>
+<h2><span id="sqlacopytotableのoutput"><code>sqla.CopyToTable</code>の<code>output</code></span></h2><p><code>Archive</code>タスクは<code>output</code>としてレコードを DB に登録することができたが、このレコードを削除したら次にタスクを回した時再度登録されるだろうか？</p>
+<p>実際やってみると再登録はされない。それどころか<code>Archive</code>処理自体が走らなくなる。</p>
+<p><code>sqla.CopyToTable</code>の<code>complete</code>をどうやって判定しているかという話になるが、<code>update_id</code>というメソッドで判定しており、内部で<code>task_id</code>を参照している。<code>task_id</code>はタスクを走らせた時のログに出てくる<code>Archive__fbe666d9fe</code>のような値で、<code>&lt;タスク&gt;_&lt;パラメータ&gt;_&lt;パラメータのmd5ハッシュ&gt;</code>（正確じゃないかもしれないけどこんな感じ）というフォーマットになっている。</p>
+<p>つまりタスクとパラメータが同一ならキーが変わらないので<code>sqla.CopyToTable</code>は走らない。<br>そしてこの情報は<code>table_updates</code>というテーブルが自動的に作成されて保存されている。</p>
+<p>今回の要件だとタスクの ID よりもレコードの内容で<code>complete</code>を判定して欲しい。具体的にはユニークである<code>filename</code>のカラムだ。<br>しかし<code>Archive</code>タスクで<code>update_id</code>メソッドをオーバーライドしようとしても、<code>complete</code>を判定するタイミングで<code>filename</code>はわからない。ジレンマの再来だ。</p>
+<h2><span id="残課題">残課題</span></h2><ul>
+<li><code>update_id</code>をオーバーライドして、レコード内容をもとに<code>complete</code>判定をするようにしたい。現状ではパラメータを渡さなければ一回限りの実行しかしないし、何かしらパラメータを渡しても無条件で<code>run</code>が走る形になってしまう。</li>
+</ul>
+<h2><span id="余談">余談</span></h2><p>サンプルでも<code>MockTarget</code>使ってる…<code>MockTarget</code>はユニットテスト用途と言われているけど、やっぱり<code>output</code>がファイルである必要性が無いタスクは<code>MockTarget</code>使ったほうがスマートだよね</p>
+<h2><span id="実行環境">実行環境</span></h2><ul>
+<li>Windows 10</li>
+<li>Python 3.6.3</li>
+<li>luigi 2.7.2</li>
+<li>SQLAlchemy 1.2.1</li>
+<li>sqlalchemy-migrate 0.11.0</li>
+</ul>
+
+      
+    </div>
+    <footer class="article-footer">
+      <div data-url="https://t-kojima.github.io/2018/05/15/0006-luigi-dynamic-output-db/" data-id="cjq51fhz6000jmtu78sxbm3bu" class="article-share-items"></div>
+      <!-- <a data-url="https://t-kojima.github.io/2018/05/15/0006-luigi-dynamic-output-db/" data-id="cjq51fhz6000jmtu78sxbm3bu" class="article-share-link">共有</a> -->
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/luigi/">luigi</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/python/">python</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/sqlalchemy/">sqlalchemy</a></li></ul>
+
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+    <a href="/2018/05/15/0007-luigi-not-dynamic-output/" id="article-nav-newer" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">次の記事</strong>
+      <div class="article-nav-title">
+        
+          [Python] luigiで動的アウトプットはしない
+        
+      </div>
+    </a>
+  
+  
+    <a href="/2018/05/15/0005-luigi-dynamic-output/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">前の記事</strong>
+      <div class="article-nav-title">[Python] luigiで動的アウトプット</div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">カテゴリ</h3>
+    <div class="widget">
+      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/Mac/">Mac</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/MySQL/">MySQL</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Node/">Node</a><span class="category-list-count">2</span><ul class="category-list-child"><li class="category-list-item"><a class="category-list-link" href="/categories/Node/Express/">Express</a><span class="category-list-count">2</span></li></ul></li><li class="category-list-item"><a class="category-list-link" href="/categories/Sinatra/">Sinatra</a><span class="category-list-count">1</span></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">タグ</h3>
+    <div class="widget">
+      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/axios/">axios</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/babel/">babel</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/bottle/">bottle</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/browserify/">browserify</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/csharp/">csharp</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/docker/">docker</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/eslint/">eslint</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/euler/">euler</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/express/">express</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/firebase/">firebase</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/flask/">flask</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/hexo/">hexo</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/javascript/">javascript</a><span class="tag-list-count">8</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/jupyter/">jupyter</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/karma/">karma</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/kintone/">kintone</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/linux/">linux</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/log4js/">log4js</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/luigi/">luigi</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mac/">mac</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mocha/">mocha</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mysql/">mysql</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/node-fetch/">node-fetch</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/nodejs/">nodejs</a><span class="tag-list-count">13</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/powerline/">powerline</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/prettier/">prettier</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/python/">python</a><span class="tag-list-count">8</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/rails/">rails</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/react/">react</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/redis/">redis</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/rpa/">rpa</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/rspec/">rspec</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ruby/">ruby</a><span class="tag-list-count">7</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/sidekiq/">sidekiq</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/sinatra/">sinatra</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/sqlalchemy/">sqlalchemy</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/vagrant/">vagrant</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/virtualbox/">virtualbox</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/vscode/">vscode</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/vue/">vue</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/webpack/">webpack</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/zipstream/">zipstream</a><span class="tag-list-count">1</span></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">タグクラウド</h3>
+    <div class="widget tagcloud">
+      <a href="/tags/axios/" style="font-size: 10px;">axios</a> <a href="/tags/babel/" style="font-size: 10px;">babel</a> <a href="/tags/bottle/" style="font-size: 10px;">bottle</a> <a href="/tags/browserify/" style="font-size: 10px;">browserify</a> <a href="/tags/csharp/" style="font-size: 10px;">csharp</a> <a href="/tags/docker/" style="font-size: 10px;">docker</a> <a href="/tags/eslint/" style="font-size: 11.43px;">eslint</a> <a href="/tags/euler/" style="font-size: 10px;">euler</a> <a href="/tags/express/" style="font-size: 11.43px;">express</a> <a href="/tags/firebase/" style="font-size: 12.86px;">firebase</a> <a href="/tags/flask/" style="font-size: 10px;">flask</a> <a href="/tags/hexo/" style="font-size: 11.43px;">hexo</a> <a href="/tags/javascript/" style="font-size: 18.57px;">javascript</a> <a href="/tags/jupyter/" style="font-size: 10px;">jupyter</a> <a href="/tags/karma/" style="font-size: 11.43px;">karma</a> <a href="/tags/kintone/" style="font-size: 12.86px;">kintone</a> <a href="/tags/linux/" style="font-size: 10px;">linux</a> <a href="/tags/log4js/" style="font-size: 10px;">log4js</a> <a href="/tags/luigi/" style="font-size: 15.71px;">luigi</a> <a href="/tags/mac/" style="font-size: 10px;">mac</a> <a href="/tags/mocha/" style="font-size: 10px;">mocha</a> <a href="/tags/mysql/" style="font-size: 11.43px;">mysql</a> <a href="/tags/node-fetch/" style="font-size: 10px;">node-fetch</a> <a href="/tags/nodejs/" style="font-size: 20px;">nodejs</a> <a href="/tags/powerline/" style="font-size: 11.43px;">powerline</a> <a href="/tags/prettier/" style="font-size: 10px;">prettier</a> <a href="/tags/python/" style="font-size: 18.57px;">python</a> <a href="/tags/rails/" style="font-size: 10px;">rails</a> <a href="/tags/react/" style="font-size: 12.86px;">react</a> <a href="/tags/redis/" style="font-size: 10px;">redis</a> <a href="/tags/rpa/" style="font-size: 10px;">rpa</a> <a href="/tags/rspec/" style="font-size: 10px;">rspec</a> <a href="/tags/ruby/" style="font-size: 17.14px;">ruby</a> <a href="/tags/sidekiq/" style="font-size: 10px;">sidekiq</a> <a href="/tags/sinatra/" style="font-size: 15.71px;">sinatra</a> <a href="/tags/sqlalchemy/" style="font-size: 11.43px;">sqlalchemy</a> <a href="/tags/vagrant/" style="font-size: 10px;">vagrant</a> <a href="/tags/virtualbox/" style="font-size: 10px;">virtualbox</a> <a href="/tags/vscode/" style="font-size: 14.29px;">vscode</a> <a href="/tags/vue/" style="font-size: 12.86px;">vue</a> <a href="/tags/webpack/" style="font-size: 10px;">webpack</a> <a href="/tags/zipstream/" style="font-size: 10px;">zipstream</a>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">アーカイブ</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/12/">12月 2018</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/11/">11月 2018</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/10/">10月 2018</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/09/">9月 2018</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/08/">8月 2018</a><span class="archive-list-count">6</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/07/">7月 2018</a><span class="archive-list-count">11</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/06/">6月 2018</a><span class="archive-list-count">12</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/05/">5月 2018</a><span class="archive-list-count">11</span></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">最近の投稿</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2018/12/20/0051-setup-macbook-pro-2018/">MacBookPro2018のセットアップ</a>
+          </li>
+        
+          <li>
+            <a href="/2018/11/29/0050-about-config-ru/">[Sinatra] config.ruとは</a>
+          </li>
+        
+          <li>
+            <a href="/2018/11/14/0049-docker-mysql-error-caching-sha2-password/">[MySQL] Unable to load authentication plugin &#39;caching_sha2_password&#39;</a>
+          </li>
+        
+          <li>
+            <a href="/2018/11/05/0048-express-with-log4js/">[Node] ExpressでAPIを作ったらログも吐く</a>
+          </li>
+        
+          <li>
+            <a href="/2018/11/02/0047-helloworld-express-with-json/">[Node] Expressを使って最速でJSONを返す</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      &copy; 2018 t-kojima<br>
+      Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+
+
+  <link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
+  <script src="/fancybox/jquery.fancybox.pack.js"></script>
+
+
+<script src="/js/script.js"></script>
+
+
+
+  </div>
+  <script async src="//cdn.embedly.com/widgets/platform.js" charset="UTF-8"></script>
+</body>
+</html>

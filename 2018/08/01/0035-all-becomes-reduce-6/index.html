@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+
+  
+  <title>全てがReduceになる(6) | Today&#39;s Commit</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="前回に続き、残りのメソッドをやっつける。消化試合とも言う。  splice toLocaleString toString unshict  実装及びテストのリポジトリ(practice-all-becomes-reduce)">
+<meta name="keywords" content="javascript,nodejs">
+<meta property="og:type" content="article">
+<meta property="og:title" content="全てがReduceになる(6)">
+<meta property="og:url" content="https://t-kojima.github.io/2018/08/01/0035-all-becomes-reduce-6/index.html">
+<meta property="og:site_name" content="Today&#39;s Commit">
+<meta property="og:description" content="前回に続き、残りのメソッドをやっつける。消化試合とも言う。  splice toLocaleString toString unshict  実装及びテストのリポジトリ(practice-all-becomes-reduce)">
+<meta property="og:locale" content="ja">
+<meta property="og:updated_time" content="2018-12-20T11:07:38.290Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="全てがReduceになる(6)">
+<meta name="twitter:description" content="前回に続き、残りのメソッドをやっつける。消化試合とも言う。  splice toLocaleString toString unshict  実装及びテストのリポジトリ(practice-all-becomes-reduce)">
+  
+    <link rel="alternate" href="/atom.xml" title="Today&#39;s Commit" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  
+    <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
+  
+  <link rel="stylesheet" href="/css/style.css">
+  
+    <link rel="amphtml" href="https://t-kojima.github.io/2018/08/01/0035-all-becomes-reduce-6//amp/index.html">
+  
+</head>
+
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">Today&#39;s Commit</a>
+      </h1>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSSフィード"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="検索"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="https://t-kojima.github.io"></form>
+      </div>
+    </div>
+  </div>
+</header>
+      <div class="outer">
+        <section id="main"><article id="post-0035-all-becomes-reduce-6" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2018/08/01/0035-all-becomes-reduce-6/" class="article-date">
+  <time datetime="2018-08-01T11:40:02.000Z" itemprop="datePublished">2018-08-01</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      全てがReduceになる(6)
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p><a href="https://t-kojima.github.io/2018/07/28/0034-all-becomes-reduce-5/">前回</a>に続き、残りのメソッドをやっつける。消化試合とも言う。</p>
+<ul>
+<li>splice</li>
+<li>toLocaleString</li>
+<li>toString</li>
+<li>unshict</li>
+</ul>
+<p><a href="https://github.com/t-kojima/practice-all-becomes-reduce" target="_blank" rel="noopener">実装及びテストのリポジトリ(practice-all-becomes-reduce)</a></p>
+<a id="more"></a>
+<h1><span id="ルール">ルール</span></h1><p>引き続き以下のルールでやっていく。</p>
+<ul>
+<li>for 文禁止</li>
+<li>Array#reduce を必ず使用する</li>
+<li>Array のインスタンスメソッドは reduce 以外使用不可</li>
+<li>Array のプロパティ、クラスメソッドは使用可能</li>
+<li>スプレッド構文は使用不可（reduce すら不要になる場合があるから）</li>
+</ul>
+<hr>
+<h1 style="font-size: 4em;"><span id="splice">splice</span></h1>
+
+<p><a href="https://developer.mozilla.org/ja/docs/Web/JavaScript/Reference/Global_Objects/Array/splice" target="_blank" rel="noopener">Array.prototype.splice() - JavaScript | MDN</a></p>
+<p>指定した範囲の要素を取り除く（戻り値として返す）したり、取り除いた場所に要素を追加したりできるメソッド。若干機能過多（？）な気がしないでもない</p>
+<h2><span id="構文">構文</span></h2><figure class="highlight js"><table><tr><td class="code"><pre><span class="line">array.splice(index, howMany, [element1][, ..., elementN]);</span><br><span class="line">array.splice(index, [howMany, [element1][, ..., elementN]]);  <span class="comment">// SpiderMonkey/Firefox 拡張、この場合 howMany=array.length-index となります</span></span><br></pre></td></tr></table></figure>
+<p>引数も多く若干複雑な挙動を取るメソッドなので、各引数に関わる仕様を以下に列挙する。</p>
+<ul>
+<li>戻り値として取り除かれた要素の配列を返す。</li>
+</ul>
+<h3><span id="index">index</span></h3><ul>
+<li>要素を切り取る開始位置を指定する。</li>
+<li>index を省略すると何も処理を行わない。</li>
+<li>数値への暗黙的な変換ができない要素を指定した場合、0 として扱われる。</li>
+<li>負の値を指定した場合、配列の末尾からのオフセット値となる。</li>
+<li>負の値を指定した場合、値の絶対値が配列長を超える場合、0 として扱われる。</li>
+</ul>
+<h3><span id="howmany">howMany</span></h3><ul>
+<li>切り取る要素の数を指定する。</li>
+<li>howMany を省略した場合、length - index として扱われる。</li>
+<li>数値への暗黙的な変換ができない要素を指定した場合、0 として扱われる。</li>
+<li>length - index を超える値を指定した時、length-index として扱われる。</li>
+<li>0 以下の値を指定した時、0 として扱われる。</li>
+</ul>
+<h3><span id="element1elementn">element1…elementN</span></h3><ul>
+<li>追加する要素を指定する。複数指定可能。</li>
+</ul>
+<h2><span id="再実装">再実装</span></h2><p>上記の仕様を再実装すると以下のようになる。</p>
+<figure class="highlight js"><table><tr><td class="code"><pre><span class="line"><span class="comment">/* eslint-disable array-callback-return */</span></span><br><span class="line"><span class="built_in">Array</span>.prototype.splice = <span class="function"><span class="keyword">function</span>(<span class="params">idx = this.length, howMany, ...elements</span>) </span>&#123;</span><br><span class="line">  <span class="keyword">const</span> i =</span><br><span class="line">    <span class="built_in">Math</span>.min(</span><br><span class="line">      <span class="built_in">Math</span>.max(<span class="built_in">Number</span>.parseInt(idx, <span class="number">10</span>) + (idx &lt; <span class="number">0</span> ? <span class="keyword">this</span>.length : <span class="number">0</span>), <span class="number">0</span>),</span><br><span class="line">      <span class="keyword">this</span>.length</span><br><span class="line">    ) || <span class="number">0</span></span><br><span class="line">  <span class="keyword">const</span> h =</span><br><span class="line">    <span class="built_in">Math</span>.min(</span><br><span class="line">      <span class="built_in">Math</span>.max(<span class="built_in">Number</span>.parseInt(howMany || <span class="keyword">this</span>.length - i, <span class="number">10</span>), <span class="number">0</span>),</span><br><span class="line">      <span class="keyword">this</span>.length - i</span><br><span class="line">    ) || <span class="number">0</span></span><br><span class="line"></span><br><span class="line">  <span class="comment">// 配列のi位置にelementsを挿入した配列コピーを返す</span></span><br><span class="line">  <span class="keyword">const</span> copyWithElements = <span class="built_in">Array</span>.from(</span><br><span class="line">    <span class="built_in">Array</span>(<span class="keyword">this</span>.length + elements.length)</span><br><span class="line">  ).reduce(<span class="function">(<span class="params">acc, cur, index</span>) =&gt;</span> &#123;</span><br><span class="line">    <span class="keyword">if</span> (index &lt; i &amp;&amp; index <span class="keyword">in</span> <span class="keyword">this</span>) &#123;</span><br><span class="line">      acc[index] = <span class="keyword">this</span>[index]</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">if</span> (index &gt;= i &amp;&amp; index &lt; i + elements.length) &#123;</span><br><span class="line">      acc[index] = elements[index - i]</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">if</span> (index &gt;= i + elements.length &amp;&amp; index - elements.length <span class="keyword">in</span> <span class="keyword">this</span>) &#123;</span><br><span class="line">      acc[index] = <span class="keyword">this</span>[index - elements.length]</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> acc</span><br><span class="line">  &#125;, <span class="built_in">Array</span>(<span class="keyword">this</span>.length + elements.length))</span><br><span class="line"></span><br><span class="line">  <span class="keyword">this</span>.length = <span class="number">0</span></span><br><span class="line">  <span class="keyword">this</span>.length = copyWithElements.length - h</span><br><span class="line"></span><br><span class="line">  <span class="comment">// index - i - elements.lengthからh個の要素を切り出す。</span></span><br><span class="line">  <span class="comment">// (事前にelementsを挿入しているので、elements.length分ズレる)</span></span><br><span class="line">  <span class="keyword">return</span> copyWithElements.reduce(<span class="function">(<span class="params">acc, cur, index</span>) =&gt;</span> &#123;</span><br><span class="line">    <span class="keyword">if</span> (index &lt; i + elements.length) &#123;</span><br><span class="line">      <span class="keyword">this</span>[index] = cur</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">if</span> (index &gt;= i + elements.length &amp;&amp; index &lt; i + h + elements.length) &#123;</span><br><span class="line">      acc[index - i - elements.length] = cur</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">if</span> (index &gt;= i + h + elements.length) &#123;</span><br><span class="line">      <span class="keyword">this</span>[index - h] = cur</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> acc</span><br><span class="line">  &#125;, <span class="built_in">Array</span>(h))</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>いくつかの処理に分かれているので、各々の処理を詳細に見ていく。</p>
+<figure class="highlight js"><table><tr><td class="code"><pre><span class="line"><span class="keyword">const</span> i =</span><br><span class="line">  <span class="built_in">Math</span>.min(</span><br><span class="line">    <span class="built_in">Math</span>.max(<span class="built_in">Number</span>.parseInt(idx, <span class="number">10</span>) + (idx &lt; <span class="number">0</span> ? <span class="keyword">this</span>.length : <span class="number">0</span>), <span class="number">0</span>),</span><br><span class="line">    <span class="keyword">this</span>.length</span><br><span class="line">  ) || <span class="number">0</span></span><br><span class="line"><span class="keyword">const</span> h =</span><br><span class="line">  <span class="built_in">Math</span>.min(</span><br><span class="line">    <span class="built_in">Math</span>.max(<span class="built_in">Number</span>.parseInt(howMany || <span class="keyword">this</span>.length - i, <span class="number">10</span>), <span class="number">0</span>),</span><br><span class="line">    <span class="keyword">this</span>.length - i</span><br><span class="line">  ) || <span class="number">0</span></span><br></pre></td></tr></table></figure>
+<p>最初に index,howMany に対し、前述の仕様に沿った変換を掛ける。howMany は index と違い、マイナス値を許さず、最大値が length-index となる。</p>
+<p>続いて、copyWithElements という配列に追加要素を含んだ元配列をコピーする。</p>
+<figure class="highlight js"><table><tr><td class="code"><pre><span class="line"><span class="keyword">const</span> copyWithElements = <span class="built_in">Array</span>.from(</span><br><span class="line">  <span class="built_in">Array</span>(<span class="keyword">this</span>.length + elements.length)</span><br><span class="line">).reduce(<span class="function">(<span class="params">acc, cur, index</span>) =&gt;</span> &#123;</span><br><span class="line">  <span class="keyword">if</span> (index &lt; i &amp;&amp; index <span class="keyword">in</span> <span class="keyword">this</span>) &#123;</span><br><span class="line">    acc[index] = <span class="keyword">this</span>[index]</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">if</span> (index &gt;= i &amp;&amp; index &lt; i + elements.length) &#123;</span><br><span class="line">    acc[index] = elements[index - i]</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">if</span> (index &gt;= i + elements.length &amp;&amp; index - elements.length <span class="keyword">in</span> <span class="keyword">this</span>) &#123;</span><br><span class="line">    acc[index] = <span class="keyword">this</span>[index - elements.length]</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">return</span> acc</span><br><span class="line">&#125;, <span class="built_in">Array</span>(<span class="keyword">this</span>.length + elements.length))</span><br></pre></td></tr></table></figure>
+<p>例えば元配列が <code>[1,2,3]</code> で、追加要素が <code>&#39;a&#39;, &#39;b&#39;</code>、index が <code>1</code> の場合、copyWithElements は <code>[1,&#39;a&#39;,&#39;b&#39;,2,3]</code> になる。</p>
+<p>本来一回の reduce で要素の削除と追加を同時に行いたかったが、追加要素数と削除要素数が必ずしも一致しないことから処理が難しく（必要以上に複雑になる）、追加と削除は別のロジックとしたほうが理解しやすいと感じた。</p>
+<figure class="highlight js"><table><tr><td class="code"><pre><span class="line"><span class="keyword">this</span>.length = <span class="number">0</span></span><br><span class="line"><span class="keyword">this</span>.length = copyWithElements.length - h</span><br></pre></td></tr></table></figure>
+<p>元配列を書き換えるメソッドなので、<code>lentgh = 0</code> で一度配列をリセットし、最終的な配列長をセットする。</p>
+<p>最後に index 位置から howMany 分の要素を切り出す。</p>
+<figure class="highlight js"><table><tr><td class="code"><pre><span class="line"><span class="comment">// index - i - elements.lengthからh個の要素を切り出す。</span></span><br><span class="line"><span class="comment">// (事前にelementsを挿入しているので、elements.length分ズレる)</span></span><br><span class="line"><span class="keyword">return</span> copyWithElements.reduce(<span class="function">(<span class="params">acc, cur, index</span>) =&gt;</span> &#123;</span><br><span class="line">  <span class="keyword">if</span> (index &lt; i + elements.length) &#123;</span><br><span class="line">    <span class="keyword">this</span>[index] = cur</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">if</span> (index &gt;= i + elements.length &amp;&amp; index &lt; i + h + elements.length) &#123;</span><br><span class="line">    acc[index - i - elements.length] = cur</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">if</span> (index &gt;= i + h + elements.length) &#123;</span><br><span class="line">    <span class="keyword">this</span>[index - h] = cur</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">return</span> acc</span><br><span class="line">&#125;, <span class="built_in">Array</span>(h))</span><br></pre></td></tr></table></figure>
+<p>コメントにもあるが、先に要素を追加している状態なので、切り出す index の位置は element.length 分ずれることになる。</p>
+<p>かなり複雑になってしまったが、これで splice 再実装できた。</p>
+<hr>
+<h1 style="font-size: 4em;"><span id="tolocalestring">toLocaleString</span></h1>
+
+<p><a href="https://developer.mozilla.org/ja/docs/Web/JavaScript/Reference/Global_Objects/Array/toLocaleString" target="_blank" rel="noopener">Array.prototype.toLocaleString() - JavaScript | MDN</a></p>
+<p>配列の各要素に <code>toLocaleString</code> メソッドを適用する。</p>
+<h2><span id="構文">構文</span></h2><figure class="highlight js"><table><tr><td class="code"><pre><span class="line">arr.toLocaleString()</span><br></pre></td></tr></table></figure>
+<p>引数が無い。シンプル！</p>
+<h2><span id="再実装">再実装</span></h2><p>再実装コードは以下の通りだ。</p>
+<figure class="highlight js"><table><tr><td class="code"><pre><span class="line"><span class="built_in">Array</span>.prototype.toLocaleString = <span class="function"><span class="keyword">function</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">  <span class="keyword">const</span> value = <span class="function"><span class="params">v</span> =&gt;</span> (v === <span class="literal">undefined</span> || v === <span class="literal">null</span> ? <span class="string">''</span> : v)</span><br><span class="line"></span><br><span class="line">  <span class="comment">// 空配列は空文字列を返す</span></span><br><span class="line">  <span class="keyword">if</span> (<span class="keyword">this</span>.length === <span class="number">0</span>) <span class="keyword">return</span> <span class="string">''</span></span><br><span class="line"></span><br><span class="line">  <span class="keyword">const</span> copy = <span class="built_in">Array</span>.from(<span class="keyword">this</span>).reduce(<span class="function">(<span class="params">acc, cur, index</span>) =&gt;</span> &#123;</span><br><span class="line">    acc[index] = value(cur).toLocaleString()</span><br><span class="line">    <span class="keyword">return</span> acc</span><br><span class="line">  &#125;, [])</span><br><span class="line"></span><br><span class="line">  <span class="keyword">return</span> copy.reduce(<span class="function">(<span class="params">acc, cur</span>) =&gt;</span> <span class="string">`<span class="subst">$&#123;acc&#125;</span>,<span class="subst">$&#123;cur&#125;</span>`</span>)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>まず join と同様に、undefined,null,プロパティ無しの要素は全て空白として扱われる。value 関数はその変換を行う。</p>
+<p>次に空配列は空文字列を返す。空配列の場合 reduce が一切回らないので固定の処理で良い。</p>
+<p>次に配列のコピーを作成しつつ、各要素に value 関数と toLocaleString メソッドの適用を行う。</p>
+<p>これは最後の連結処理と同時に以下の形でいけるかと思ったが、要素が 1 個の時 reduce が一切回らずにその要素をただ返す動作をした為、このように分割している。</p>
+<figure class="highlight js"><table><tr><td class="code"><pre><span class="line"><span class="keyword">return</span> <span class="built_in">Array</span>.from(<span class="keyword">this</span>).reduce(</span><br><span class="line">  (acc, cur) =&gt; <span class="string">`<span class="subst">$&#123;value(acc).toLocaleString()&#125;</span>,<span class="subst">$&#123;value(cur).toLocaleString()&#125;</span>`</span></span><br><span class="line">)</span><br></pre></td></tr></table></figure>
+<p>reduce の initialValue を省略すると index が 1 から始まるが、この時 length が 1 だと index=1 の要素が存在しないので、reduce 自身が回らないのだろう。</p>
+<hr>
+<h1 style="font-size: 4em;"><span id="tostring">toString</span></h1>
+
+<p><a href="https://developer.mozilla.org/ja/docs/Web/JavaScript/Reference/Global_Objects/Array/toString" target="_blank" rel="noopener">Array.prototype.toString() - JavaScript | MDN</a></p>
+<p>toLocaleString と同様で、配列の各要素に <code>toString</code> メソッドを適用するのみだ。</p>
+<h2><span id="構文">構文</span></h2><figure class="highlight js"><table><tr><td class="code"><pre><span class="line">string = array.toString()</span><br></pre></td></tr></table></figure>
+<p>あまり気にしなくて良いと思うが、<code>Object.prototype.toString</code> を上書きしているらしい。</p>
+<h2><span id="再実装">再実装</span></h2><p>ハッキリ言って toLocaleString メソッドと全く一緒、以上！</p>
+<figure class="highlight js"><table><tr><td class="code"><pre><span class="line"><span class="built_in">Array</span>.prototype.toString = <span class="function"><span class="keyword">function</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">  <span class="keyword">const</span> value = <span class="function"><span class="params">v</span> =&gt;</span> (v === <span class="literal">undefined</span> || v === <span class="literal">null</span> ? <span class="string">''</span> : v)</span><br><span class="line"></span><br><span class="line">  <span class="comment">// 空配列は空文字列を返す</span></span><br><span class="line">  <span class="keyword">if</span> (<span class="keyword">this</span>.length === <span class="number">0</span>) <span class="keyword">return</span> <span class="string">''</span></span><br><span class="line"></span><br><span class="line">  <span class="keyword">const</span> copy = <span class="built_in">Array</span>.from(<span class="keyword">this</span>).reduce(<span class="function">(<span class="params">acc, cur, index</span>) =&gt;</span> &#123;</span><br><span class="line">    acc[index] = value(cur).toString()</span><br><span class="line">    <span class="keyword">return</span> acc</span><br><span class="line">  &#125;, [])</span><br><span class="line"></span><br><span class="line">  <span class="keyword">return</span> copy.reduce(<span class="function">(<span class="params">acc, cur</span>) =&gt;</span> <span class="string">`<span class="subst">$&#123;acc&#125;</span>,<span class="subst">$&#123;cur&#125;</span>`</span>)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<hr>
+<h1 style="font-size: 4em;"><span id="unshift">unshift</span></h1>
+
+<p><a href="https://developer.mozilla.org/ja/docs/Web/JavaScript/Reference/Global_Objects/Array/unshift" target="_blank" rel="noopener">Array.prototype.unshift() - JavaScript | MDN</a></p>
+<p>やっとこ最後のメソッドだ。</p>
+<p>unshift は配列の最初に要素を追加する。push の逆版だ。</p>
+<h2><span id="構文">構文</span></h2><figure class="highlight js"><table><tr><td class="code"><pre><span class="line">arr.unshift(element1[, ...[, elementN]])</span><br></pre></td></tr></table></figure>
+<p>push と同様に element は複数指定が可能、そして戻り値として要素が追加された後の配列長を返す。</p>
+<h2><span id="再実装">再実装</span></h2><figure class="highlight js"><table><tr><td class="code"><pre><span class="line"><span class="built_in">Array</span>.prototype.unshift = <span class="function"><span class="keyword">function</span>(<span class="params">...elements</span>) </span>&#123;</span><br><span class="line">  <span class="keyword">const</span> copy = <span class="keyword">this</span>.reduce(<span class="function">(<span class="params">acc, cur, index</span>) =&gt;</span> &#123;</span><br><span class="line">    acc[index] = cur</span><br><span class="line">    <span class="keyword">return</span> acc</span><br><span class="line">  &#125;, <span class="built_in">Array</span>(<span class="keyword">this</span>.length))</span><br><span class="line"></span><br><span class="line">  <span class="keyword">this</span>.length = <span class="number">0</span></span><br><span class="line">  <span class="keyword">this</span>.length = copy.length + elements.length</span><br><span class="line"></span><br><span class="line">  <span class="keyword">return</span> copy.reduce(</span><br><span class="line">    (acc, cur, index) =&gt; &#123;</span><br><span class="line">      <span class="keyword">this</span>[index + elements.length] = copy[index]</span><br><span class="line">      <span class="keyword">return</span> acc</span><br><span class="line">    &#125;,</span><br><span class="line">    elements.reduce(<span class="function">(<span class="params">acc, cur, index</span>) =&gt;</span> &#123;</span><br><span class="line">      <span class="keyword">this</span>[index] = cur</span><br><span class="line">      <span class="keyword">return</span> acc</span><br><span class="line">    &#125;, copy.length + elements.length)</span><br><span class="line">  )</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>元配列を copy する処理や length=0 などは何度も出てきた処理なので割愛</p>
+<p>最後に return する箇所で reduce を二重に行っている。最初の reduce は追加要素（elements）をレシーバとして行っていて、その結果の配列を initialValue として次の reduce を行っている。そういう感じで追加要素を配列の最初に押し込んでいるのだ。</p>
+<h1><span id="おわりに">おわりに</span></h1><p>軽い気持ちでやり始めた反面、想像以上に大変だったけど、いい暇つぶしになった。今回扱ったメソッド仕様の理解は深まったので、個人的に得るものはあったと思う。（特に疎な配列と sort 関係は普通に使ってたらここまで調べないので）</p>
+<p>つづかない</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <div data-url="https://t-kojima.github.io/2018/08/01/0035-all-becomes-reduce-6/" data-id="cjq51fi1e005imtu7mcyqd628" class="article-share-items"></div>
+      <!-- <a data-url="https://t-kojima.github.io/2018/08/01/0035-all-becomes-reduce-6/" data-id="cjq51fi1e005imtu7mcyqd628" class="article-share-link">共有</a> -->
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/javascript/">javascript</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/nodejs/">nodejs</a></li></ul>
+
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+    <a href="/2018/08/05/0036-upgrade-linux-mint-19-tera/" id="article-nav-newer" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">次の記事</strong>
+      <div class="article-nav-title">
+        
+          [Linux] SSD換装ついでに Mint 18 を 19 にアップグレードした
+        
+      </div>
+    </a>
+  
+  
+    <a href="/2018/07/28/0034-all-becomes-reduce-5/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">前の記事</strong>
+      <div class="article-nav-title">全てがReduceになる(5)</div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">カテゴリ</h3>
+    <div class="widget">
+      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/Mac/">Mac</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/MySQL/">MySQL</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Node/">Node</a><span class="category-list-count">2</span><ul class="category-list-child"><li class="category-list-item"><a class="category-list-link" href="/categories/Node/Express/">Express</a><span class="category-list-count">2</span></li></ul></li><li class="category-list-item"><a class="category-list-link" href="/categories/Sinatra/">Sinatra</a><span class="category-list-count">1</span></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">タグ</h3>
+    <div class="widget">
+      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/axios/">axios</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/babel/">babel</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/bottle/">bottle</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/browserify/">browserify</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/csharp/">csharp</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/docker/">docker</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/eslint/">eslint</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/euler/">euler</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/express/">express</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/firebase/">firebase</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/flask/">flask</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/hexo/">hexo</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/javascript/">javascript</a><span class="tag-list-count">8</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/jupyter/">jupyter</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/karma/">karma</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/kintone/">kintone</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/linux/">linux</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/log4js/">log4js</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/luigi/">luigi</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mac/">mac</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mocha/">mocha</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mysql/">mysql</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/node-fetch/">node-fetch</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/nodejs/">nodejs</a><span class="tag-list-count">13</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/powerline/">powerline</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/prettier/">prettier</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/python/">python</a><span class="tag-list-count">8</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/rails/">rails</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/react/">react</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/redis/">redis</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/rpa/">rpa</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/rspec/">rspec</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ruby/">ruby</a><span class="tag-list-count">7</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/sidekiq/">sidekiq</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/sinatra/">sinatra</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/sqlalchemy/">sqlalchemy</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/vagrant/">vagrant</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/virtualbox/">virtualbox</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/vscode/">vscode</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/vue/">vue</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/webpack/">webpack</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/zipstream/">zipstream</a><span class="tag-list-count">1</span></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">タグクラウド</h3>
+    <div class="widget tagcloud">
+      <a href="/tags/axios/" style="font-size: 10px;">axios</a> <a href="/tags/babel/" style="font-size: 10px;">babel</a> <a href="/tags/bottle/" style="font-size: 10px;">bottle</a> <a href="/tags/browserify/" style="font-size: 10px;">browserify</a> <a href="/tags/csharp/" style="font-size: 10px;">csharp</a> <a href="/tags/docker/" style="font-size: 10px;">docker</a> <a href="/tags/eslint/" style="font-size: 11.43px;">eslint</a> <a href="/tags/euler/" style="font-size: 10px;">euler</a> <a href="/tags/express/" style="font-size: 11.43px;">express</a> <a href="/tags/firebase/" style="font-size: 12.86px;">firebase</a> <a href="/tags/flask/" style="font-size: 10px;">flask</a> <a href="/tags/hexo/" style="font-size: 11.43px;">hexo</a> <a href="/tags/javascript/" style="font-size: 18.57px;">javascript</a> <a href="/tags/jupyter/" style="font-size: 10px;">jupyter</a> <a href="/tags/karma/" style="font-size: 11.43px;">karma</a> <a href="/tags/kintone/" style="font-size: 12.86px;">kintone</a> <a href="/tags/linux/" style="font-size: 10px;">linux</a> <a href="/tags/log4js/" style="font-size: 10px;">log4js</a> <a href="/tags/luigi/" style="font-size: 15.71px;">luigi</a> <a href="/tags/mac/" style="font-size: 10px;">mac</a> <a href="/tags/mocha/" style="font-size: 10px;">mocha</a> <a href="/tags/mysql/" style="font-size: 11.43px;">mysql</a> <a href="/tags/node-fetch/" style="font-size: 10px;">node-fetch</a> <a href="/tags/nodejs/" style="font-size: 20px;">nodejs</a> <a href="/tags/powerline/" style="font-size: 11.43px;">powerline</a> <a href="/tags/prettier/" style="font-size: 10px;">prettier</a> <a href="/tags/python/" style="font-size: 18.57px;">python</a> <a href="/tags/rails/" style="font-size: 10px;">rails</a> <a href="/tags/react/" style="font-size: 12.86px;">react</a> <a href="/tags/redis/" style="font-size: 10px;">redis</a> <a href="/tags/rpa/" style="font-size: 10px;">rpa</a> <a href="/tags/rspec/" style="font-size: 10px;">rspec</a> <a href="/tags/ruby/" style="font-size: 17.14px;">ruby</a> <a href="/tags/sidekiq/" style="font-size: 10px;">sidekiq</a> <a href="/tags/sinatra/" style="font-size: 15.71px;">sinatra</a> <a href="/tags/sqlalchemy/" style="font-size: 11.43px;">sqlalchemy</a> <a href="/tags/vagrant/" style="font-size: 10px;">vagrant</a> <a href="/tags/virtualbox/" style="font-size: 10px;">virtualbox</a> <a href="/tags/vscode/" style="font-size: 14.29px;">vscode</a> <a href="/tags/vue/" style="font-size: 12.86px;">vue</a> <a href="/tags/webpack/" style="font-size: 10px;">webpack</a> <a href="/tags/zipstream/" style="font-size: 10px;">zipstream</a>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">アーカイブ</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/12/">12月 2018</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/11/">11月 2018</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/10/">10月 2018</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/09/">9月 2018</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/08/">8月 2018</a><span class="archive-list-count">6</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/07/">7月 2018</a><span class="archive-list-count">11</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/06/">6月 2018</a><span class="archive-list-count">12</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/05/">5月 2018</a><span class="archive-list-count">11</span></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">最近の投稿</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2018/12/20/0051-setup-macbook-pro-2018/">MacBookPro2018のセットアップ</a>
+          </li>
+        
+          <li>
+            <a href="/2018/11/29/0050-about-config-ru/">[Sinatra] config.ruとは</a>
+          </li>
+        
+          <li>
+            <a href="/2018/11/14/0049-docker-mysql-error-caching-sha2-password/">[MySQL] Unable to load authentication plugin &#39;caching_sha2_password&#39;</a>
+          </li>
+        
+          <li>
+            <a href="/2018/11/05/0048-express-with-log4js/">[Node] ExpressでAPIを作ったらログも吐く</a>
+          </li>
+        
+          <li>
+            <a href="/2018/11/02/0047-helloworld-express-with-json/">[Node] Expressを使って最速でJSONを返す</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      &copy; 2018 t-kojima<br>
+      Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+
+
+  <link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
+  <script src="/fancybox/jquery.fancybox.pack.js"></script>
+
+
+<script src="/js/script.js"></script>
+
+
+
+  </div>
+  <script async src="//cdn.embedly.com/widgets/platform.js" charset="UTF-8"></script>
+</body>
+</html>

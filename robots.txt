@@ -1,0 +1,3 @@
+User-agent: *
+Disallow: /images/
+Sitemap: https://t-kojima.github.io/sitemap.xml

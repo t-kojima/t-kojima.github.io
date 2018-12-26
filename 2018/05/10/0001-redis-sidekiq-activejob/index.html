@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+
+  
+  <title>[Rails] RedisとSidekiqとActiveJobで苦しむ | Today&#39;s Commit</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="Rails でバッチ処理をしたい具体的には動画のエンコードを Rails 上でやりたい。 もちろんリクエストを投げてエンコード結果のレスポンスを返すなんてことは無理だ、だからバッチでやる。Rails でバッチ処理のやり方を調べると、Rails4.2 からは ActiveJob という機能を使ってやるらしい。">
+<meta name="keywords" content="ruby,rails,redis,sidekiq">
+<meta property="og:type" content="article">
+<meta property="og:title" content="[Rails] RedisとSidekiqとActiveJobで苦しむ">
+<meta property="og:url" content="https://t-kojima.github.io/2018/05/10/0001-redis-sidekiq-activejob/index.html">
+<meta property="og:site_name" content="Today&#39;s Commit">
+<meta property="og:description" content="Rails でバッチ処理をしたい具体的には動画のエンコードを Rails 上でやりたい。 もちろんリクエストを投げてエンコード結果のレスポンスを返すなんてことは無理だ、だからバッチでやる。Rails でバッチ処理のやり方を調べると、Rails4.2 からは ActiveJob という機能を使ってやるらしい。">
+<meta property="og:locale" content="ja">
+<meta property="og:image" content="https://t-kojima.github.io/images/01-01.png">
+<meta property="og:updated_time" content="2018-12-20T11:07:38.279Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="[Rails] RedisとSidekiqとActiveJobで苦しむ">
+<meta name="twitter:description" content="Rails でバッチ処理をしたい具体的には動画のエンコードを Rails 上でやりたい。 もちろんリクエストを投げてエンコード結果のレスポンスを返すなんてことは無理だ、だからバッチでやる。Rails でバッチ処理のやり方を調べると、Rails4.2 からは ActiveJob という機能を使ってやるらしい。">
+<meta name="twitter:image" content="https://t-kojima.github.io/images/01-01.png">
+  
+    <link rel="alternate" href="/atom.xml" title="Today&#39;s Commit" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  
+    <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
+  
+  <link rel="stylesheet" href="/css/style.css">
+  
+    <link rel="amphtml" href="https://t-kojima.github.io/2018/05/10/0001-redis-sidekiq-activejob//amp/index.html">
+  
+</head>
+
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">Today&#39;s Commit</a>
+      </h1>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSSフィード"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="検索"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="https://t-kojima.github.io"></form>
+      </div>
+    </div>
+  </div>
+</header>
+      <div class="outer">
+        <section id="main"><article id="post-0001-redis-sidekiq-activejob" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2018/05/10/0001-redis-sidekiq-activejob/" class="article-date">
+  <time datetime="2018-05-09T15:38:03.000Z" itemprop="datePublished">2018-05-10</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      [Rails] RedisとSidekiqとActiveJobで苦しむ
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h2><span id="rails-でバッチ処理をしたい">Rails でバッチ処理をしたい</span></h2><p>具体的には動画のエンコードを Rails 上でやりたい。</p>
+<p>もちろんリクエストを投げてエンコード結果のレスポンスを返すなんてことは無理だ、だからバッチでやる。Rails でバッチ処理のやり方を調べると、Rails4.2 からは ActiveJob という機能を使ってやるらしい。</p>
+<a id="more"></a>
+<p><a href="https://railsguides.jp/active_job_basics.html" class="embedly-card" data-card-image="0" data-card-controls="0" data-card-align="left" target="_blank" rel="noopener"></a></p>
+<p>冒頭に ActiveJob の目的なるものが書いてある。</p>
+<p>&gt;Active Job の主要な目的は、Rails アプリを即席で作成した直後でも使用できる、自前のジョブ管理インフラを持つことです。これにより、Delayed Job と Resque などのように、さまざまなジョブ実行機能の API の違いを気にせずにジョブフレームワーク機能やその他の gem を搭載することができるようになります。バックエンドでのキューイング作業では、操作方法以外のことを気にせずに済みます。さらに、ジョブ管理フレームワークを切り替える際にジョブを書き直さずに済みます。</p>
+<p>なるほど、ジョブ管理フレームワーク（アダプタ）の差異を吸収してくれる機能なわけね。</p>
+<p>アダプタは情報が多そうな<code>Sidekiq</code>を使ってみることにする。</p>
+<h2><span id="redis-で苦しむ">Redis で苦しむ</span></h2><p><code>Sidekiq</code>を使うには<code>Redis</code>のインストールが必要なようだ。WSL（Windows Subsystem for Linux）の Ubuntu で動作させる為、Redis を apt からインストールする。</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">sudo apt-get install -y redis-server</span><br></pre></td></tr></table></figure>
+<p>うまくインストールされた。<code>redis-server</code>コマンドで Redis 自体も立ち上がった。次は Sidekiq だ</p>
+<p>Gemfile に追記し</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">gem &apos;sidekiq&apos;</span><br></pre></td></tr></table></figure>
+<p>インストールする</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">bundle install</span><br></pre></td></tr></table></figure>
+<p>そして Sidekiq を起動……起動しない</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">$ bundle <span class="built_in">exec</span> sidekiq</span><br><span class="line">2018-03-31T02:45:54.416Z 569 TID-oxysghnw1 INFO: Booting Sidekiq 5.1.1 with redis options &#123;:url=&gt;<span class="string">"redis://127.0.0.1:6379"</span>, :namespace=&gt;<span class="string">"sidekiq"</span>, :id=&gt;<span class="string">"Sidekiq-server-PID-569"</span>&#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">         m,</span><br><span class="line">         `<span class="variable">$b</span></span><br><span class="line">    .ss,  $$:         .,d$</span><br><span class="line">    `$<span class="variable">$P</span>,d<span class="variable">$P</span><span class="string">'    .,md$P"'</span></span><br><span class="line">     ,$$$$<span class="variable">$bmmd</span>$$<span class="variable">$P</span>^<span class="string">'</span></span><br><span class="line"><span class="string">   .d$$$$$$$$$$P'</span></span><br><span class="line">   $$^<span class="string">' `"^$$$'</span>       ____  _     _      _    _</span><br><span class="line">   $:     ,$$:       / ___|(_) __| | ___| | _(_) __ _</span><br><span class="line">   `b     :$$        \___ \| |/ _` |/ _ \ |/ / |/ _` |</span><br><span class="line">          $$:         ___) | | (_| |  __/   &lt;| | (_| |</span><br><span class="line">          $$         |____/|_|\__,_|\___|_|\_\_|\__, |</span><br><span class="line">        .d$$                                       |_|</span><br><span class="line"></span><br><span class="line">2018-03-31T02:45:59.593Z 569 TID-oxysghnw1 INFO: Running <span class="keyword">in</span> ruby 2.3.3p222 (2016-11-21 revision 56859) [x86_64-linux]</span><br><span class="line">2018-03-31T02:45:59.593Z 569 TID-oxysghnw1 INFO: See LICENSE and the LGPL-3.0 <span class="keyword">for</span> licensing details.</span><br><span class="line">2018-03-31T02:45:59.594Z 569 TID-oxysghnw1 INFO: Upgrade to Sidekiq Pro <span class="keyword">for</span> more features and support: http://sidekiq.org</span><br><span class="line">Error connecting to Redis on 127.0.0.1:6379 (Errno::ECONNREFUSED)</span><br></pre></td></tr></table></figure>
+<p><code>redis-cli</code>でもダメだ</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">Could not connect to Redis at 127.0.0.1:6379: Connection refused</span><br></pre></td></tr></table></figure>
+<p>結局原因は分からなかったが、パッケージマネージャからインストールすると Redis のバージョンが古い模様（この時 2.8 がインストールされていた）</p>
+<h3><span id="最新バージョンをインストールする">最新バージョンをインストールする</span></h3><p><a href="http://d.hatena.ne.jp/Kazuhira/20160116/1452933029" target="_blank" rel="noopener">Ubuntu Linux 14.04 LTS に Redis 3 をインストールする</a>を参考に最新バージョンを入れる。</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">sudo add-apt-repository ppa:chris-lea/redis-server</span><br><span class="line">sudo apt-get update</span><br><span class="line">sudo apt-get install redis-server</span><br></pre></td></tr></table></figure>
+<p>見事 4.0.9 がインストールされた…が、今度は起動しないのだ。</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">$ redis-server</span><br><span class="line">68:C 31 Mar 13:27:35.509 <span class="comment"># oO0OoO0OoO0Oo Redis is starting oO0OoO0OoO0Oo</span></span><br><span class="line">68:C 31 Mar 13:27:35.509 <span class="comment"># Redis version=4.0.9, bits=64, commit=00000000, modified=0, pid=68, just started</span></span><br><span class="line">68:C 31 Mar 13:27:35.509 <span class="comment"># Warning: no config file specified, using the default config. In order to specify a config file use redis-server /path/to/redis.conf</span></span><br><span class="line">68:M 31 Mar 13:27:35.509 <span class="comment"># You requested maxclients of 10000 requiring at least 10032 max file descriptors.</span></span><br><span class="line">68:M 31 Mar 13:27:35.509 <span class="comment"># Server can't set maximum open files to 10032 because of OS error: Invalid argument.</span></span><br><span class="line">68:M 31 Mar 13:27:35.509 <span class="comment"># Current maximum open files is 2048. maxclients has been reduced to 2016 to compensate for low ulimit. If you need higher maxclients increase 'ulimit -n'.</span></span><br><span class="line">68:M 31 Mar 13:27:35.509 <span class="comment"># Creating Server TCP listening socket *:6379: bind: Address already in use</span></span><br></pre></td></tr></table></figure>
+<p>config ファイルの指定をしたら立ち上がった<br><code>--help</code>には未指定ならデフォルトって書いてるのに…</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">sudo redis-server /etc/redis/redis.conf</span><br></pre></td></tr></table></figure>
+<p>そして今度こそ Sidekiq が立ち上がった。</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">$ bundle <span class="built_in">exec</span> sidekiq</span><br><span class="line">2018-03-31T04:35:18.081Z 92 TID-oxyufulvw INFO: Booting Sidekiq 5.1.1 with redis options &#123;:url=&gt;<span class="string">"redis://localhost:6379"</span>, :namespace=&gt;<span class="string">"sidekiq"</span>, :id=&gt;<span class="string">"Sidekiq-server-PID-92"</span>&#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">         m,</span><br><span class="line">         `<span class="variable">$b</span></span><br><span class="line">    .ss,  $$:         .,d$</span><br><span class="line">    `$<span class="variable">$P</span>,d<span class="variable">$P</span><span class="string">'    .,md$P"'</span></span><br><span class="line">     ,$$$$<span class="variable">$bmmd</span>$$<span class="variable">$P</span>^<span class="string">'</span></span><br><span class="line"><span class="string">   .d$$$$$$$$$$P'</span></span><br><span class="line">   $$^<span class="string">' `"^$$$'</span>       ____  _     _      _    _</span><br><span class="line">   $:     ,$$:       / ___|(_) __| | ___| | _(_) __ _</span><br><span class="line">   `b     :$$        \___ \| |/ _` |/ _ \ |/ / |/ _` |</span><br><span class="line">          $$:         ___) | | (_| |  __/   &lt;| | (_| |</span><br><span class="line">          $$         |____/|_|\__,_|\___|_|\_\_|\__, |</span><br><span class="line">        .d$$                                       |_|</span><br><span class="line"></span><br><span class="line">2018-03-31T04:35:22.032Z 92 TID-oxyufulvw INFO: Running <span class="keyword">in</span> ruby 2.3.3p222 (2016-11-21 revision 56859) [x86_64-linux]</span><br><span class="line">2018-03-31T04:35:22.032Z 92 TID-oxyufulvw INFO: See LICENSE and the LGPL-3.0 <span class="keyword">for</span> licensing details.</span><br><span class="line">2018-03-31T04:35:22.032Z 92 TID-oxyufulvw INFO: Upgrade to Sidekiq Pro <span class="keyword">for</span> more features and support: http://sidekiq.org</span><br><span class="line">2018-03-31T04:35:22.053Z 92 TID-oxyufulvw INFO: Starting processing, hit Ctrl-C to stop</span><br></pre></td></tr></table></figure>
+<h3><span id="redis-を-docker-で入れる">Redis を Docker で入れる</span></h3><p>ここまでやって「あれ…Docker でいいんじゃね？」と気付く</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">docker run --name redis -d -p 6379:6379 redis redis-server</span><br></pre></td></tr></table></figure>
+<p>らくちーん！</p>
+<h2><span id="sidekiq-で苦しむ">Sidekiq で苦しむ</span></h2><p>ActiveJob の動作テストをする為に、まず Job を作成する。</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">$ bundle exec rails g job encoder</span><br><span class="line">invoke rspec</span><br><span class="line">identical spec/jobs/encoder_job_spec.rb</span><br><span class="line">create app/jobs/encoder_job.rb</span><br></pre></td></tr></table></figure>
+<p>Job にはログ出力のみ追記しておく。</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">class EncoderJob &lt; ApplicationJob</span><br><span class="line">  queue_as :default</span><br><span class="line">  def perform(*args)</span><br><span class="line">    Rails.logger.debug(&apos;do job!&apos;)</span><br><span class="line">  end</span><br><span class="line">end</span><br></pre></td></tr></table></figure>
+<p>そして<code>rails runner</code>で ActiveJob をキックする。</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">bundle exec rails runner &apos;EncoderJob.perform_later&apos;</span><br></pre></td></tr></table></figure>
+<p>…ログが出ない</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">[ActiveJob] Enqueued Encoder::Job (Job ID: 2f2f8b9e-ce21-474b-b8d7-152aac0750f2) to Sidekiq(encoder)</span><br><span class="line">[ActiveJob] [Encoder::Job] [2f2f8b9e-ce21-474b-b8d7-152aac0750f2] Performing Encoder::Job (Job ID: 2f2f8b9e-ce21-474b-b8d7-152aac0750f2) from Sidekiq(encoder)</span><br></pre></td></tr></table></figure>
+<p>Enqueue と Perform のログは出ているので実行はされているようだが、肝心の<code>Rails.logger.debug(&#39;do job!&#39;)</code>が出力されない。<br>解決… <a href="http://d.hatena.ne.jp/yk5656/20140804/1407572756" target="_blank" rel="noopener">Rails でバッチ処理を作成してみる（runner の場合）</a> <code>rails runner</code>でキックする場合<code>Logger</code>を<code>new</code>しないとダメなんかい</p>
+<h3><span id="queue-でさらに詰まる">queue でさらに詰まる</span></h3><p><code>queue_as :default</code>を<code>queue_as :encoder</code>に変えたらまたログが出なくなった。<br>起動時に使用するキューの設定を<code>-q</code>でする必要があった <code>bundle exec sidekiq -q default encoder</code>で OK…ではない<code>-q</code>直後のキューしか認識しない<br><code>-q default</code>なら default しか動かないし、<code>-q encoder</code>なら encoder しか動かない <code>sidekiq.yml</code>で設定したら両方動いた、なんでだろ…</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">:verbose: false</span><br><span class="line">:pidfile: ./tmp/pids/sidekiq.pid</span><br><span class="line">:logfile: ./log/sidekiq.log</span><br><span class="line">:concurrency:  25</span><br><span class="line">:queues:</span><br><span class="line">  - default</span><br><span class="line">  - downloader</span><br><span class="line">  - encoder</span><br></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">bundle exec sidekiq -C config/sidekiq.yml</span><br></pre></td></tr></table></figure>
+<p>これで OK</p>
+<h3><span id="ダッシュボードはいい">ダッシュボードはいい</span></h3><p>Sidekiq にはダッシュボードがついている、これはいいものだ、以下の設定で有効になる。</p>
+<figure class="highlight ruby"><table><tr><td class="code"><pre><span class="line"><span class="comment"># config/routes.rb</span></span><br><span class="line"><span class="keyword">require</span> <span class="string">'sidekiq/web'</span></span><br><span class="line">mount Sidekiq::Web =&gt; <span class="string">'/sidekiq'</span></span><br></pre></td></tr></table></figure>
+<p>開発環境なら<code>http://localhost:3000/sidekiq</code>にアクセスで表示される。</p>
+<p><img src="/images/01-01.png" alt="ダッシュボードの表示例"></p>
+<h3><span id="アダプタ意識しなくていい">アダプタ意識しなくていい？</span></h3><p>冒頭で ActiveJob はジョブ管理フレームワーク（アダプタ）の差異を吸収すると書いたが、結局 Sidekiq がっつり覚えなきゃ最低限の動作も難しかった。<br>アダプタを変更しても ActiveJob より先は修正が必要ないという事だろうけど、アダプタの変更ってそんな発生するものだろうか？ActiveJob のメリットが感じ辛かった、Sidekiq 単体でいいんじゃないかと。</p>
+<p>全くの 0 から導入する場合、<code>ActiveJob+Sidekiq+Redis</code>と<code>Sidekiq+Redis</code>なら明らかに後者の負荷が低いだろう。</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <div data-url="https://t-kojima.github.io/2018/05/10/0001-redis-sidekiq-activejob/" data-id="cjq51fi15004zmtu7wt7mq5ec" class="article-share-items"></div>
+      <!-- <a data-url="https://t-kojima.github.io/2018/05/10/0001-redis-sidekiq-activejob/" data-id="cjq51fi15004zmtu7wt7mq5ec" class="article-share-link">共有</a> -->
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/rails/">rails</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/redis/">redis</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/ruby/">ruby</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/sidekiq/">sidekiq</a></li></ul>
+
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+    <a href="/2018/05/10/0002-project-euler-1/" id="article-nav-newer" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">次の記事</strong>
+      <div class="article-nav-title">
+        
+          Project Euler # 1
+        
+      </div>
+    </a>
+  
+  
+</nav>
+
+  
+</article>
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">カテゴリ</h3>
+    <div class="widget">
+      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/Mac/">Mac</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/MySQL/">MySQL</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Node/">Node</a><span class="category-list-count">2</span><ul class="category-list-child"><li class="category-list-item"><a class="category-list-link" href="/categories/Node/Express/">Express</a><span class="category-list-count">2</span></li></ul></li><li class="category-list-item"><a class="category-list-link" href="/categories/Sinatra/">Sinatra</a><span class="category-list-count">1</span></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">タグ</h3>
+    <div class="widget">
+      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/axios/">axios</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/babel/">babel</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/bottle/">bottle</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/browserify/">browserify</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/csharp/">csharp</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/docker/">docker</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/eslint/">eslint</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/euler/">euler</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/express/">express</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/firebase/">firebase</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/flask/">flask</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/hexo/">hexo</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/javascript/">javascript</a><span class="tag-list-count">8</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/jupyter/">jupyter</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/karma/">karma</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/kintone/">kintone</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/linux/">linux</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/log4js/">log4js</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/luigi/">luigi</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mac/">mac</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mocha/">mocha</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mysql/">mysql</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/node-fetch/">node-fetch</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/nodejs/">nodejs</a><span class="tag-list-count">13</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/powerline/">powerline</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/prettier/">prettier</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/python/">python</a><span class="tag-list-count">8</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/rails/">rails</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/react/">react</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/redis/">redis</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/rpa/">rpa</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/rspec/">rspec</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ruby/">ruby</a><span class="tag-list-count">7</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/sidekiq/">sidekiq</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/sinatra/">sinatra</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/sqlalchemy/">sqlalchemy</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/vagrant/">vagrant</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/virtualbox/">virtualbox</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/vscode/">vscode</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/vue/">vue</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/webpack/">webpack</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/zipstream/">zipstream</a><span class="tag-list-count">1</span></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">タグクラウド</h3>
+    <div class="widget tagcloud">
+      <a href="/tags/axios/" style="font-size: 10px;">axios</a> <a href="/tags/babel/" style="font-size: 10px;">babel</a> <a href="/tags/bottle/" style="font-size: 10px;">bottle</a> <a href="/tags/browserify/" style="font-size: 10px;">browserify</a> <a href="/tags/csharp/" style="font-size: 10px;">csharp</a> <a href="/tags/docker/" style="font-size: 10px;">docker</a> <a href="/tags/eslint/" style="font-size: 11.43px;">eslint</a> <a href="/tags/euler/" style="font-size: 10px;">euler</a> <a href="/tags/express/" style="font-size: 11.43px;">express</a> <a href="/tags/firebase/" style="font-size: 12.86px;">firebase</a> <a href="/tags/flask/" style="font-size: 10px;">flask</a> <a href="/tags/hexo/" style="font-size: 11.43px;">hexo</a> <a href="/tags/javascript/" style="font-size: 18.57px;">javascript</a> <a href="/tags/jupyter/" style="font-size: 10px;">jupyter</a> <a href="/tags/karma/" style="font-size: 11.43px;">karma</a> <a href="/tags/kintone/" style="font-size: 12.86px;">kintone</a> <a href="/tags/linux/" style="font-size: 10px;">linux</a> <a href="/tags/log4js/" style="font-size: 10px;">log4js</a> <a href="/tags/luigi/" style="font-size: 15.71px;">luigi</a> <a href="/tags/mac/" style="font-size: 10px;">mac</a> <a href="/tags/mocha/" style="font-size: 10px;">mocha</a> <a href="/tags/mysql/" style="font-size: 11.43px;">mysql</a> <a href="/tags/node-fetch/" style="font-size: 10px;">node-fetch</a> <a href="/tags/nodejs/" style="font-size: 20px;">nodejs</a> <a href="/tags/powerline/" style="font-size: 11.43px;">powerline</a> <a href="/tags/prettier/" style="font-size: 10px;">prettier</a> <a href="/tags/python/" style="font-size: 18.57px;">python</a> <a href="/tags/rails/" style="font-size: 10px;">rails</a> <a href="/tags/react/" style="font-size: 12.86px;">react</a> <a href="/tags/redis/" style="font-size: 10px;">redis</a> <a href="/tags/rpa/" style="font-size: 10px;">rpa</a> <a href="/tags/rspec/" style="font-size: 10px;">rspec</a> <a href="/tags/ruby/" style="font-size: 17.14px;">ruby</a> <a href="/tags/sidekiq/" style="font-size: 10px;">sidekiq</a> <a href="/tags/sinatra/" style="font-size: 15.71px;">sinatra</a> <a href="/tags/sqlalchemy/" style="font-size: 11.43px;">sqlalchemy</a> <a href="/tags/vagrant/" style="font-size: 10px;">vagrant</a> <a href="/tags/virtualbox/" style="font-size: 10px;">virtualbox</a> <a href="/tags/vscode/" style="font-size: 14.29px;">vscode</a> <a href="/tags/vue/" style="font-size: 12.86px;">vue</a> <a href="/tags/webpack/" style="font-size: 10px;">webpack</a> <a href="/tags/zipstream/" style="font-size: 10px;">zipstream</a>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">アーカイブ</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/12/">12月 2018</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/11/">11月 2018</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/10/">10月 2018</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/09/">9月 2018</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/08/">8月 2018</a><span class="archive-list-count">6</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/07/">7月 2018</a><span class="archive-list-count">11</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/06/">6月 2018</a><span class="archive-list-count">12</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/05/">5月 2018</a><span class="archive-list-count">11</span></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">最近の投稿</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2018/12/20/0051-setup-macbook-pro-2018/">MacBookPro2018のセットアップ</a>
+          </li>
+        
+          <li>
+            <a href="/2018/11/29/0050-about-config-ru/">[Sinatra] config.ruとは</a>
+          </li>
+        
+          <li>
+            <a href="/2018/11/14/0049-docker-mysql-error-caching-sha2-password/">[MySQL] Unable to load authentication plugin &#39;caching_sha2_password&#39;</a>
+          </li>
+        
+          <li>
+            <a href="/2018/11/05/0048-express-with-log4js/">[Node] ExpressでAPIを作ったらログも吐く</a>
+          </li>
+        
+          <li>
+            <a href="/2018/11/02/0047-helloworld-express-with-json/">[Node] Expressを使って最速でJSONを返す</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      &copy; 2018 t-kojima<br>
+      Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+
+
+  <link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
+  <script src="/fancybox/jquery.fancybox.pack.js"></script>
+
+
+<script src="/js/script.js"></script>
+
+
+
+  </div>
+  <script async src="//cdn.embedly.com/widgets/platform.js" charset="UTF-8"></script>
+</body>
+</html>

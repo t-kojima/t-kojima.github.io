@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+
+  
+  <title>全てがReduceになる(1) | Today&#39;s Commit</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="ごめんなさいタイトルが言いたかっただけです。それはそうと reduce をいじっているとなんでもできそうな気がしてきたので、Array のメソッドを再実装してみる。  concat copyWithin entries every">
+<meta name="keywords" content="javascript,nodejs">
+<meta property="og:type" content="article">
+<meta property="og:title" content="全てがReduceになる(1)">
+<meta property="og:url" content="https://t-kojima.github.io/2018/07/21/0030-all-becomes-reduce-1/index.html">
+<meta property="og:site_name" content="Today&#39;s Commit">
+<meta property="og:description" content="ごめんなさいタイトルが言いたかっただけです。それはそうと reduce をいじっているとなんでもできそうな気がしてきたので、Array のメソッドを再実装してみる。  concat copyWithin entries every">
+<meta property="og:locale" content="ja">
+<meta property="og:updated_time" content="2018-12-20T11:07:38.288Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="全てがReduceになる(1)">
+<meta name="twitter:description" content="ごめんなさいタイトルが言いたかっただけです。それはそうと reduce をいじっているとなんでもできそうな気がしてきたので、Array のメソッドを再実装してみる。  concat copyWithin entries every">
+  
+    <link rel="alternate" href="/atom.xml" title="Today&#39;s Commit" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  
+    <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
+  
+  <link rel="stylesheet" href="/css/style.css">
+  
+    <link rel="amphtml" href="https://t-kojima.github.io/2018/07/21/0030-all-becomes-reduce-1//amp/index.html">
+  
+</head>
+
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">Today&#39;s Commit</a>
+      </h1>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSSフィード"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="検索"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="https://t-kojima.github.io"></form>
+      </div>
+    </div>
+  </div>
+</header>
+      <div class="outer">
+        <section id="main"><article id="post-0030-all-becomes-reduce-1" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2018/07/21/0030-all-becomes-reduce-1/" class="article-date">
+  <time datetime="2018-07-20T19:35:23.000Z" itemprop="datePublished">2018-07-21</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      全てがReduceになる(1)
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>ごめんなさいタイトルが言いたかっただけです。<br>それはそうと reduce をいじっていると<strong>なんでもできそうな気がしてきた</strong>ので、Array のメソッドを再実装してみる。</p>
+<ul>
+<li>concat</li>
+<li>copyWithin</li>
+<li>entries</li>
+<li>every</li>
+</ul>
+<a id="more"></a>
+<hr>
+<ul>
+<li>7/23 <code>concat</code>、<code>copyWithin</code>、<code>entries</code> を疎の配列を考慮した実装に修正</li>
+<li>7/27 <code>every</code> を truthly で判定するよう修正</li>
+</ul>
+<hr>
+<p>prototype 汚染なんか気にしないでガンガン上書きしちゃうぞ！（というかこういう機会じゃないと prototype 拡張なんかしないから…）</p>
+<p><a href="https://developer.mozilla.org/ja/docs/Web/JavaScript/Reference/Global_Objects/Array" target="_blank" rel="noopener">Array - JavaScript | MDN</a>のメソッドを上から順にやっつけていく。</p>
+<h1><span id="おさらい">おさらい</span></h1><p>はじめに reduce の仕様をおさらい。</p>
+<p><a href="https://developer.mozilla.org/ja/docs/Web/JavaScript/Reference/Global_Objects/Array/reduce" class="embedly-card" data-card-image="0" data-card-controls="0" data-card-align="left" target="_blank" rel="noopener"></a></p>
+<h2><span id="構文">構文</span></h2><figure class="highlight js"><table><tr><td class="code"><pre><span class="line">array.reduce(callback[, initialValue])</span><br></pre></td></tr></table></figure>
+<h2><span id="使用例sum">使用例（Sum）</span></h2><figure class="highlight js"><table><tr><td class="code"><pre><span class="line">;[<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>].reduce(<span class="function"><span class="keyword">function</span>(<span class="params">accumulator, currentValue, currentIndex, array</span>) </span>&#123;</span><br><span class="line">  <span class="keyword">return</span> accumulator + currentValue</span><br><span class="line">&#125;, <span class="number">0</span>)</span><br><span class="line"><span class="comment">// &gt; 6</span></span><br></pre></td></tr></table></figure>
+<h2><span id="説明">説明</span></h2><p>基本的にはレシーバとなる配列の反復処理を行う。callback は要素の数の分だけ呼び出されるが、その時各引数は以下の値を取る。</p>
+<ul>
+<li>accumulator : 前の要素の return 結果</li>
+<li>currentValue : 現在の要素値</li>
+<li>currentIndex : 現在の要素のインデクス</li>
+<li>array : レシーバ自身</li>
+</ul>
+<p>最後の要素の return 結果が、最終的な reduce の戻り値として返される。<br>また、最初の要素の accumulator は initialValue の値となり、initialValue を省略した場合は accumulator が最初の要素、currentValue が二番目の要素になる。</p>
+<p>ちなみに上記の例は以下の流れで処理される</p>
+<table>
+<thead>
+<tr>
+<th>index</th>
+<th>callback</th>
+<th>return</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>0</td>
+<td>(0, 1, 0, [1,2,3])</td>
+<td>0 + 1</td>
+</tr>
+<tr>
+<td>1</td>
+<td>(1, 2, 1, [1,2,3])</td>
+<td>1 + 2</td>
+</tr>
+<tr>
+<td>2</td>
+<td>(3, 3, 2, [1,2,3])</td>
+<td>3 + 3</td>
+</tr>
+</tbody>
+</table>
+<p>最後の要素の return が 6 なので、ちゃんと sum として動いていることがわかる。</p>
+<h1><span id="ルール">ルール</span></h1><p>ただ再実装するだけだと色々抜け道があるので以下のルールを規定する。</p>
+<ul>
+<li>for 文禁止</li>
+<li>Array#reduce を必ず使用する</li>
+<li>Array のインスタンスメソッドは reduce 以外使用不可</li>
+<li>Array のプロパティ、クラスメソッドは使用可能</li>
+<li>スプレッド構文は使用不可（reduce すら不要になる場合があるから）</li>
+</ul>
+<hr>
+<h1 style="font-size: 4em;"><span id="concat">concat</span></h1>
+
+<p><a href="https://developer.mozilla.org/ja/docs/Web/JavaScript/Reference/Global_Objects/Array/concat" target="_blank" rel="noopener">Array.prototype.concat() - JavaScript | MDN</a></p>
+<p>concat は二つの配列を結合し、新しい配列を返すメソッド。</p>
+<h2><span id="構文">構文</span></h2><figure class="highlight js"><table><tr><td class="code"><pre><span class="line"><span class="keyword">var</span> new_array = old_array.concat(value1[, value2[, ...[, valueN]]])</span><br></pre></td></tr></table></figure>
+<h2><span id="再実装">再実装</span></h2><p>reduce を使って実装した結果がこれ</p>
+<figure class="highlight js"><table><tr><td class="code"><pre><span class="line"><span class="built_in">Array</span>.prototype.concat = <span class="function"><span class="keyword">function</span>(<span class="params">...args</span>) </span>&#123;</span><br><span class="line">  <span class="keyword">const</span> copy = <span class="built_in">Array</span>.from(<span class="keyword">this</span>)</span><br><span class="line">  args.reduce(<span class="function">(<span class="params">_, array</span>) =&gt;</span> &#123;</span><br><span class="line">    array.reduce(<span class="function">(<span class="params">acc, cur</span>) =&gt;</span> &#123;</span><br><span class="line">      copy[copy.length] = cur</span><br><span class="line">    &#125;, <span class="literal">null</span>)</span><br><span class="line">  &#125;, <span class="literal">null</span>)</span><br><span class="line">  <span class="keyword">return</span> copy</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">const</span> array = [<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>, <span class="number">4</span>]</span><br><span class="line"><span class="built_in">console</span>.log(array.concat([<span class="number">5</span>, <span class="number">6</span>], [<span class="number">7</span>, <span class="number">8</span>]))</span><br><span class="line"></span><br><span class="line"><span class="comment">// &gt; [ 1, 2, 3, 4, 5, 6, 7, 8 ]</span></span><br></pre></td></tr></table></figure>
+<p>まず最初に非破壊的なメソッドなので copy する。arguments を使うとそのままでは Array#reduce できない（ESLint にも怒られるし）ので、レスト構文（<code>...args</code>)を使うことで reduce を呼べるようにしている。</p>
+<p>次に copy 配列に args の配列を一つずつ追加していくが、Array#push が使えないので <code>array[array.length] = value</code> という形で順次配列を拡張していく。配列長を超えた要素に代入すると拡張されるのね、他の言語では大体 OutOfIndex 系のエラーが出るけど、これは助かる。</p>
+<h2><span id="723-追記">7/23 追記</span></h2><p><strong>疎な配列</strong>（<code>sparse array</code>）の考慮が漏れていた！</p>
+<h3><span id="疎な配列とは">疎な配列とは</span></h3><p>こういうやつ</p>
+<figure class="highlight js"><table><tr><td class="code"><pre><span class="line">[,,]</span><br><span class="line"><span class="comment">// &gt; [ &lt;2 empty items&gt; ]</span></span><br><span class="line"><span class="built_in">Array</span>(<span class="number">3</span>)</span><br><span class="line"><span class="comment">// &gt; [ &lt;3 empty items&gt; ]</span></span><br><span class="line">[,,,<span class="number">3</span>,<span class="number">4</span>,,,]</span><br><span class="line"><span class="comment">// &gt; [ &lt;3 empty items&gt;, 3, 4, &lt;2 empty items&gt; ]</span></span><br></pre></td></tr></table></figure>
+<p>性質として、length のみが設定された配列で、<code>empty item</code> となっている要素は undefined でもなく<strong>undefined とは別の未定義</strong>という状態だ。（便宜的に<strong>疎の要素</strong>とでも言おうか。。。）</p>
+<p>こいつの厄介なところは、疎の要素は undefined ではないにも関わらず、アクセスして値を取り出すと undefined が取り出されてしまうので、一見区別がつかない点だ。判別するには <code>Object.prototype.hasOwnProperty</code> を使うか、もしくは <code>&lt;property&gt; in &lt;object&gt;</code> で判別するしかない。</p>
+<p>また、疎な配列のコピー（シャローコピー）を行いたい場合にも、<code>Array.from(target)</code> は使用できない。疎の要素に undefined が入ってしまうのだ。</p>
+<figure class="highlight js"><table><tr><td class="code"><pre><span class="line"><span class="built_in">Array</span>.from([, , , , , ,])</span><br><span class="line"><span class="comment">// &gt; [ undefined, undefined, undefined, undefined, undefined, undefined ]</span></span><br></pre></td></tr></table></figure>
+<p><code>Array#concat</code> や <code>Array#slice</code> を使えば疎な配列のコピーを行うことができるが、concat を再実装する為に concat が必要だというのだから本末転倒だ。</p>
+<p>そして concat（を含むほとんどのインスタンスメソッド）は疎な配列を正しく解釈する。</p>
+<figure class="highlight js"><table><tr><td class="code"><pre><span class="line"><span class="built_in">Array</span>(<span class="number">3</span>).concat(<span class="built_in">Array</span>(<span class="number">2</span>))</span><br><span class="line"><span class="comment">// &gt; [ &lt;5 empty items&gt; ]</span></span><br></pre></td></tr></table></figure>
+<p>なので頑張って対応するしかない。</p>
+<h3><span id="改めて再実装">改めて再実装</span></h3><p>疎な配列に対応したものが以下の実装だ。</p>
+<figure class="highlight js"><table><tr><td class="code"><pre><span class="line"><span class="built_in">Array</span>.prototype.concat = <span class="function"><span class="keyword">function</span>(<span class="params">...args</span>) </span>&#123;</span><br><span class="line">  <span class="keyword">const</span> list = <span class="function"><span class="params">array</span> =&gt;</span> <span class="built_in">Array</span>.from(<span class="built_in">Array</span>(array.length))</span><br><span class="line"></span><br><span class="line">  <span class="keyword">const</span> pushValue = <span class="function">(<span class="params"><span class="keyword">from</span>, to, index</span>) =&gt;</span> &#123;</span><br><span class="line">    <span class="keyword">if</span> (index <span class="keyword">in</span> <span class="keyword">from</span>) &#123;</span><br><span class="line">      to[to.length] = <span class="keyword">from</span>[index]</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">      to.length += <span class="number">1</span></span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">const</span> copy = list(<span class="keyword">this</span>).reduce(<span class="function">(<span class="params">acc, cur, index</span>) =&gt;</span> &#123;</span><br><span class="line">    pushValue(<span class="keyword">this</span>, acc, index)</span><br><span class="line">    <span class="keyword">return</span> acc</span><br><span class="line">  &#125;, [])</span><br><span class="line"></span><br><span class="line">  <span class="keyword">const</span> arrays = args.reduce(<span class="function">(<span class="params">acc, cur</span>) =&gt;</span> &#123;</span><br><span class="line">    acc[acc.length] = <span class="built_in">Array</span>.isArray(cur) ? cur : [cur]</span><br><span class="line">    <span class="keyword">return</span> acc</span><br><span class="line">  &#125;, [])</span><br><span class="line"></span><br><span class="line">  arrays.reduce(<span class="function">(<span class="params">_, array</span>) =&gt;</span> &#123;</span><br><span class="line">    list(array).reduce(<span class="function">(<span class="params">acc, cur, index</span>) =&gt;</span> &#123;</span><br><span class="line">      pushValue(array, copy, index)</span><br><span class="line">    &#125;, <span class="literal">null</span>)</span><br><span class="line">  &#125;, <span class="literal">null</span>)</span><br><span class="line">  <span class="keyword">return</span> copy</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h4><span id="配列のコピー">配列のコピー</span></h4><p>まず配列のコピーはもともと</p>
+<figure class="highlight js"><table><tr><td class="code"><pre><span class="line"><span class="keyword">const</span> copy = <span class="built_in">Array</span>.from(<span class="keyword">this</span>)</span><br></pre></td></tr></table></figure>
+<p>としていたが、疎の配列を考慮することで以下のようになった。</p>
+<figure class="highlight js"><table><tr><td class="code"><pre><span class="line"><span class="keyword">const</span> list = <span class="function"><span class="params">array</span> =&gt;</span> <span class="built_in">Array</span>.from(<span class="built_in">Array</span>(array.length))</span><br><span class="line"></span><br><span class="line"><span class="keyword">const</span> pushValue = <span class="function">(<span class="params"><span class="keyword">from</span>, to, index</span>) =&gt;</span> &#123;</span><br><span class="line">  <span class="keyword">if</span> (index <span class="keyword">in</span> <span class="keyword">from</span>) &#123;</span><br><span class="line">    to[to.length] = <span class="keyword">from</span>[index]</span><br><span class="line">  &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">    to.length += <span class="number">1</span></span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">const</span> copy = list(<span class="keyword">this</span>).reduce(<span class="function">(<span class="params">acc, cur, index</span>) =&gt;</span> &#123;</span><br><span class="line">  pushValue(<span class="keyword">this</span>, acc, index)</span><br><span class="line">  <span class="keyword">return</span> acc</span><br><span class="line">&#125;, [])</span><br></pre></td></tr></table></figure>
+<p><code>Array.from</code> でのコピーで疎の配列を扱えないのは前述の通りだが、reduce も反復処理の中で疎の要素を数えてくれない。なので必然的に index を基準とした要素アクセスを行う必要があり、そのために <code>Array.from(Array(array.length))</code> を reduce のレシーバとすることで、疎の要素があっても全ての要素が処理されるようにしている。</p>
+<p><code>pushValue</code> 関数では from がコピー元の配列、to がコピー先の配列で <code>to.push(from[index])</code> のような処理を（イメージです）行っている。<code>index in from</code> で疎の要素の判別を行い、コピー元が疎の要素であればコピー先に<strong>疎の要素の追加</strong>を行う。しかし疎の要素は通常代入できない。なのでコピー先の length を 1 つ拡張し、拡張された分の要素が疎の要素になるようにする。</p>
+<h4><span id="値の-concat">値の concat</span></h4><p>これは単純に MDN の記載を見逃してただけなんだけど…concat は引数に配列だけではなく、値も取ることができる。</p>
+<figure class="highlight js"><table><tr><td class="code"><pre><span class="line"><span class="keyword">const</span> arrays = args.reduce(<span class="function">(<span class="params">acc, cur</span>) =&gt;</span> &#123;</span><br><span class="line">  acc[acc.length] = <span class="built_in">Array</span>.isArray(cur) ? cur : [cur]</span><br><span class="line">  <span class="keyword">return</span> acc</span><br><span class="line">&#125;, [])</span><br></pre></td></tr></table></figure>
+<p>なのでここでは引数をチェックし、値であれば配列でラップしている。配列かどうかの判定は <code>Array.isArray(cur)</code> の有無で判定する。</p>
+<h4><span id="argsarrays-を-concat">args(arrays) を concat</span></h4><p>最後に引数の配列（arrays）を reduce で回し、更にその要素の配列を reduce で回して、copy にガンガン push していく。</p>
+<figure class="highlight js"><table><tr><td class="code"><pre><span class="line">arrays.reduce(<span class="function">(<span class="params">_, array</span>) =&gt;</span> &#123;</span><br><span class="line">  list(array).reduce(<span class="function">(<span class="params">acc, cur, index</span>) =&gt;</span> &#123;</span><br><span class="line">    pushValue(array, copy, index)</span><br><span class="line">  &#125;, <span class="literal">null</span>)</span><br><span class="line">&#125;, <span class="literal">null</span>)</span><br></pre></td></tr></table></figure>
+<p>ここで回す配列も疎な配列の可能性がある為、<code>list</code> と <code>pushValue</code> 関数でのケアが必要だ。</p>
+<p>疎の配列は完全に抜けてたなぁ…他のメソッドも全部見直さなきゃ…</p>
+<hr>
+<h1 style="font-size: 4em;"><span id="copywithin">copyWithin</span></h1>
+
+<p><a href="https://developer.mozilla.org/ja/docs/Web/JavaScript/Reference/Global_Objects/Array/copyWithin" target="_blank" rel="noopener">Array.prototype.copyWithin() - JavaScript | MDN</a></p>
+<p>copyWithin は配列の指定の範囲を別の範囲に上書きする。</p>
+<h2><span id="構文">構文</span></h2><figure class="highlight js"><table><tr><td class="code"><pre><span class="line">arr.copyWithin(target[, start = <span class="number">0</span>[, end = <span class="keyword">this</span>.length]])</span><br></pre></td></tr></table></figure>
+<p>初めて見たメソッドなんだけど、MDN の説明も訳わかんなくて理解に時間が掛かった。</p>
+<figure class="highlight js"><table><tr><td class="code"><pre><span class="line">;[<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>, <span class="number">4</span>, <span class="number">5</span>, <span class="number">6</span>, <span class="number">7</span>].copyWithin(<span class="number">0</span>, <span class="number">3</span>, <span class="number">5</span>)</span><br><span class="line"><span class="comment">//         ~~~~~この範囲を</span></span><br><span class="line"><span class="comment">//====ここに上書きする</span></span><br><span class="line"><span class="comment">// &gt; [ 4, 5, 3, 4, 5, 6, 7 ] こうなる</span></span><br></pre></td></tr></table></figure>
+<p>ちょっと気になる点として、引数の end はコピー対象の末尾のインデクスを指定しているわけではなく、end-1 が実際コピーされる末尾インデクスになる。なので上の例だと start/end を <code>3 to 5</code> で指定しているので、<code>4,5,6</code> がコピー対象と思いがちだが、実際は <code>4,5</code> のみがコピー対象だ。</p>
+<p>また、以下の特性がある。</p>
+<ul>
+<li>target, start, end は Number の整数に変換される。</li>
+<li>引数が負の場合は末尾から数えた位置（<code>this.length - x</code>）として扱われる。</li>
+<li>this 自身を変更し、this を返す。</li>
+</ul>
+<p>逆に copyWithin は generic な関数として動作するとあるが、reduce が実装されていない型では動作できないので、この点は考慮しない。</p>
+<h2><span id="再実装">再実装</span></h2><p>これを reduce で実装するとこうなる</p>
+<figure class="highlight js"><table><tr><td class="code"><pre><span class="line"><span class="built_in">Array</span>.prototype.copyWithin = <span class="function"><span class="keyword">function</span>(<span class="params">target, start = <span class="number">0</span>, end = this.length</span>) </span>&#123;</span><br><span class="line">  <span class="keyword">const</span> copy = <span class="built_in">Array</span>.from(<span class="keyword">this</span>)</span><br><span class="line">  <span class="keyword">const</span> parse = <span class="function"><span class="params">value</span> =&gt;</span> &#123;</span><br><span class="line">    <span class="keyword">if</span> (value &gt; <span class="keyword">this</span>.length) <span class="keyword">return</span> <span class="keyword">this</span>.length</span><br><span class="line">    <span class="keyword">if</span> (value + <span class="keyword">this</span>.length &lt; <span class="number">0</span>) <span class="keyword">return</span> <span class="number">0</span></span><br><span class="line">    <span class="keyword">return</span> value &lt; <span class="number">0</span></span><br><span class="line">      ? <span class="keyword">this</span>.length + <span class="built_in">Number</span>.parseInt(value, <span class="number">10</span>)</span><br><span class="line">      : <span class="built_in">Number</span>.parseInt(value, <span class="number">10</span>)</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">const</span> t = parse(target)</span><br><span class="line">  <span class="keyword">const</span> s = parse(start)</span><br><span class="line">  <span class="keyword">const</span> e = parse(end)</span><br><span class="line"></span><br><span class="line">  <span class="keyword">return</span> <span class="keyword">this</span>.reduce(<span class="function">(<span class="params">acc, cur, index</span>) =&gt;</span> &#123;</span><br><span class="line">    <span class="keyword">if</span> (index &gt;= t &amp;&amp; index &lt; e - s + t) &#123;</span><br><span class="line">      acc[index] = copy[s + index - t]</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> acc</span><br><span class="line">  &#125;, <span class="keyword">this</span>)</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">const</span> array = [<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>, <span class="number">4</span>, <span class="number">5</span>, <span class="number">6</span>, <span class="number">7</span>]</span><br><span class="line"><span class="built_in">console</span>.log(array.copyWithin(<span class="number">0</span>, <span class="number">3</span>, <span class="number">5</span>))</span><br></pre></td></tr></table></figure>
+<p>中身は多く感じるが、大半は整数へのパースと配列長を超えた引数やマイナス引数の補正だ。</p>
+<p>いくつかポイントを解説</p>
+<figure class="highlight js"><table><tr><td class="code"><pre><span class="line"><span class="keyword">const</span> copy = <span class="built_in">Array</span>.from(<span class="keyword">this</span>)</span><br></pre></td></tr></table></figure>
+<p>後の reduce 内の処理で this を書き換えるてしまうので、コピー元の配列を保存しておく</p>
+<figure class="highlight js"><table><tr><td class="code"><pre><span class="line"><span class="keyword">const</span> parse = <span class="function"><span class="params">value</span> =&gt;</span> &#123;</span><br><span class="line">  <span class="keyword">if</span> (value &gt; <span class="keyword">this</span>.length) <span class="keyword">return</span> <span class="keyword">this</span>.length</span><br><span class="line">  <span class="keyword">if</span> (value + <span class="keyword">this</span>.length &lt; <span class="number">0</span>) <span class="keyword">return</span> <span class="number">0</span></span><br><span class="line">  <span class="keyword">return</span> value &lt; <span class="number">0</span></span><br><span class="line">    ? <span class="keyword">this</span>.length + <span class="built_in">Number</span>.parseInt(value, <span class="number">10</span>)</span><br><span class="line">    : <span class="built_in">Number</span>.parseInt(value, <span class="number">10</span>)</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">const</span> t = parse(target)</span><br><span class="line"><span class="keyword">const</span> s = parse(start)</span><br><span class="line"><span class="keyword">const</span> e = parse(end)</span><br></pre></td></tr></table></figure>
+<p>parse を通すと以下の処理を行った値になる。</p>
+<ul>
+<li>絶対値が配列長を超えていてプラス値の場合、配列長に丸める。</li>
+<li>絶対値が配列長を超えていてマイナス値の場合、0 に丸める。</li>
+<li>値がマイナスの場合、配列長を足して末尾から数えた位置を返す。</li>
+<li>値が少数の場合、整数に丸める（切り捨て）</li>
+</ul>
+<figure class="highlight js"><table><tr><td class="code"><pre><span class="line"><span class="keyword">return</span> <span class="keyword">this</span>.reduce(<span class="function">(<span class="params">acc, cur, index</span>) =&gt;</span> &#123;</span><br><span class="line">  <span class="keyword">if</span> (index &gt;= t &amp;&amp; index &lt; e - s + t) &#123;</span><br><span class="line">    acc[index] = copy[s + index - t]</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">return</span> acc</span><br><span class="line">&#125;, <span class="keyword">this</span>)</span><br></pre></td></tr></table></figure>
+<p>target が index 以上、かつ <code>target</code> + <code>startとendの差分</code>が index 未満の場合、該当 index の要素に <code>start</code> + <code>targetとindexの差分</code>をコピーする。</p>
+<p>copyWithin は動作確認に色々なパターンがあって面倒そうだったので<a href="https://github.com/t-kojima/practice-all-becomes-reduce/blob/master/test/copy_within_test.js" target="_blank" rel="noopener">テストも書いてみた。</a></p>
+<h2><span id="723-追記">7/23 追記</span></h2><p>疎な配列の対応をし、実装を見直した。</p>
+<figure class="highlight js"><table><tr><td class="code"><pre><span class="line"><span class="comment">// 長さが同じで要素がundefinedな配列を返す</span></span><br><span class="line"><span class="comment">// 疎の配列の場合reduce of empty array回避の為</span></span><br><span class="line"><span class="keyword">const</span> list = <span class="function"><span class="params">array</span> =&gt;</span> <span class="built_in">Array</span>.from(<span class="built_in">Array</span>(array.length))</span><br><span class="line"></span><br><span class="line"><span class="comment">// 配列(to)へ配列(from)のindex位置の要素をpushする。</span></span><br><span class="line"><span class="comment">// index位置が疎要素の場合はlengthを拡張して対応</span></span><br><span class="line"><span class="comment">// 疎要素を維持したままpushできる。</span></span><br><span class="line"><span class="keyword">const</span> pushValue = <span class="function">(<span class="params"><span class="keyword">from</span>, to, index</span>) =&gt;</span> &#123;</span><br><span class="line">  <span class="keyword">if</span> (index <span class="keyword">in</span> <span class="keyword">from</span>) &#123;</span><br><span class="line">    to[to.length] = <span class="keyword">from</span>[index]</span><br><span class="line">  &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">    to.length += <span class="number">1</span></span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 配列をコピーする。array.concat()と等価</span></span><br><span class="line"><span class="comment">// array#concatが利用できないのでreduceで実装</span></span><br><span class="line"><span class="keyword">const</span> clone = <span class="function"><span class="params">array</span> =&gt;</span></span><br><span class="line">  list(array).reduce(<span class="function">(<span class="params">acc, cur, index</span>) =&gt;</span> &#123;</span><br><span class="line">    pushValue(array, acc, index)</span><br><span class="line">    <span class="keyword">return</span> acc</span><br><span class="line">  &#125;, [])</span><br><span class="line"></span><br><span class="line"><span class="built_in">Array</span>.prototype.copyWithin = <span class="function"><span class="keyword">function</span>(<span class="params">target, start = <span class="number">0</span>, end = this.length</span>) </span>&#123;</span><br><span class="line">  <span class="keyword">const</span> parse = <span class="function"><span class="params">value</span> =&gt;</span></span><br><span class="line">    <span class="built_in">Math</span>.min(</span><br><span class="line">      <span class="built_in">Math</span>.max(<span class="built_in">Number</span>.parseInt(value, <span class="number">10</span>) + (value &lt; <span class="number">0</span> ? <span class="keyword">this</span>.length : <span class="number">0</span>), <span class="number">0</span>),</span><br><span class="line">      <span class="keyword">this</span>.length</span><br><span class="line">    )</span><br><span class="line"></span><br><span class="line">  <span class="keyword">const</span> t = parse(target)</span><br><span class="line">  <span class="keyword">const</span> s = parse(start)</span><br><span class="line">  <span class="keyword">const</span> e = parse(end)</span><br><span class="line"></span><br><span class="line">  <span class="keyword">const</span> copy = clone(<span class="keyword">this</span>)</span><br><span class="line"></span><br><span class="line">  <span class="keyword">this</span>.length = <span class="number">0</span></span><br><span class="line">  <span class="keyword">return</span> list(copy).reduce(<span class="function">(<span class="params">acc, cur, index</span>) =&gt;</span> &#123;</span><br><span class="line">    pushValue(</span><br><span class="line">      copy,</span><br><span class="line">      acc,</span><br><span class="line">      index &gt;= t &amp;&amp; index &lt; e - s + t ? s + index - t : index</span><br><span class="line">    )</span><br><span class="line">    <span class="keyword">return</span> acc</span><br><span class="line">  &#125;, <span class="keyword">this</span>)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><code>list</code>、<code>pushValue</code>、<code>clone</code> の関数は（恐らく）今後もそのまま使えると思うので、分かりやすく外だししてみた。</p>
+<p>基本的には concat と同様の修正だ。配列のコピーは <code>Array.from</code> を使用せず、自作の <code>clone</code> 関数を使う。（concat の時は関数に <code>clone</code> という名前は付けていなかったが、同じロジックだ）</p>
+<p>一点特筆すべきは <code>this.length = 0</code> の行だ。疎の要素を追加する際、既存の配列に対してインデクスを拡張しつつ追加することはできるが、length のサイズを変えずに既存の要素を疎の要素に置き換えることができない。しかし copyWithin は破壊的な操作になるので、配列のコピーを返すわけにもいかない。</p>
+<p>そこで <code>this.length = 0</code> とすることで this の要素を全て削除し、改めてそこに要素を追加していく形にしている。これなら疎の要素も追加することができる。</p>
+<p>あと地味に parse のロジックをワンライナーに書き直した。長いけど</p>
+<hr>
+<h1 style="font-size: 4em;"><span id="entries">entries</span></h1>
+
+<p><a href="https://developer.mozilla.org/ja/docs/Web/JavaScript/Reference/Global_Objects/Array/entries" target="_blank" rel="noopener">Array.prototype.entries() - JavaScript | MDN</a></p>
+<p>配列の各要素のインデクスと値のペアを含むイテレータを返す。</p>
+<h2><span id="構文">構文</span></h2><figure class="highlight js"><table><tr><td class="code"><pre><span class="line">array.entries()</span><br></pre></td></tr></table></figure>
+<p>基本的にイテレータそのものが必要になるシーンは普段無くて、大体そのまま for したり forEach したりするからこれも初めて使ったメソッドだった。</p>
+<h2><span id="再実装">再実装</span></h2><p>reduce で再実装すると以下のようになる。</p>
+<figure class="highlight js"><table><tr><td class="code"><pre><span class="line"><span class="built_in">Array</span>.prototype.entries = <span class="function"><span class="keyword">function</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">  <span class="keyword">const</span> iterator = []</span><br><span class="line">  <span class="keyword">let</span> count = <span class="number">0</span></span><br><span class="line">  iterator.next = <span class="function"><span class="params">()</span> =&gt;</span> &#123;</span><br><span class="line">    <span class="keyword">try</span> &#123;</span><br><span class="line">      <span class="keyword">return</span> <span class="keyword">this</span>.reduce(</span><br><span class="line">        (acc, cur, index) =&gt;</span><br><span class="line">          count === index ? &#123; <span class="attr">value</span>: [index, <span class="keyword">this</span>[index]], <span class="attr">done</span>: <span class="literal">false</span> &#125; : acc,</span><br><span class="line">        &#123; <span class="attr">value</span>: <span class="literal">undefined</span>, <span class="attr">done</span>: <span class="literal">true</span> &#125;</span><br><span class="line">      )</span><br><span class="line">    &#125; <span class="keyword">finally</span> &#123;</span><br><span class="line">      count += <span class="number">1</span></span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">return</span> iterator</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>参考： <a href="https://qiita.com/kura07/items/cf168a7ea20e8c2554c6" target="_blank" rel="noopener">JavaScript の イテレータ を極める！ - Qiita</a></p>
+<p>イテレータカウントのインクリメントを try/catch でやっているのが若干苦しい感じがするが、reduce のループ内でやるともっと苦しそうだったからこうなっている。</p>
+<p>それにしてもイテレータの再実装なんてのも初めてやったな…</p>
+<h2><span id="723-追記">7/23 追記</span></h2><p>entries も疎の配列対応をした。</p>
+<figure class="highlight js"><table><tr><td class="code"><pre><span class="line"><span class="built_in">Array</span>.prototype.entries = <span class="function"><span class="keyword">function</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">  <span class="keyword">const</span> list = <span class="function"><span class="params">array</span> =&gt;</span> <span class="built_in">Array</span>.from(<span class="built_in">Array</span>(array.length))</span><br><span class="line">  <span class="keyword">const</span> value = <span class="function"><span class="params">index</span> =&gt;</span> (index <span class="keyword">in</span> <span class="keyword">this</span> ? <span class="keyword">this</span>[index] : <span class="literal">undefined</span>)</span><br><span class="line"></span><br><span class="line">  <span class="keyword">const</span> iterator = <span class="keyword">this</span>[<span class="built_in">Symbol</span>.iterator]()</span><br><span class="line">  <span class="keyword">let</span> count = <span class="number">0</span></span><br><span class="line">  iterator.next = <span class="function"><span class="params">()</span> =&gt;</span> &#123;</span><br><span class="line">    <span class="keyword">try</span> &#123;</span><br><span class="line">      <span class="keyword">return</span> list(<span class="keyword">this</span>).reduce(</span><br><span class="line">        (acc, cur, index) =&gt;</span><br><span class="line">          count === index ? &#123; <span class="attr">value</span>: [index, value(index)], <span class="attr">done</span>: <span class="literal">false</span> &#125; : acc,</span><br><span class="line">        &#123; <span class="attr">value</span>: <span class="literal">undefined</span>, <span class="attr">done</span>: <span class="literal">true</span> &#125;</span><br><span class="line">      )</span><br><span class="line">    &#125; <span class="keyword">finally</span> &#123;</span><br><span class="line">      count += <span class="number">1</span></span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">return</span> iterator</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3><span id="スプレッド構文対応">スプレッド構文対応</span></h3><p>もともと <code>const iterator = []</code> となっていた所を、以下のように直した。</p>
+<figure class="highlight js"><table><tr><td class="code"><pre><span class="line"><span class="keyword">const</span> iterator = <span class="keyword">this</span>[<span class="built_in">Symbol</span>.iterator]()</span><br></pre></td></tr></table></figure>
+<p><code>const iterator = []</code> でも <code>next()</code> で要素を取得する分には問題なく動いていたが、スプレッド構文で <code>[...array.entries()]</code> としたとき正常に配列を取得できなかった。<code>this[Symbol.iterator]()</code> で取得したイテレータを上書きする形にすることでちゃんと動くようになった。</p>
+<h3><span id="疎の配列対応">疎の配列対応</span></h3><p>entries でも疎の要素はちゃんと考慮されなければならない。疎の要素の場合、イテレータの要素は <code>{ value: undefined, done: false }</code> というオブジェクトになる。</p>
+<p>対応なようは concat や copyWithin と同様だが、引数の parse や配列のコピーが不要なので、幾分か簡素にできている。</p>
+<hr>
+<h1 style="font-size: 4em;"><span id="every">every</span></h1>
+
+<p><a href="https://developer.mozilla.org/ja/docs/Web/JavaScript/Reference/Global_Objects/Array/every" target="_blank" rel="noopener">Array.prototype.every() - JavaScript | MDN</a></p>
+<p>指定された callback を要素が全てパスするかを判定する。</p>
+<h2><span id="構文">構文</span></h2><figure class="highlight js"><table><tr><td class="code"><pre><span class="line">array.every(callback[, thisArg])</span><br></pre></td></tr></table></figure>
+<p>callback は以下 3 つの引数を取る。</p>
+<ul>
+<li>currentValue : 現在の要素値</li>
+<li>index : 現在の要素のインデクス</li>
+<li>array : レシーバ自身</li>
+</ul>
+<p>また、いくつかの特性がある。</p>
+<ul>
+<li>thisArg が指定される場合、callback 内で this として扱われる。未指定の場合は undefined となる。</li>
+<li>呼びだされた配列に破壊的変更を加えない。</li>
+<li>空配列に対しては true を返す。</li>
+</ul>
+<h2><span id="再実装">再実装</span></h2><figure class="highlight js"><table><tr><td class="code"><pre><span class="line"><span class="built_in">Array</span>.prototype.every = <span class="function"><span class="keyword">function</span>(<span class="params">callback, thisArgs</span>) </span>&#123;</span><br><span class="line">  <span class="keyword">return</span> <span class="keyword">this</span>.reduce(</span><br><span class="line">    (acc, cur, index, array) =&gt;</span><br><span class="line">      acc ? callback.call(thisArgs, cur, index, array) : acc,</span><br><span class="line">    <span class="literal">true</span></span><br><span class="line">  )</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>call で関数スコープの this を指定できるのは初めて知った。しかし callback を function 式とアロー関数式で記述した時、this の評価が異なる点気になった。アロー関数式で記述した際は thisArgs が無視されるのだ。</p>
+<p>ただ<a href="https://developer.mozilla.org/ja/docs/Web/JavaScript/Reference/Operators/this" target="_blank" rel="noopener">MDN の this の注意書き</a>でも以下のように触れられているし</p>
+<blockquote>
+<p>注: this 引数がアロー関数の実行時に call, bind, apply に渡されても無視されます。まだ call に引数を加えることはできますが、最初の引数(thisArg) は null をセットすべきです。.</p>
+</blockquote>
+<p>every の polyfill にも以下のように call を使用した実装がされているので、そういう仕様で問題なさそうだ。</p>
+<figure class="highlight js"><table><tr><td class="code"><pre><span class="line"><span class="comment">// ii. testResult は、this 値としての T と、kValue、k、0 を含む引数リストを</span></span><br><span class="line"><span class="comment">//     ともなって、callbackfn の Call 内部メソッドを実行した結果です。</span></span><br><span class="line"><span class="keyword">var</span> testResult = callbackfn.call(T, kValue, k, O)</span><br></pre></td></tr></table></figure>
+<h2><span id="727-追記">7/27 追記</span></h2><p>実装に誤りがあったので修正</p>
+<figure class="highlight js"><table><tr><td class="code"><pre><span class="line"><span class="built_in">Array</span>.prototype.every = <span class="function"><span class="keyword">function</span>(<span class="params">callback, thisArgs</span>) </span>&#123;</span><br><span class="line">  <span class="keyword">return</span> <span class="keyword">this</span>.reduce(</span><br><span class="line">    (acc, cur, index, array) =&gt;</span><br><span class="line">      acc ? !!callback.call(thisArgs, cur, index, array) : acc,</span><br><span class="line">    <span class="literal">true</span></span><br><span class="line">  )</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>戻り値は boolean を返さなくてはいけなかったのに、callback の結果をそのまま渡してしまっていた。</p>
+<p>例えば数値の 4 は truthly だが、そのまま戻り値として 4 を渡してしまってはいけない。<code>!!callback</code> で callback の結果を boolean に変換してあげる。これならば callback の結果が 4 であっても true が戻るようになる。</p>
+<h1><span id="さいごに">さいごに</span></h1><p>やばい、これ全部のメソッド書くとすさまじい長さになる</p>
+<p><a href="https://t-kojima.github.io/2018/07/22/0031-all-becomes-reduce-2/">つづく</a></p>
+<h1><span id="追記時の参考">追記時の参考</span></h1><ul>
+<li><a href="https://efcl.info/2016/10/11/array-patterns/" target="_blank" rel="noopener">JavaScript の配列のパターン | Web Scratch</a></li>
+</ul>
+
+      
+    </div>
+    <footer class="article-footer">
+      <div data-url="https://t-kojima.github.io/2018/07/21/0030-all-becomes-reduce-1/" data-id="cjq51fi1o006gmtu7chfp52gx" class="article-share-items"></div>
+      <!-- <a data-url="https://t-kojima.github.io/2018/07/21/0030-all-becomes-reduce-1/" data-id="cjq51fi1o006gmtu7chfp52gx" class="article-share-link">共有</a> -->
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/javascript/">javascript</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/nodejs/">nodejs</a></li></ul>
+
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+    <a href="/2018/07/22/0031-all-becomes-reduce-2/" id="article-nav-newer" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">次の記事</strong>
+      <div class="article-nav-title">
+        
+          全てがReduceになる(2)
+        
+      </div>
+    </a>
+  
+  
+    <a href="/2018/07/19/0029-kinpost-is-custom-js-uploader/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">前の記事</strong>
+      <div class="article-nav-title">[Kintone] カスタムJS（CSS)ファイルのアップロードモジュールを作った</div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">カテゴリ</h3>
+    <div class="widget">
+      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/Mac/">Mac</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/MySQL/">MySQL</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Node/">Node</a><span class="category-list-count">2</span><ul class="category-list-child"><li class="category-list-item"><a class="category-list-link" href="/categories/Node/Express/">Express</a><span class="category-list-count">2</span></li></ul></li><li class="category-list-item"><a class="category-list-link" href="/categories/Sinatra/">Sinatra</a><span class="category-list-count">1</span></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">タグ</h3>
+    <div class="widget">
+      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/axios/">axios</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/babel/">babel</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/bottle/">bottle</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/browserify/">browserify</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/csharp/">csharp</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/docker/">docker</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/eslint/">eslint</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/euler/">euler</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/express/">express</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/firebase/">firebase</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/flask/">flask</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/hexo/">hexo</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/javascript/">javascript</a><span class="tag-list-count">8</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/jupyter/">jupyter</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/karma/">karma</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/kintone/">kintone</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/linux/">linux</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/log4js/">log4js</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/luigi/">luigi</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mac/">mac</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mocha/">mocha</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mysql/">mysql</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/node-fetch/">node-fetch</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/nodejs/">nodejs</a><span class="tag-list-count">13</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/powerline/">powerline</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/prettier/">prettier</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/python/">python</a><span class="tag-list-count">8</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/rails/">rails</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/react/">react</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/redis/">redis</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/rpa/">rpa</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/rspec/">rspec</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ruby/">ruby</a><span class="tag-list-count">7</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/sidekiq/">sidekiq</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/sinatra/">sinatra</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/sqlalchemy/">sqlalchemy</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/vagrant/">vagrant</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/virtualbox/">virtualbox</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/vscode/">vscode</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/vue/">vue</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/webpack/">webpack</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/zipstream/">zipstream</a><span class="tag-list-count">1</span></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">タグクラウド</h3>
+    <div class="widget tagcloud">
+      <a href="/tags/axios/" style="font-size: 10px;">axios</a> <a href="/tags/babel/" style="font-size: 10px;">babel</a> <a href="/tags/bottle/" style="font-size: 10px;">bottle</a> <a href="/tags/browserify/" style="font-size: 10px;">browserify</a> <a href="/tags/csharp/" style="font-size: 10px;">csharp</a> <a href="/tags/docker/" style="font-size: 10px;">docker</a> <a href="/tags/eslint/" style="font-size: 11.43px;">eslint</a> <a href="/tags/euler/" style="font-size: 10px;">euler</a> <a href="/tags/express/" style="font-size: 11.43px;">express</a> <a href="/tags/firebase/" style="font-size: 12.86px;">firebase</a> <a href="/tags/flask/" style="font-size: 10px;">flask</a> <a href="/tags/hexo/" style="font-size: 11.43px;">hexo</a> <a href="/tags/javascript/" style="font-size: 18.57px;">javascript</a> <a href="/tags/jupyter/" style="font-size: 10px;">jupyter</a> <a href="/tags/karma/" style="font-size: 11.43px;">karma</a> <a href="/tags/kintone/" style="font-size: 12.86px;">kintone</a> <a href="/tags/linux/" style="font-size: 10px;">linux</a> <a href="/tags/log4js/" style="font-size: 10px;">log4js</a> <a href="/tags/luigi/" style="font-size: 15.71px;">luigi</a> <a href="/tags/mac/" style="font-size: 10px;">mac</a> <a href="/tags/mocha/" style="font-size: 10px;">mocha</a> <a href="/tags/mysql/" style="font-size: 11.43px;">mysql</a> <a href="/tags/node-fetch/" style="font-size: 10px;">node-fetch</a> <a href="/tags/nodejs/" style="font-size: 20px;">nodejs</a> <a href="/tags/powerline/" style="font-size: 11.43px;">powerline</a> <a href="/tags/prettier/" style="font-size: 10px;">prettier</a> <a href="/tags/python/" style="font-size: 18.57px;">python</a> <a href="/tags/rails/" style="font-size: 10px;">rails</a> <a href="/tags/react/" style="font-size: 12.86px;">react</a> <a href="/tags/redis/" style="font-size: 10px;">redis</a> <a href="/tags/rpa/" style="font-size: 10px;">rpa</a> <a href="/tags/rspec/" style="font-size: 10px;">rspec</a> <a href="/tags/ruby/" style="font-size: 17.14px;">ruby</a> <a href="/tags/sidekiq/" style="font-size: 10px;">sidekiq</a> <a href="/tags/sinatra/" style="font-size: 15.71px;">sinatra</a> <a href="/tags/sqlalchemy/" style="font-size: 11.43px;">sqlalchemy</a> <a href="/tags/vagrant/" style="font-size: 10px;">vagrant</a> <a href="/tags/virtualbox/" style="font-size: 10px;">virtualbox</a> <a href="/tags/vscode/" style="font-size: 14.29px;">vscode</a> <a href="/tags/vue/" style="font-size: 12.86px;">vue</a> <a href="/tags/webpack/" style="font-size: 10px;">webpack</a> <a href="/tags/zipstream/" style="font-size: 10px;">zipstream</a>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">アーカイブ</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/12/">12月 2018</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/11/">11月 2018</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/10/">10月 2018</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/09/">9月 2018</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/08/">8月 2018</a><span class="archive-list-count">6</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/07/">7月 2018</a><span class="archive-list-count">11</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/06/">6月 2018</a><span class="archive-list-count">12</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/05/">5月 2018</a><span class="archive-list-count">11</span></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">最近の投稿</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2018/12/20/0051-setup-macbook-pro-2018/">MacBookPro2018のセットアップ</a>
+          </li>
+        
+          <li>
+            <a href="/2018/11/29/0050-about-config-ru/">[Sinatra] config.ruとは</a>
+          </li>
+        
+          <li>
+            <a href="/2018/11/14/0049-docker-mysql-error-caching-sha2-password/">[MySQL] Unable to load authentication plugin &#39;caching_sha2_password&#39;</a>
+          </li>
+        
+          <li>
+            <a href="/2018/11/05/0048-express-with-log4js/">[Node] ExpressでAPIを作ったらログも吐く</a>
+          </li>
+        
+          <li>
+            <a href="/2018/11/02/0047-helloworld-express-with-json/">[Node] Expressを使って最速でJSONを返す</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      &copy; 2018 t-kojima<br>
+      Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+
+
+  <link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
+  <script src="/fancybox/jquery.fancybox.pack.js"></script>
+
+
+<script src="/js/script.js"></script>
+
+
+
+  </div>
+  <script async src="//cdn.embedly.com/widgets/platform.js" charset="UTF-8"></script>
+</body>
+</html>

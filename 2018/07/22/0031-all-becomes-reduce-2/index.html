@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+
+  
+  <title>全てがReduceになる(2) | Today&#39;s Commit</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="前回に続き、Array のメソッドを reduce で再実装していく。  fill filter find findIndex forEach includes  ちなみにこのリポジトリでテストとかやってる。">
+<meta name="keywords" content="javascript,nodejs">
+<meta property="og:type" content="article">
+<meta property="og:title" content="全てがReduceになる(2)">
+<meta property="og:url" content="https://t-kojima.github.io/2018/07/22/0031-all-becomes-reduce-2/index.html">
+<meta property="og:site_name" content="Today&#39;s Commit">
+<meta property="og:description" content="前回に続き、Array のメソッドを reduce で再実装していく。  fill filter find findIndex forEach includes  ちなみにこのリポジトリでテストとかやってる。">
+<meta property="og:locale" content="ja">
+<meta property="og:updated_time" content="2018-12-20T11:07:38.289Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="全てがReduceになる(2)">
+<meta name="twitter:description" content="前回に続き、Array のメソッドを reduce で再実装していく。  fill filter find findIndex forEach includes  ちなみにこのリポジトリでテストとかやってる。">
+  
+    <link rel="alternate" href="/atom.xml" title="Today&#39;s Commit" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  
+    <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
+  
+  <link rel="stylesheet" href="/css/style.css">
+  
+    <link rel="amphtml" href="https://t-kojima.github.io/2018/07/22/0031-all-becomes-reduce-2//amp/index.html">
+  
+</head>
+
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">Today&#39;s Commit</a>
+      </h1>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSSフィード"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="検索"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="https://t-kojima.github.io"></form>
+      </div>
+    </div>
+  </div>
+</header>
+      <div class="outer">
+        <section id="main"><article id="post-0031-all-becomes-reduce-2" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2018/07/22/0031-all-becomes-reduce-2/" class="article-date">
+  <time datetime="2018-07-22T12:51:34.000Z" itemprop="datePublished">2018-07-22</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      全てがReduceになる(2)
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p><a href="https://t-kojima.github.io/2018/07/21/0030-all-becomes-reduce-1/">前回</a>に続き、Array のメソッドを reduce で再実装していく。</p>
+<ul>
+<li>fill</li>
+<li>filter</li>
+<li>find</li>
+<li>findIndex</li>
+<li>forEach</li>
+<li>includes</li>
+</ul>
+<p>ちなみに<a href="https://github.com/t-kojima/practice-all-becomes-reduce" target="_blank" rel="noopener">このリポジトリ</a>でテストとかやってる。</p>
+<a id="more"></a>
+<hr>
+<ul>
+<li>7/24 <code>fill</code>、<code>findIndex</code>、<code>includes</code> を疎の配列を考慮した実装に修正</li>
+</ul>
+<hr>
+<h1><span id="ルール">ルール</span></h1><p>引き続き以下のルールでやっていく。</p>
+<ul>
+<li>for 文禁止</li>
+<li>Array#reduce を必ず使用する</li>
+<li>Array のインスタンスメソッドは reduce 以外使用不可</li>
+<li>Array のプロパティ、クラスメソッドは使用可能</li>
+<li>スプレッド構文は使用不可（reduce すら不要になる場合があるから）</li>
+</ul>
+<hr>
+<h1 style="font-size: 4em;"><span id="fill">fill</span></h1>
+
+<p><a href="https://developer.mozilla.org/ja/docs/Web/JavaScript/Reference/Global_Objects/Array/fill" target="_blank" rel="noopener">Array.prototype.fill() - JavaScript | MDN</a></p>
+<p>fill は指定した値で配列を埋めるメソッド、0 埋めとかによく使う。</p>
+<h2><span id="構文">構文</span></h2><figure class="highlight js"><table><tr><td class="code"><pre><span class="line">array.fill(value[, start = <span class="number">0</span>[, end = <span class="keyword">this</span>.length]])</span><br></pre></td></tr></table></figure>
+<p>引数の特性は copyWithin とよく似ている。</p>
+<ul>
+<li>start から end の値を置き換えるが、end は含まない。</li>
+<li>start と end はマイナスの場合、start+length もしくは end+length として扱う。（末尾から数えた位置）</li>
+<li>start, end は Number の整数に変換される。</li>
+<li>this 自身を変更し、this を返す。</li>
+</ul>
+<h2><span id="再実装">再実装</span></h2><figure class="highlight js"><table><tr><td class="code"><pre><span class="line"><span class="built_in">Array</span>.prototype.fill = <span class="function"><span class="keyword">function</span>(<span class="params">target, start = <span class="number">0</span>, end = this.length</span>) </span>&#123;</span><br><span class="line">  <span class="keyword">const</span> parse = <span class="function"><span class="params">value</span> =&gt;</span> &#123;</span><br><span class="line">    <span class="keyword">if</span> (value &gt; <span class="keyword">this</span>.length) <span class="keyword">return</span> <span class="keyword">this</span>.length</span><br><span class="line">    <span class="keyword">if</span> (value + <span class="keyword">this</span>.length &lt; <span class="number">0</span>) <span class="keyword">return</span> <span class="number">0</span></span><br><span class="line">    <span class="keyword">return</span> <span class="built_in">Number</span>.parseInt(value, <span class="number">10</span>) + (value &lt; <span class="number">0</span> ? <span class="keyword">this</span>.length : <span class="number">0</span>)</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">const</span> s = parse(start)</span><br><span class="line">  <span class="keyword">const</span> e = parse(end)</span><br><span class="line"></span><br><span class="line">  <span class="keyword">return</span> <span class="keyword">this</span>.reduce(<span class="function">(<span class="params">acc, cur, index</span>) =&gt;</span> &#123;</span><br><span class="line">    <span class="keyword">if</span> (index &gt;= s &amp;&amp; index &lt; e) &#123;</span><br><span class="line">      acc[index] = target</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> acc</span><br><span class="line">  &#125;, <span class="keyword">this</span>)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>parse 関数は copyWithin の時に比べ少しだけ変えた。とはいえ最後の return 部分を若干 DIY にしただけなので、処理内容自体は全く同じだ。そして parse の対象は start と end のみとなる。</p>
+<p>fill される条件は単純にインデクスが start 以上、end 未満の場合だ。ここは単純になっていて分かりやすい。</p>
+<h2><span id="724-追記">7/24 追記</span></h2><p>疎な配列の対応をし、実装を見直した。</p>
+<figure class="highlight js"><table><tr><td class="code"><pre><span class="line"><span class="built_in">Array</span>.prototype.fill = <span class="function"><span class="keyword">function</span>(<span class="params">target, start = <span class="number">0</span>, end = this.length</span>) </span>&#123;</span><br><span class="line">  <span class="keyword">const</span> list = <span class="function"><span class="params">array</span> =&gt;</span> <span class="built_in">Array</span>.from(<span class="built_in">Array</span>(array.length))</span><br><span class="line">  <span class="keyword">const</span> parse = <span class="function"><span class="params">value</span> =&gt;</span></span><br><span class="line">    <span class="built_in">Math</span>.min(</span><br><span class="line">      <span class="built_in">Math</span>.max(<span class="built_in">Number</span>.parseInt(value, <span class="number">10</span>) + (value &lt; <span class="number">0</span> ? <span class="keyword">this</span>.length : <span class="number">0</span>), <span class="number">0</span>),</span><br><span class="line">      <span class="keyword">this</span>.length</span><br><span class="line">    )</span><br><span class="line"></span><br><span class="line">  <span class="keyword">const</span> s = parse(start)</span><br><span class="line">  <span class="keyword">const</span> e = parse(end)</span><br><span class="line"></span><br><span class="line">  <span class="keyword">return</span> list(<span class="keyword">this</span>).reduce(<span class="function">(<span class="params">acc, cur, index</span>) =&gt;</span> &#123;</span><br><span class="line">    <span class="keyword">if</span> (index &gt;= s &amp;&amp; index &lt; e) &#123;</span><br><span class="line">      acc[index] = target</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> acc</span><br><span class="line">  &#125;, <span class="keyword">this</span>)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>基本的にはレシーバとなる this を list 関数でラップし、疎の要素があっても列挙されるようにした。あと copyWithin と同様に parse をワンライナーに修正。</p>
+<hr>
+<h1 style="font-size: 4em;"><span id="filter">filter</span></h1>
+
+<p><a href="https://developer.mozilla.org/ja/docs/Web/JavaScript/Reference/Global_Objects/Array/filter" target="_blank" rel="noopener">Array.prototype.filter() - JavaScript | MDN</a></p>
+<p>filter は C#でいう Linq の Where、Ruby でいう Array#select で、非常に良く使われるメソッドだ。利用率としては map か filter か、といったところだろう。</p>
+<p>callback の判定で true を返す要素のみを新たな配列として返す。</p>
+<h2><span id="構文">構文</span></h2><figure class="highlight js"><table><tr><td class="code"><pre><span class="line"><span class="keyword">var</span> newArray = array.filter(callback[, thisArg])</span><br></pre></td></tr></table></figure>
+<p>callback は以下 3 つの引数を取る。</p>
+<ul>
+<li>element : 現在の要素値</li>
+<li>index : 現在の要素のインデクス</li>
+<li>array : レシーバ自身</li>
+</ul>
+<p>また、いくつかの特性がある。この辺り every とよく似ている。</p>
+<ul>
+<li>thisArg が指定される場合、callback 内で this として扱われる。未指定の場合は undefined となる。</li>
+<li>呼びだされた配列に破壊的変更を加えない。</li>
+<li>callback の判定が全て false の場合、空配列を返す。</li>
+</ul>
+<h2><span id="再実装">再実装</span></h2><figure class="highlight js"><table><tr><td class="code"><pre><span class="line"><span class="built_in">Array</span>.prototype.filter = <span class="function"><span class="keyword">function</span>(<span class="params">callback, thisArgs</span>) </span>&#123;</span><br><span class="line">  <span class="keyword">return</span> <span class="keyword">this</span>.reduce(<span class="function">(<span class="params">acc, cur, index, array</span>) =&gt;</span> &#123;</span><br><span class="line">    <span class="keyword">if</span> (callback.call(thisArgs, cur, index, array)) &#123;</span><br><span class="line">      acc[acc.length] = cur</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> acc</span><br><span class="line">  &#125;, [])</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>実装は非常にシンプルになった。reduce の初期値として空配列を指定し、callback に通った要素だけ追加していけばいい。</p>
+<hr>
+<h1 style="font-size: 4em;"><span id="find">find</span></h1>
+
+<p><a href="https://developer.mozilla.org/ja/docs/Web/JavaScript/Reference/Global_Objects/Array/find" target="_blank" rel="noopener">Array.prototype.find() - JavaScript | MDN</a></p>
+<p>find は callback の判定をパスした最初の要素を返す。これもよく使われるね。</p>
+<h2><span id="構文">構文</span></h2><figure class="highlight js"><table><tr><td class="code"><pre><span class="line">array.find(callback[, thisArg])</span><br></pre></td></tr></table></figure>
+<p>callback は以下 3 つの引数を取る。filter と全く同じだ。</p>
+<ul>
+<li>element : 現在の要素値</li>
+<li>index : 現在の要素のインデクス</li>
+<li>array : レシーバ自身</li>
+</ul>
+<p>同様に以下の特性がある。</p>
+<ul>
+<li>thisArg が指定される場合、callback 内で this として扱われる。未指定の場合は undefined となる。</li>
+<li>呼びだされた配列に破壊的変更を加えない。</li>
+<li>callback の判定が全て false の場合（見つからなかった時）、undefined を返す。</li>
+</ul>
+<h3><span id="thisarg-について">thisArg について</span></h3><p>余談だが、thisArg を指定しない場合（または undefined を指定した場合）、callback 内で呼び出される this は undefined として扱われる…と MDN には書いてあるが、実際はそうはならない。</p>
+<p>MDN の filter の場合は、thisArg について以下のように記述されている。</p>
+<blockquote>
+<p>filter に thisArg パラメータが与えられると、そのオブジェクトは callback 関数内の this として使用されます。thisArg が与えられないか undefined の場合、callback 関数内の this は関数内の this を決定する一般的ルールに従って決められます。</p>
+</blockquote>
+<p>この記述は正しくて、実際このように動作する。</p>
+<p>しかし MDN の find には以下のように記述されている。</p>
+<blockquote>
+<p>find に thisArg 引数を与えた場合、各 callback の呼び出し時に、その与えたオブジェクトが、this として使用されます。この引数を省略した場合、this は undefined になります。</p>
+</blockquote>
+<p>単に undefined になると書いてある。が、実際の挙動は filter と同様に<strong>関数内の this を決定する一般的なルールに従って決められる。</strong></p>
+<p>これは恐らく <code>call</code> に <code>this</code> を渡した際の共通の挙動と思われるので、他の thisArg を引数に取る関数も同様の動作になるはずだ。</p>
+<p>MDN の find は単に記述ミスかな？</p>
+<h2><span id="再実装">再実装</span></h2><figure class="highlight js"><table><tr><td class="code"><pre><span class="line"><span class="built_in">Array</span>.prototype.find = <span class="function"><span class="keyword">function</span>(<span class="params">callback, thisArgs</span>) </span>&#123;</span><br><span class="line">  <span class="keyword">return</span> <span class="keyword">this</span>.reduce(</span><br><span class="line">    (acc, cur, index, array) =&gt;</span><br><span class="line">      acc === <span class="literal">undefined</span> &amp;&amp; callback.call(thisArgs, cur, index, array)</span><br><span class="line">        ? cur</span><br><span class="line">        : acc,</span><br><span class="line">    <span class="literal">undefined</span></span><br><span class="line">  )</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>reduce の初期値に undefined を指定し、callback の判定をパスしたら accumulator に要素を代入する。すると以後の callback は評価されず、最初に代入した要素がそのまま返される。</p>
+<hr>
+<h1 style="font-size: 4em;"><span id="findindex">findIndex</span></h1>
+
+<p><a href="https://developer.mozilla.org/ja/docs/Web/JavaScript/Reference/Global_Objects/Array/findIndex" target="_blank" rel="noopener">Array.prototype.findIndex() - JavaScript | MDN</a></p>
+<p>find のインデクスを返す版だ。</p>
+<h2><span id="構文">構文</span></h2><figure class="highlight js"><table><tr><td class="code"><pre><span class="line">array.findIndex(callback[, thisArg])</span><br></pre></td></tr></table></figure>
+<p>callback の引数や、その他の特性は find と全く一緒だ。唯一見つからなかった場合の戻り値のみが異なる。</p>
+<ul>
+<li>callback の判定が全て false の場合（見つからなかった時）、-1 を返す。</li>
+</ul>
+<h2><span id="再実装">再実装</span></h2><figure class="highlight js"><table><tr><td class="code"><pre><span class="line"><span class="built_in">Array</span>.prototype.findIndex = <span class="function"><span class="keyword">function</span>(<span class="params">callback, thisArgs</span>) </span>&#123;</span><br><span class="line">  <span class="keyword">return</span> <span class="keyword">this</span>.reduce(</span><br><span class="line">    (acc, cur, index, array) =&gt;</span><br><span class="line">      acc &lt; <span class="number">0</span> &amp;&amp; callback.call(thisArgs, cur, index, array) ? index : acc,</span><br><span class="line">    <span class="number">-1</span></span><br><span class="line">  )</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>再実装のコードも find とほぼほぼ同じだね。初期値が-1 であることと、要素の代わりに index を返すことくらいか…</p>
+<h2><span id="724-追記">7/24 追記</span></h2><p>疎な配列の対応をし、実装を見直した。</p>
+<figure class="highlight js"><table><tr><td class="code"><pre><span class="line"><span class="built_in">Array</span>.prototype.findIndex = <span class="function"><span class="keyword">function</span>(<span class="params">callback, thisArgs</span>) </span>&#123;</span><br><span class="line">  <span class="keyword">return</span> <span class="built_in">Array</span>.from(<span class="keyword">this</span>).reduce(</span><br><span class="line">    (acc, cur, index, array) =&gt;</span><br><span class="line">      acc &lt; <span class="number">0</span> &amp;&amp; callback.call(thisArgs, cur, index, array) ? index : acc,</span><br><span class="line">    <span class="number">-1</span></span><br><span class="line">  )</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>findIndex には疎の要素を undefined として判別する特徴がある。つまり以下のようなコードがあった場合、戻り値は 3 になる。</p>
+<figure class="highlight js"><table><tr><td class="code"><pre><span class="line">;[<span class="number">0</span>, <span class="number">1</span>, <span class="number">2</span>, , , , ,].findIndex(<span class="function"><span class="params">v</span> =&gt;</span> v === <span class="literal">undefined</span>)</span><br><span class="line"><span class="comment">// &gt; 3</span></span><br></pre></td></tr></table></figure>
+<p>そのため、<code>Array.from(this)</code>とすることで元の配列の疎の要素を全て undefined に変換をしている。</p>
+<figure class="highlight js"><table><tr><td class="code"><pre><span class="line"><span class="built_in">Array</span>.from([<span class="number">0</span>, <span class="number">1</span>, <span class="number">2</span>, , , , ,]) <span class="comment">// を通すと</span></span><br><span class="line"><span class="comment">// &gt; [0,1,2,undefined,undefined,undefined,undefined]</span></span><br><span class="line"><span class="comment">// 疎の要素はundefinedになる</span></span><br></pre></td></tr></table></figure>
+<h1><span id="flatmap-と-flatten">flatMap と flatten</span></h1><p><a href="https://developer.mozilla.org/ja/docs/Web/JavaScript/Reference/Global_Objects/Array/flatMap" target="_blank" rel="noopener">Array.prototype.flatMap() - JavaScript | MDN</a><br><a href="https://developer.mozilla.org/ja/docs/Web/JavaScript/Reference/Global_Objects/Array/flat" target="_blank" rel="noopener">Array.prototype.flat() - JavaScript | MDN</a></p>
+<p>こいつらは Node.js で利用できない＆代替手段として既に reduce が例示されているのでやらないです。。。</p>
+<hr>
+<h1 style="font-size: 4em;"><span id="foreach">forEach</span></h1>
+
+<p><a href="https://developer.mozilla.org/ja/docs/Web/JavaScript/Reference/Global_Objects/Array/forEach" target="_blank" rel="noopener">Array.prototype.forEach() - JavaScript | MDN</a></p>
+<p>配列の反復処理を行う。本質的には for と同じだが、for は文で forEach は式といった違いはある。</p>
+<h2><span id="構文">構文</span></h2><figure class="highlight js"><table><tr><td class="code"><pre><span class="line">array.forEach(<span class="function"><span class="keyword">function</span> <span class="title">callback</span>(<span class="params">currentValue[, index[, array]]</span>) </span>&#123;</span><br><span class="line">    <span class="comment">//your iterator</span></span><br><span class="line">&#125;[, thisArg]);</span><br></pre></td></tr></table></figure>
+<p>なぜか構文の書き方が他のメソッドと違う…今までのパターンでいくと <code>array.forEach(callback[, thisArg])</code> になるはず。どうでもいいけど…</p>
+<p>構文にある通り、callback は以下 3 つの引数を取る。</p>
+<ul>
+<li>currentValue : 現在の要素値</li>
+<li>index : 現在の要素のインデクス</li>
+<li>array : レシーバ自身</li>
+</ul>
+<p>そして以下の特性を持つ。</p>
+<ul>
+<li>thisArg が指定される場合、callback 内で this として扱われる。未指定の場合は undefined となる。</li>
+<li>呼びだされた配列に破壊的変更を加えない。</li>
+<li>戻り値は undefined となる。</li>
+</ul>
+<h2><span id="再実装">再実装</span></h2><figure class="highlight js"><table><tr><td class="code"><pre><span class="line"><span class="built_in">Array</span>.prototype.forEach = <span class="function"><span class="keyword">function</span>(<span class="params">callback, thisArgs</span>) </span>&#123;</span><br><span class="line">  <span class="keyword">return</span> <span class="keyword">this</span>.reduce(<span class="function">(<span class="params">acc, cur, index, array</span>) =&gt;</span> &#123;</span><br><span class="line">    callback.call(thisArgs, cur, index, array)</span><br><span class="line">    <span class="keyword">return</span> acc</span><br><span class="line">  &#125;, <span class="literal">undefined</span>)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>ただ渡された callback を実行するだけの素直な実装だ。しいて言うなら undefined を返すよう accumulator は常に undefined であることくらいか。</p>
+<hr>
+<h1 style="font-size: 4em;"><span id="includes">includes</span></h1>
+
+<p><a href="https://developer.mozilla.org/ja/docs/Web/JavaScript/Reference/Global_Objects/Array/includes" target="_blank" rel="noopener">Array.prototype.includes() - JavaScript | MDN</a></p>
+<p>指定の要素が配列に含まれるかを調べる。</p>
+<h2><span id="構文">構文</span></h2><figure class="highlight js"><table><tr><td class="code"><pre><span class="line">array.includes(searchElement[, fromIndex])</span><br></pre></td></tr></table></figure>
+<p>findIndex は検索を開始する位置（インデクス）だが、以下の性質を持つ。</p>
+<ul>
+<li>省略時は 0</li>
+<li>配列の長さ以上の場合、includes は無条件に false を返す。</li>
+<li>負の値の場合、配列を逆から数えた値となる。（補正される）</li>
+<li>補正された負の値が 0 以下になった場合、0 として扱われる。</li>
+</ul>
+<p>また、includes は <code>Array-like</code> なオブジェクト（<code>arguments</code>など）でも利用可能だが、<code>Array-like</code>なオブジェクトではそもそも reduce が使えないので、今回は考慮しないこととにする。</p>
+<h2><span id="再実装">再実装</span></h2><figure class="highlight js"><table><tr><td class="code"><pre><span class="line"><span class="built_in">Array</span>.prototype.includes = <span class="function"><span class="keyword">function</span>(<span class="params">target, fromIndex = <span class="number">0</span></span>) </span>&#123;</span><br><span class="line">  <span class="keyword">const</span> parse = <span class="function"><span class="params">value</span> =&gt;</span> &#123;</span><br><span class="line">    <span class="keyword">if</span> (value &gt; <span class="keyword">this</span>.length) <span class="keyword">return</span> <span class="keyword">this</span>.length</span><br><span class="line">    <span class="keyword">if</span> (value + <span class="keyword">this</span>.length &lt; <span class="number">0</span>) <span class="keyword">return</span> <span class="number">0</span></span><br><span class="line">    <span class="keyword">return</span> <span class="built_in">Number</span>.parseInt(value, <span class="number">10</span>) + (value &lt; <span class="number">0</span> ? <span class="keyword">this</span>.length : <span class="number">0</span>)</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">const</span> findex = parse(fromIndex)</span><br><span class="line"></span><br><span class="line">  <span class="keyword">return</span> <span class="keyword">this</span>.reduce(</span><br><span class="line">    (acc, cur, index) =&gt;</span><br><span class="line">      !acc &amp;&amp;</span><br><span class="line">      index &gt;= findex &amp;&amp;</span><br><span class="line">      (cur === target || (<span class="built_in">Number</span>.isNaN(cur) &amp;&amp; <span class="built_in">Number</span>.isNaN(target)))</span><br><span class="line">        ? <span class="literal">true</span></span><br><span class="line">        : acc,</span><br><span class="line">    <span class="literal">false</span></span><br><span class="line">  )</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>parse 関数は copyWithin や fill で使ったものと同じだ。これを findIndex に適用する。</p>
+<p>target と currentItem(cur)は <code>===</code> (厳格な比較)で比較し、合致していた場合 true となるが、<code>NaN</code> の場合は <code>===</code> で比較できないので別途 <code>isNaN</code> での比較としている。</p>
+<p><a href="https://developer.mozilla.org/ja/docs/Web/JavaScript/Equality_comparisons_and_when_to_use_them" target="_blank" rel="noopener">等価性の比較とその使いどころ - JavaScript | MDN</a> を参照しても、<code>===</code> で <code>NaN</code> のみ true にならないとしているので、<code>NaN</code> のみ例外ケースとして問題ないだろう。</p>
+<blockquote>
+<p>(x !== x) が true になる唯一のケースは x が NaN である場合です。</p>
+</blockquote>
+<h2><span id="724-追記">7/24 追記</span></h2><p>疎な配列の対応をし、実装を見直した。</p>
+<figure class="highlight js"><table><tr><td class="code"><pre><span class="line"><span class="built_in">Array</span>.prototype.includes = <span class="function"><span class="keyword">function</span>(<span class="params">target, fromIndex = <span class="number">0</span></span>) </span>&#123;</span><br><span class="line">  <span class="keyword">const</span> list = <span class="function"><span class="params">array</span> =&gt;</span> <span class="built_in">Array</span>.from(<span class="built_in">Array</span>(array.length))</span><br><span class="line"></span><br><span class="line">  <span class="keyword">const</span> parse = <span class="function"><span class="params">value</span> =&gt;</span></span><br><span class="line">    <span class="built_in">Math</span>.min(</span><br><span class="line">      <span class="built_in">Math</span>.max(<span class="built_in">Number</span>.parseInt(value, <span class="number">10</span>) + (value &lt; <span class="number">0</span> ? <span class="keyword">this</span>.length : <span class="number">0</span>), <span class="number">0</span>),</span><br><span class="line">      <span class="keyword">this</span>.length</span><br><span class="line">    )</span><br><span class="line"></span><br><span class="line">  <span class="keyword">const</span> sameValueZero = <span class="function">(<span class="params">v1, v2</span>) =&gt;</span></span><br><span class="line">    v1 === v2 || (<span class="built_in">Number</span>.isNaN(v1) &amp;&amp; <span class="built_in">Number</span>.isNaN(v2))</span><br><span class="line"></span><br><span class="line">  <span class="keyword">const</span> findex = parse(fromIndex)</span><br><span class="line"></span><br><span class="line">  <span class="keyword">return</span> list(<span class="keyword">this</span>).reduce(</span><br><span class="line">    (acc, cur, index) =&gt;</span><br><span class="line">      !acc &amp;&amp; index &gt;= findex &amp;&amp; sameValueZero(<span class="keyword">this</span>[index], target)</span><br><span class="line">        ? <span class="literal">true</span></span><br><span class="line">        : acc,</span><br><span class="line">    <span class="literal">false</span></span><br><span class="line">  )</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>他のメソッドと同様に、this を list 関数でラップする対応を行った。</p>
+<p>また、疎な配列とは関係ないが、SameValueZero 判定を関数に切り出し明確にした。</p>
+<h1><span id="おわりに">おわりに</span></h1><p>29 メソッドあるうち 10 メソッドできた。まだまだあるな…</p>
+<p><a href="https://t-kojima.github.io/2018/07/24/0032-all-becomes-reduce-3/">つづく</a></p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <div data-url="https://t-kojima.github.io/2018/07/22/0031-all-becomes-reduce-2/" data-id="cjq51fi190056mtu78rhzm1fo" class="article-share-items"></div>
+      <!-- <a data-url="https://t-kojima.github.io/2018/07/22/0031-all-becomes-reduce-2/" data-id="cjq51fi190056mtu78rhzm1fo" class="article-share-link">共有</a> -->
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/javascript/">javascript</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/nodejs/">nodejs</a></li></ul>
+
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+    <a href="/2018/07/24/0032-all-becomes-reduce-3/" id="article-nav-newer" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">次の記事</strong>
+      <div class="article-nav-title">
+        
+          全てがReduceになる(3)
+        
+      </div>
+    </a>
+  
+  
+    <a href="/2018/07/21/0030-all-becomes-reduce-1/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">前の記事</strong>
+      <div class="article-nav-title">全てがReduceになる(1)</div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">カテゴリ</h3>
+    <div class="widget">
+      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/Mac/">Mac</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/MySQL/">MySQL</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Node/">Node</a><span class="category-list-count">2</span><ul class="category-list-child"><li class="category-list-item"><a class="category-list-link" href="/categories/Node/Express/">Express</a><span class="category-list-count">2</span></li></ul></li><li class="category-list-item"><a class="category-list-link" href="/categories/Sinatra/">Sinatra</a><span class="category-list-count">1</span></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">タグ</h3>
+    <div class="widget">
+      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/axios/">axios</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/babel/">babel</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/bottle/">bottle</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/browserify/">browserify</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/csharp/">csharp</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/docker/">docker</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/eslint/">eslint</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/euler/">euler</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/express/">express</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/firebase/">firebase</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/flask/">flask</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/hexo/">hexo</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/javascript/">javascript</a><span class="tag-list-count">8</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/jupyter/">jupyter</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/karma/">karma</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/kintone/">kintone</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/linux/">linux</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/log4js/">log4js</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/luigi/">luigi</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mac/">mac</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mocha/">mocha</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mysql/">mysql</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/node-fetch/">node-fetch</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/nodejs/">nodejs</a><span class="tag-list-count">13</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/powerline/">powerline</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/prettier/">prettier</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/python/">python</a><span class="tag-list-count">8</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/rails/">rails</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/react/">react</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/redis/">redis</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/rpa/">rpa</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/rspec/">rspec</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ruby/">ruby</a><span class="tag-list-count">7</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/sidekiq/">sidekiq</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/sinatra/">sinatra</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/sqlalchemy/">sqlalchemy</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/vagrant/">vagrant</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/virtualbox/">virtualbox</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/vscode/">vscode</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/vue/">vue</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/webpack/">webpack</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/zipstream/">zipstream</a><span class="tag-list-count">1</span></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">タグクラウド</h3>
+    <div class="widget tagcloud">
+      <a href="/tags/axios/" style="font-size: 10px;">axios</a> <a href="/tags/babel/" style="font-size: 10px;">babel</a> <a href="/tags/bottle/" style="font-size: 10px;">bottle</a> <a href="/tags/browserify/" style="font-size: 10px;">browserify</a> <a href="/tags/csharp/" style="font-size: 10px;">csharp</a> <a href="/tags/docker/" style="font-size: 10px;">docker</a> <a href="/tags/eslint/" style="font-size: 11.43px;">eslint</a> <a href="/tags/euler/" style="font-size: 10px;">euler</a> <a href="/tags/express/" style="font-size: 11.43px;">express</a> <a href="/tags/firebase/" style="font-size: 12.86px;">firebase</a> <a href="/tags/flask/" style="font-size: 10px;">flask</a> <a href="/tags/hexo/" style="font-size: 11.43px;">hexo</a> <a href="/tags/javascript/" style="font-size: 18.57px;">javascript</a> <a href="/tags/jupyter/" style="font-size: 10px;">jupyter</a> <a href="/tags/karma/" style="font-size: 11.43px;">karma</a> <a href="/tags/kintone/" style="font-size: 12.86px;">kintone</a> <a href="/tags/linux/" style="font-size: 10px;">linux</a> <a href="/tags/log4js/" style="font-size: 10px;">log4js</a> <a href="/tags/luigi/" style="font-size: 15.71px;">luigi</a> <a href="/tags/mac/" style="font-size: 10px;">mac</a> <a href="/tags/mocha/" style="font-size: 10px;">mocha</a> <a href="/tags/mysql/" style="font-size: 11.43px;">mysql</a> <a href="/tags/node-fetch/" style="font-size: 10px;">node-fetch</a> <a href="/tags/nodejs/" style="font-size: 20px;">nodejs</a> <a href="/tags/powerline/" style="font-size: 11.43px;">powerline</a> <a href="/tags/prettier/" style="font-size: 10px;">prettier</a> <a href="/tags/python/" style="font-size: 18.57px;">python</a> <a href="/tags/rails/" style="font-size: 10px;">rails</a> <a href="/tags/react/" style="font-size: 12.86px;">react</a> <a href="/tags/redis/" style="font-size: 10px;">redis</a> <a href="/tags/rpa/" style="font-size: 10px;">rpa</a> <a href="/tags/rspec/" style="font-size: 10px;">rspec</a> <a href="/tags/ruby/" style="font-size: 17.14px;">ruby</a> <a href="/tags/sidekiq/" style="font-size: 10px;">sidekiq</a> <a href="/tags/sinatra/" style="font-size: 15.71px;">sinatra</a> <a href="/tags/sqlalchemy/" style="font-size: 11.43px;">sqlalchemy</a> <a href="/tags/vagrant/" style="font-size: 10px;">vagrant</a> <a href="/tags/virtualbox/" style="font-size: 10px;">virtualbox</a> <a href="/tags/vscode/" style="font-size: 14.29px;">vscode</a> <a href="/tags/vue/" style="font-size: 12.86px;">vue</a> <a href="/tags/webpack/" style="font-size: 10px;">webpack</a> <a href="/tags/zipstream/" style="font-size: 10px;">zipstream</a>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">アーカイブ</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/12/">12月 2018</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/11/">11月 2018</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/10/">10月 2018</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/09/">9月 2018</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/08/">8月 2018</a><span class="archive-list-count">6</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/07/">7月 2018</a><span class="archive-list-count">11</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/06/">6月 2018</a><span class="archive-list-count">12</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/05/">5月 2018</a><span class="archive-list-count">11</span></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">最近の投稿</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2018/12/20/0051-setup-macbook-pro-2018/">MacBookPro2018のセットアップ</a>
+          </li>
+        
+          <li>
+            <a href="/2018/11/29/0050-about-config-ru/">[Sinatra] config.ruとは</a>
+          </li>
+        
+          <li>
+            <a href="/2018/11/14/0049-docker-mysql-error-caching-sha2-password/">[MySQL] Unable to load authentication plugin &#39;caching_sha2_password&#39;</a>
+          </li>
+        
+          <li>
+            <a href="/2018/11/05/0048-express-with-log4js/">[Node] ExpressでAPIを作ったらログも吐く</a>
+          </li>
+        
+          <li>
+            <a href="/2018/11/02/0047-helloworld-express-with-json/">[Node] Expressを使って最速でJSONを返す</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      &copy; 2018 t-kojima<br>
+      Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+
+
+  <link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
+  <script src="/fancybox/jquery.fancybox.pack.js"></script>
+
+
+<script src="/js/script.js"></script>
+
+
+
+  </div>
+  <script async src="//cdn.embedly.com/widgets/platform.js" charset="UTF-8"></script>
+</body>
+</html>

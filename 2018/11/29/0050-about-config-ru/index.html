@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+
+  
+  <title>[Sinatra] config.ruとは | Today&#39;s Commit</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="Sinatra のチュートリアルやブログなど参照していると、手順として「config.ruというファイルを作れ」とあるが何故必要なのか説明できていなかったので、改めて調べてみた。">
+<meta name="keywords" content="ruby,sinatra">
+<meta property="og:type" content="article">
+<meta property="og:title" content="[Sinatra] config.ruとは">
+<meta property="og:url" content="https://t-kojima.github.io/2018/11/29/0050-about-config-ru/index.html">
+<meta property="og:site_name" content="Today&#39;s Commit">
+<meta property="og:description" content="Sinatra のチュートリアルやブログなど参照していると、手順として「config.ruというファイルを作れ」とあるが何故必要なのか説明できていなかったので、改めて調べてみた。">
+<meta property="og:locale" content="ja">
+<meta property="og:updated_time" content="2018-12-20T11:07:38.293Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="[Sinatra] config.ruとは">
+<meta name="twitter:description" content="Sinatra のチュートリアルやブログなど参照していると、手順として「config.ruというファイルを作れ」とあるが何故必要なのか説明できていなかったので、改めて調べてみた。">
+  
+    <link rel="alternate" href="/atom.xml" title="Today&#39;s Commit" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  
+    <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
+  
+  <link rel="stylesheet" href="/css/style.css">
+  
+    <link rel="amphtml" href="https://t-kojima.github.io/2018/11/29/0050-about-config-ru//amp/index.html">
+  
+</head>
+
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">Today&#39;s Commit</a>
+      </h1>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSSフィード"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="検索"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="https://t-kojima.github.io"></form>
+      </div>
+    </div>
+  </div>
+</header>
+      <div class="outer">
+        <section id="main"><article id="post-0050-about-config-ru" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2018/11/29/0050-about-config-ru/" class="article-date">
+  <time datetime="2018-11-29T01:09:54.000Z" itemprop="datePublished">2018-11-29</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/Sinatra/">Sinatra</a>
+  </div>
+
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      [Sinatra] config.ruとは
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>Sinatra のチュートリアルやブログなど参照していると、手順として「<code>config.ru</code>というファイルを作れ」とあるが<br>何故必要なのか説明できていなかったので、改めて調べてみた。</p>
+<a id="more"></a>
+<h1><span id="configru-を使わないで-sinatra-を動かす">config.ru を使わないで Sinatra を動かす</span></h1><p>例えば Sinatra のみを bundler でインストールする。</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">$ mkdir sinatra-test</span><br><span class="line">$ <span class="built_in">cd</span> sinatra-test</span><br><span class="line">$ bundle init</span><br><span class="line"><span class="comment"># Gemfileができるので、gem 'sinatra'を追記</span></span><br><span class="line">$ bundle install --path vendor/bundle</span><br></pre></td></tr></table></figure>
+<p>そして以下のようなファイル index.rb を作成し</p>
+<figure class="highlight ruby"><table><tr><td class="code"><pre><span class="line"><span class="keyword">require</span> <span class="string">'sinatra'</span></span><br><span class="line"><span class="keyword">require</span> <span class="string">'json'</span></span><br><span class="line"></span><br><span class="line">get <span class="string">'/'</span> <span class="keyword">do</span></span><br><span class="line">  content_type <span class="symbol">:json</span></span><br><span class="line">  response = &#123;</span><br><span class="line">    <span class="symbol">body:</span> <span class="string">'welcome to sinatra'</span>,</span><br><span class="line">  &#125;</span><br><span class="line">  response.to_json</span><br><span class="line"><span class="keyword">end</span></span><br></pre></td></tr></table></figure>
+<p>以下のコマンドで立ち上げれば、Sinatra 自体は立ち上がる（WEBrick で）</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">$ bundle <span class="built_in">exec</span> ruby index.rb</span><br><span class="line">WARNING: If you plan to load any of ActiveSupport<span class="string">'s core extensions to Hash, be</span></span><br><span class="line"><span class="string">sure to do so *before* loading Sinatra::Application or Sinatra::Base. If not,</span></span><br><span class="line"><span class="string">you may disregard this warning.</span></span><br><span class="line"><span class="string">[2018-11-29 10:41:57] INFO  WEBrick 1.4.2</span></span><br><span class="line"><span class="string">[2018-11-29 10:41:57] INFO  ruby 2.5.1 (2018-03-29) [x86_64-linux]</span></span><br><span class="line"><span class="string">== Sinatra (v2.0.4) has taken the stage on 4567 for development with backup from WEBrick</span></span><br><span class="line"><span class="string">[2018-11-29 10:41:57] INFO  WEBrick::HTTPServer#start: pid=23960 port=4567</span></span><br></pre></td></tr></table></figure>
+<p>Sinatra 公式でも最小の起動方法はこれであると説明されている。</p>
+<p>では config.ru は何に必要なんだろう？</p>
+<h1><span id="自動生成した-configru-を読む">自動生成した config.ru を読む</span></h1><p>Rails の場合 config.ru が自動生成されるので、それを見てみよう。</p>
+<p>まずテスト用のディレクトリを作り、<code>bundle init</code>する。</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">$ mkdir rails-test</span><br><span class="line">$ <span class="built_in">cd</span> rails-test</span><br><span class="line">$ bundle init</span><br></pre></td></tr></table></figure>
+<p>生成された Gemfile の rails のコメントを外し…</p>
+<p><code>rails new</code>まで実行する。</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">$ bundle install --path vendor/bundle</span><br><span class="line">$ bundle <span class="built_in">exec</span> rails new .</span><br></pre></td></tr></table></figure>
+<p>するとデフォルトのファイル群が生成され、以下の内容の config.ru を得ることができる。</p>
+<figure class="highlight ruby"><table><tr><td class="code"><pre><span class="line"><span class="comment"># This file is used by Rack-based servers to start the application.</span></span><br><span class="line"></span><br><span class="line">require_relative <span class="string">'config/environment'</span></span><br><span class="line"></span><br><span class="line">run Rails.application</span><br></pre></td></tr></table></figure>
+<p>このコメントには、「Rack ベースのサーバーでアプリケーションを開始する時に使う」と書いてある。</p>
+<h1><span id="rack-とは">Rack とは</span></h1><p>Rack について「Rack は Web サーバを立ち上げるためのインターフェース」とよく説明されるが、全然ピンとこない。</p>
+<ul>
+<li><a href="https://qiita.com/k0kubun/items/248395f68164b52aec4a" target="_blank" rel="noopener">Rack とは何か - Qiita</a></li>
+<li><a href="https://doruby.jp/users/bibio/entries/Rack__" target="_blank" rel="noopener">Rack の話 | 初心者向け | DoRuby</a></li>
+</ul>
+<p>上記サイトにちょっとピンと来る説明があった。以下引用</p>
+<blockquote>
+<p>Rack は、指定したファイルを独自の Ruby DSL として読み込み、DSL で指定した様々なミドルウェア、アプリケーションを組み合わせて Web サーバを立ち上げることができる rackup というコマンドを提供するライブラリである。</p>
+</blockquote>
+<p>この「指定したファイル」というのが config.ru だろう。config.ru を DSL として読み込み、Web サーバを立ち上げる。までが Rack がやってくれることっぽい。</p>
+<p>まず config.ru は Rack のファイルだったんだな、そこから分かってなかったわ。</p>
+<h2><span id="configru-は必要">config.ru は必要？</span></h2><p>また、興味深い記述もあった。またまた引用</p>
+<blockquote>
+<p>require “sinatra”すると at_exit で Sinatra::Application.run!がフックされる。<br>Rails::Server と違って Sinatra::Application は Rack::Server のサブクラスではないので、new の際に Rack::Builder DSL を呼んだり、run!の際に Rack::Handler を探したりする実装が含まれている。</p>
+</blockquote>
+<p>つまり一番始めに config.ru 無しで動かした Sinatra サンプルでも、<code>require &quot;sinatra&quot;</code>としているので裏では Rack が動き WEBrick が動いていたということだ。</p>
+<p>じゃあ config.ru はいらないんじゃないの？</p>
+<h2><span id="rack-ミドルウェアを使う場合">Rack ミドルウェアを使う場合</span></h2><p>Rack ミドルウェアを使う場合、config.ru に設定することで Sinatra でそれらを使うことができる。</p>
+<p>Rack ミドルウェアとはどんなものがあるだろう。と思って調べてみたがイマイチ要領を得ない。多分何かの目的で使おうと思っていた gem が Rack ミドルウェアだった！ということはあっても、逆に Rack ミドルウェアを探したら該当の gem がヒットした！ということは無さそうだ。</p>
+<p>しかし Sinatra にはロギング・デバッグ・ルーティング・セッション等の標準的なミドルウェアは組み込まれているという。</p>
+<h2><span id="いつ使うのか">いつ使うのか</span></h2><p>Sinatra 公式に「config.ru はいつ使うのか？」とドンピシャのセクションがある。</p>
+<ul>
+<li><a href="http://sinatrarb.com/intro-ja.html" target="_blank" rel="noopener">Sinatra: README (Japanese)</a></li>
+</ul>
+<p>それによると異なる Rack ハンドラ（Unicorn など）を使った時・Sinatra::Base の複数のサブクラスを使う時・Sinatra をミドルウェアとして利用する時、これらの場合は config.ru を使うとしている。</p>
+<p>つまり普通に小規模な Web アプリ（クラシックスタイル）で使う場合は、気にしなくていいんじゃないの？</p>
+<h1><span id="まとめ">まとめ</span></h1><p>クラシックスタイルで Unicorn/Heroku を使わないなら config.ru は無くても良い。</p>
+<p>今の所この認識で問題無さそうだ。しかしクラシックスタイル・モジュラースタイルや Rack ミドルウェアの理解がまだあやふやな部分はかなりある。今後使いながらこの辺も徐々に固めていきたい。</p>
+<h1><span id="参考">参考</span></h1><ul>
+<li><a href="http://sinatrarb.com/intro-ja.html" target="_blank" rel="noopener">Sinatra: README (Japanese)</a></li>
+<li><a href="https://qiita.com/k0kubun/items/248395f68164b52aec4a" target="_blank" rel="noopener">Rack とは何か - Qiita</a></li>
+<li><a href="https://doruby.jp/users/bibio/entries/Rack__" target="_blank" rel="noopener">Rack の話 | 初心者向け | DoRuby</a></li>
+</ul>
+
+      
+    </div>
+    <footer class="article-footer">
+      <div data-url="https://t-kojima.github.io/2018/11/29/0050-about-config-ru/" data-id="cjq51fi030026mtu75zjy0cw9" class="article-share-items"></div>
+      <!-- <a data-url="https://t-kojima.github.io/2018/11/29/0050-about-config-ru/" data-id="cjq51fi030026mtu75zjy0cw9" class="article-share-link">共有</a> -->
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/ruby/">ruby</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/sinatra/">sinatra</a></li></ul>
+
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+    <a href="/2018/12/20/0051-setup-macbook-pro-2018/" id="article-nav-newer" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">次の記事</strong>
+      <div class="article-nav-title">
+        
+          MacBookPro2018のセットアップ
+        
+      </div>
+    </a>
+  
+  
+    <a href="/2018/11/14/0049-docker-mysql-error-caching-sha2-password/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">前の記事</strong>
+      <div class="article-nav-title">[MySQL] Unable to load authentication plugin &#39;caching_sha2_password&#39;</div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">カテゴリ</h3>
+    <div class="widget">
+      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/Mac/">Mac</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/MySQL/">MySQL</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Node/">Node</a><span class="category-list-count">2</span><ul class="category-list-child"><li class="category-list-item"><a class="category-list-link" href="/categories/Node/Express/">Express</a><span class="category-list-count">2</span></li></ul></li><li class="category-list-item"><a class="category-list-link" href="/categories/Sinatra/">Sinatra</a><span class="category-list-count">1</span></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">タグ</h3>
+    <div class="widget">
+      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/axios/">axios</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/babel/">babel</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/bottle/">bottle</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/browserify/">browserify</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/csharp/">csharp</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/docker/">docker</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/eslint/">eslint</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/euler/">euler</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/express/">express</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/firebase/">firebase</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/flask/">flask</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/hexo/">hexo</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/javascript/">javascript</a><span class="tag-list-count">8</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/jupyter/">jupyter</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/karma/">karma</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/kintone/">kintone</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/linux/">linux</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/log4js/">log4js</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/luigi/">luigi</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mac/">mac</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mocha/">mocha</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mysql/">mysql</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/node-fetch/">node-fetch</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/nodejs/">nodejs</a><span class="tag-list-count">13</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/powerline/">powerline</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/prettier/">prettier</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/python/">python</a><span class="tag-list-count">8</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/rails/">rails</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/react/">react</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/redis/">redis</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/rpa/">rpa</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/rspec/">rspec</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ruby/">ruby</a><span class="tag-list-count">7</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/sidekiq/">sidekiq</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/sinatra/">sinatra</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/sqlalchemy/">sqlalchemy</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/vagrant/">vagrant</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/virtualbox/">virtualbox</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/vscode/">vscode</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/vue/">vue</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/webpack/">webpack</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/zipstream/">zipstream</a><span class="tag-list-count">1</span></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">タグクラウド</h3>
+    <div class="widget tagcloud">
+      <a href="/tags/axios/" style="font-size: 10px;">axios</a> <a href="/tags/babel/" style="font-size: 10px;">babel</a> <a href="/tags/bottle/" style="font-size: 10px;">bottle</a> <a href="/tags/browserify/" style="font-size: 10px;">browserify</a> <a href="/tags/csharp/" style="font-size: 10px;">csharp</a> <a href="/tags/docker/" style="font-size: 10px;">docker</a> <a href="/tags/eslint/" style="font-size: 11.43px;">eslint</a> <a href="/tags/euler/" style="font-size: 10px;">euler</a> <a href="/tags/express/" style="font-size: 11.43px;">express</a> <a href="/tags/firebase/" style="font-size: 12.86px;">firebase</a> <a href="/tags/flask/" style="font-size: 10px;">flask</a> <a href="/tags/hexo/" style="font-size: 11.43px;">hexo</a> <a href="/tags/javascript/" style="font-size: 18.57px;">javascript</a> <a href="/tags/jupyter/" style="font-size: 10px;">jupyter</a> <a href="/tags/karma/" style="font-size: 11.43px;">karma</a> <a href="/tags/kintone/" style="font-size: 12.86px;">kintone</a> <a href="/tags/linux/" style="font-size: 10px;">linux</a> <a href="/tags/log4js/" style="font-size: 10px;">log4js</a> <a href="/tags/luigi/" style="font-size: 15.71px;">luigi</a> <a href="/tags/mac/" style="font-size: 10px;">mac</a> <a href="/tags/mocha/" style="font-size: 10px;">mocha</a> <a href="/tags/mysql/" style="font-size: 11.43px;">mysql</a> <a href="/tags/node-fetch/" style="font-size: 10px;">node-fetch</a> <a href="/tags/nodejs/" style="font-size: 20px;">nodejs</a> <a href="/tags/powerline/" style="font-size: 11.43px;">powerline</a> <a href="/tags/prettier/" style="font-size: 10px;">prettier</a> <a href="/tags/python/" style="font-size: 18.57px;">python</a> <a href="/tags/rails/" style="font-size: 10px;">rails</a> <a href="/tags/react/" style="font-size: 12.86px;">react</a> <a href="/tags/redis/" style="font-size: 10px;">redis</a> <a href="/tags/rpa/" style="font-size: 10px;">rpa</a> <a href="/tags/rspec/" style="font-size: 10px;">rspec</a> <a href="/tags/ruby/" style="font-size: 17.14px;">ruby</a> <a href="/tags/sidekiq/" style="font-size: 10px;">sidekiq</a> <a href="/tags/sinatra/" style="font-size: 15.71px;">sinatra</a> <a href="/tags/sqlalchemy/" style="font-size: 11.43px;">sqlalchemy</a> <a href="/tags/vagrant/" style="font-size: 10px;">vagrant</a> <a href="/tags/virtualbox/" style="font-size: 10px;">virtualbox</a> <a href="/tags/vscode/" style="font-size: 14.29px;">vscode</a> <a href="/tags/vue/" style="font-size: 12.86px;">vue</a> <a href="/tags/webpack/" style="font-size: 10px;">webpack</a> <a href="/tags/zipstream/" style="font-size: 10px;">zipstream</a>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">アーカイブ</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/12/">12月 2018</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/11/">11月 2018</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/10/">10月 2018</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/09/">9月 2018</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/08/">8月 2018</a><span class="archive-list-count">6</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/07/">7月 2018</a><span class="archive-list-count">11</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/06/">6月 2018</a><span class="archive-list-count">12</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/05/">5月 2018</a><span class="archive-list-count">11</span></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">最近の投稿</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2018/12/20/0051-setup-macbook-pro-2018/">MacBookPro2018のセットアップ</a>
+          </li>
+        
+          <li>
+            <a href="/2018/11/29/0050-about-config-ru/">[Sinatra] config.ruとは</a>
+          </li>
+        
+          <li>
+            <a href="/2018/11/14/0049-docker-mysql-error-caching-sha2-password/">[MySQL] Unable to load authentication plugin &#39;caching_sha2_password&#39;</a>
+          </li>
+        
+          <li>
+            <a href="/2018/11/05/0048-express-with-log4js/">[Node] ExpressでAPIを作ったらログも吐く</a>
+          </li>
+        
+          <li>
+            <a href="/2018/11/02/0047-helloworld-express-with-json/">[Node] Expressを使って最速でJSONを返す</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      &copy; 2018 t-kojima<br>
+      Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+
+
+  <link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
+  <script src="/fancybox/jquery.fancybox.pack.js"></script>
+
+
+<script src="/js/script.js"></script>
+
+
+
+  </div>
+  <script async src="//cdn.embedly.com/widgets/platform.js" charset="UTF-8"></script>
+</body>
+</html>

@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+
+  
+  <title>[Sinatra] シンプルなJSON API サーバーに手を加える（JSON Schema） | Today&#39;s Commit</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="前の記事（[Sinatra] シンプルな JSON API サーバーに手を加える（RSpec でテスト））に続いて、JSON Schema でデータのバリデーションをしてみる おしながき POST でデータを登録できるようにする RSpec でテストする データを JSON Schema でバリデーションする">
+<meta name="keywords" content="ruby,sinatra">
+<meta property="og:type" content="article">
+<meta property="og:title" content="[Sinatra] シンプルなJSON API サーバーに手を加える（JSON Schema）">
+<meta property="og:url" content="https://t-kojima.github.io/2018/06/28/0022-sinatra-simple-json-api-4/index.html">
+<meta property="og:site_name" content="Today&#39;s Commit">
+<meta property="og:description" content="前の記事（[Sinatra] シンプルな JSON API サーバーに手を加える（RSpec でテスト））に続いて、JSON Schema でデータのバリデーションをしてみる おしながき POST でデータを登録できるようにする RSpec でテストする データを JSON Schema でバリデーションする">
+<meta property="og:locale" content="ja">
+<meta property="og:updated_time" content="2018-12-20T11:07:38.284Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="[Sinatra] シンプルなJSON API サーバーに手を加える（JSON Schema）">
+<meta name="twitter:description" content="前の記事（[Sinatra] シンプルな JSON API サーバーに手を加える（RSpec でテスト））に続いて、JSON Schema でデータのバリデーションをしてみる おしながき POST でデータを登録できるようにする RSpec でテストする データを JSON Schema でバリデーションする">
+  
+    <link rel="alternate" href="/atom.xml" title="Today&#39;s Commit" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  
+    <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
+  
+  <link rel="stylesheet" href="/css/style.css">
+  
+    <link rel="amphtml" href="https://t-kojima.github.io/2018/06/28/0022-sinatra-simple-json-api-4//amp/index.html">
+  
+</head>
+
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">Today&#39;s Commit</a>
+      </h1>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSSフィード"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="検索"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="https://t-kojima.github.io"></form>
+      </div>
+    </div>
+  </div>
+</header>
+      <div class="outer">
+        <section id="main"><article id="post-0022-sinatra-simple-json-api-4" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2018/06/28/0022-sinatra-simple-json-api-4/" class="article-date">
+  <time datetime="2018-06-28T07:16:06.000Z" itemprop="datePublished">2018-06-28</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      [Sinatra] シンプルなJSON API サーバーに手を加える（JSON Schema）
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>前の記事（<a href="https://t-kojima.github.io/2018/06/26/0021-sinatra-simple-json-api-3/">[Sinatra] シンプルな JSON API サーバーに手を加える（RSpec でテスト）</a>）に続いて、JSON Schema でデータのバリデーションをしてみる</p>
+<h4><span id="おしながき">おしながき</span></h4><ul>
+<li>POST でデータを登録できるようにする</li>
+<li>RSpec でテストする</li>
+<li><strong>データを JSON Schema でバリデーションする</strong></li>
+</ul>
+<a id="more"></a>
+<h2><span id="json-schema-とは">JSON Schema とは</span></h2><p>JSON Schema とは、ある JSON が正しい構造・仕様を満たしているかを検証する仕組みで、JSON Schema 自体が JSON で記述される。</p>
+<p>とりあえず最低限のスキーマとそれを満たす JSON を見てみる</p>
+<h3><span id="例-1">例 1</span></h3><p>Schema</p>
+<figure class="highlight json"><table><tr><td class="code"><pre><span class="line">&#123;</span><br><span class="line">  <span class="attr">"type"</span>: <span class="string">"object"</span>,</span><br><span class="line">  <span class="attr">"properties"</span>: &#123;</span><br><span class="line">    <span class="attr">"hoge"</span>: &#123;</span><br><span class="line">      <span class="attr">"type"</span>: <span class="string">"integer"</span></span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>対象の JSON</p>
+<figure class="highlight json"><table><tr><td class="code"><pre><span class="line">&#123;</span><br><span class="line">  <span class="attr">"hoge"</span>: <span class="number">3</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>まず一番外側にオブジェクト（<code>&quot;type&quot;: &quot;object&quot;</code>）があり、数値（<code>&quot;type&quot;: &quot;integer&quot;</code>）の値を持つ <code>&quot;hoge&quot;</code> をプロパティとして持つ、と読める。</p>
+<p>なので以下のような JSON は数値が入るべきところを文字が入っているのでバリデーションで弾かれる。</p>
+<figure class="highlight json"><table><tr><td class="code"><pre><span class="line">&#123;</span><br><span class="line">  <span class="attr">"hoge"</span>: <span class="string">"3"</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3><span id="例-2">例 2</span></h3><p>一番外側はオブジェクトじゃなくてもいい、配列（<code>&quot;type&quot;: &quot;array&quot;</code>）の場合はこうだ</p>
+<p>Schema</p>
+<figure class="highlight json"><table><tr><td class="code"><pre><span class="line">&#123;</span><br><span class="line">  <span class="attr">"type"</span>: <span class="string">"array"</span>,</span><br><span class="line">  <span class="attr">"items"</span>: &#123;</span><br><span class="line">    <span class="attr">"type"</span>: <span class="string">"integer"</span></span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>対象の JSON</p>
+<figure class="highlight json"><table><tr><td class="code"><pre><span class="line">[<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>]</span><br></pre></td></tr></table></figure>
+<p>たったこれだけの内容でも、愚直にコードでバリデーションを掛けるとわりと大変だ（ハッシュを再帰的に走査してプロパティを一個ずつチェックするとか…？）そこでターゲットの JSON に対し定義済みのスキーマを被せてバリデーションするイメージの JSON Schema は簡単で分かりやすい。</p>
+<p>上記は本当に最低限動くサンプルでしかないので、もう少し実用的な記法は以下を参照</p>
+<ul>
+<li><a href="https://qiita.com/arumi8go/items/a9530cbd39ff545a7bbb" target="_blank" rel="noopener">JSON Schema と友達になる為の記事 - Qiita</a></li>
+<li><a href="https://qiita.com/dorachan1029/items/57b86116ae67e94ee1ff" target="_blank" rel="noopener">json schema のよく利用する機能まとめ - Qiita</a></li>
+</ul>
+<p><code>JSON Schema の書き方については一応本稿の趣旨ではないので…外部に丸投げする</code></p>
+<p>また、バリデーションのチェックは <a href="https://www.jsonschemavalidator.net/" target="_blank" rel="noopener">JSON Schema Validator</a> のような Web のツールを使うと楽だ</p>
+<h2><span id="ruby-でやるには">Ruby でやるには</span></h2><p><a href="https://github.com/ruby-json-schema/json-schema" target="_blank" rel="noopener">ruby-json-schema/json-schema</a> という gem を使う。この gem では <a href="https://tools.ietf.org/html/draft-zyp-json-schema-04" target="_blank" rel="noopener">JSON Schema Draft 4</a> を使用しているので、以後 Draft 4 に準ずる形で進める。</p>
+<p>ちなみに登録するデータは</p>
+<figure class="highlight json"><table><tr><td class="code"><pre><span class="line">&#123;</span><br><span class="line">  <span class="attr">"title"</span>: <span class="string">"すごいHaskellたのしく学ぼう!"</span>,</span><br><span class="line">  <span class="attr">"author"</span>: <span class="string">"Miran Lipovaca"</span>,</span><br><span class="line">  <span class="attr">"pages"</span>: <span class="number">391</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>で、利用するスキーマは</p>
+<figure class="highlight json"><table><tr><td class="code"><pre><span class="line">&#123;</span><br><span class="line">  <span class="attr">"$schema"</span>: <span class="string">"http://json-schema.org/draft-04/schema#"</span>,</span><br><span class="line">  <span class="attr">"description"</span>:</span><br><span class="line">    <span class="string">"This is book registration schema, it validates when a post on /books."</span>,</span><br><span class="line">  <span class="attr">"required"</span>: [<span class="string">"title"</span>, <span class="string">"author"</span>, <span class="string">"pages"</span>],</span><br><span class="line">  <span class="attr">"type"</span>: <span class="string">"object"</span>,</span><br><span class="line">  <span class="attr">"properties"</span>: &#123;</span><br><span class="line">    <span class="attr">"title"</span>: &#123;</span><br><span class="line">      <span class="attr">"type"</span>: <span class="string">"string"</span></span><br><span class="line">    &#125;,</span><br><span class="line">    <span class="attr">"author"</span>: &#123;</span><br><span class="line">      <span class="attr">"type"</span>: <span class="string">"string"</span></span><br><span class="line">    &#125;,</span><br><span class="line">    <span class="attr">"pages"</span>: &#123;</span><br><span class="line">      <span class="attr">"type"</span>: <span class="string">"integer"</span></span><br><span class="line">    &#125;</span><br><span class="line">  &#125;,</span><br><span class="line">  <span class="attr">"additionalProperties"</span>: <span class="literal">false</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>になる。</p>
+<h3><span id="単純に弾くだけ">単純に弾くだけ</span></h3><p>単にエラーを弾くだけなら post メソッドへは一行追加するだけでいい（スキーマは書かなきゃだけど…）</p>
+<figure class="highlight ruby"><table><tr><td class="code"><pre><span class="line">SCHEMA = &#123;</span><br><span class="line">  <span class="string">"$schema"</span> =&gt; <span class="string">"http://json-schema.org/draft-04/schema#"</span>,</span><br><span class="line">  <span class="symbol">description:</span> <span class="string">"This is book registration schema, it validates when a post on /books."</span>,</span><br><span class="line">  <span class="symbol">required:</span> [<span class="string">"title"</span>, <span class="string">"author"</span>, <span class="string">"pages"</span>],</span><br><span class="line">  <span class="symbol">type:</span> <span class="string">"object"</span>,</span><br><span class="line">  <span class="symbol">properties:</span> &#123;</span><br><span class="line">    <span class="symbol">title:</span> &#123; <span class="string">"type"</span>: <span class="string">"string"</span> &#125;,</span><br><span class="line">    <span class="symbol">author:</span> &#123; <span class="string">"type"</span>: <span class="string">"string"</span> &#125;,</span><br><span class="line">    <span class="symbol">pages:</span> &#123; <span class="string">"type"</span>: <span class="string">"integer"</span> &#125;</span><br><span class="line">  &#125;,</span><br><span class="line">  <span class="string">"additionalProperties"</span>: <span class="literal">false</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">post <span class="string">'/books'</span>, <span class="symbol">provides:</span> <span class="symbol">:json</span> <span class="keyword">do</span></span><br><span class="line">  params = JSON.parse request.body.read</span><br><span class="line"></span><br><span class="line">  <span class="comment"># この行を追加</span></span><br><span class="line">  halt <span class="number">500</span> <span class="keyword">unless</span> JSON::Validator.validate(SCHEMA, params)</span><br><span class="line"></span><br><span class="line">  book = Book.new <span class="keyword">do</span> <span class="params">|b|</span></span><br><span class="line">    b.title = params[<span class="symbol">:title</span>]</span><br><span class="line">    b.author = params[<span class="symbol">:author</span>]</span><br><span class="line">    b.pages = params[<span class="symbol">:pages</span>]</span><br><span class="line">  <span class="keyword">end</span></span><br><span class="line">  book.save</span><br><span class="line"><span class="keyword">end</span></span><br></pre></td></tr></table></figure>
+<p>これでバリデーションに失敗した場合 500 エラーになる。</p>
+<h3><span id="メッセージも通知する">メッセージも通知する</span></h3><p>単純に弾くだけだと何で弾かれたかわからないので、500 にメッセージを乗せてあげる</p>
+<p><code>JSON::Validator.validate</code> ではなく <code>JSON::Validator.fully_validate</code> を使う。fully_validate を使うと、true/false ではなく 空配列/エラーメッセージ入り配列 で結果を返すようになる。</p>
+<figure class="highlight ruby"><table><tr><td class="code"><pre><span class="line">SCHEMA = &#123;</span><br><span class="line">  <span class="comment"># 省略</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">post <span class="string">'/books'</span>, <span class="symbol">provides:</span> <span class="symbol">:json</span> <span class="keyword">do</span></span><br><span class="line">  params = JSON.parse request.body.read</span><br><span class="line"></span><br><span class="line">  <span class="comment"># この2行を追加</span></span><br><span class="line">  messages = JSON::Validator.fully_validate(SCHEMA, params)</span><br><span class="line">  halt <span class="number">500</span>, messages.to_json <span class="keyword">unless</span> messages.empty?</span><br><span class="line"></span><br><span class="line">  book = Book.new <span class="keyword">do</span> <span class="params">|b|</span></span><br><span class="line">    b.title = params[<span class="symbol">:title</span>]</span><br><span class="line">    b.author = params[<span class="symbol">:author</span>]</span><br><span class="line">    b.pages = params[<span class="symbol">:pages</span>]</span><br><span class="line">  <span class="keyword">end</span></span><br><span class="line">  book.save</span><br><span class="line"><span class="keyword">end</span></span><br></pre></td></tr></table></figure>
+<p>これで具体的にどこが弾かれたか通知されるようになった。</p>
+<h2><span id="さいごに">さいごに</span></h2><p>Sinatra において、POST の Body（JSON）のバリデーションを JSON Schema で行うことができた。</p>
+<p>今回は Sinatra にベタ書いているけど、例えば GET で返す JSON をモデルから自動生成したり<br>（<a href="https://github.com/r7kamura/json_world" target="_blank" rel="noopener">r7kamura/json_world</a>）、Rack レベルでバリデーションを掛けたり（<a href="https://github.com/r7kamura/rack-json_schema#rackjsonschemarequestvalidation" target="_blank" rel="noopener">r7kamura/rack-json_schema</a>）もできるらしい。</p>
+<p>そもそもボクが JSON Schema を知ったきっかけが<a href="http://r7kamura.hatenablog.com/entry/2014/06/10/023433" target="_blank" rel="noopener">全てが JSON になる - ✘╹◡╹✘</a>というブログで、上記のライブラリもこの作者さんのものなんだが、このライブラリ群を見てるとマジで「全てが JSON になる」と思えるようになる。マジですごい（小並感）</p>
+<h2><span id="実行環境">実行環境</span></h2><ul>
+<li>Ruby 2.3.3</li>
+<li>Sinatra 2.0.3</li>
+<li>json-schema 2.8.0</li>
+</ul>
+<h2><span id="参考">参考</span></h2><ul>
+<li><a href="https://qiita.com/sagaraya/items/115c15c0df3e84ecbc7f" target="_blank" rel="noopener">JSON スキーマはじめの一歩 - Qiita</a></li>
+<li><a href="https://qiita.com/arumi8go/items/a9530cbd39ff545a7bbb" target="_blank" rel="noopener">JSON Schema と友達になる為の記事 - Qiita</a></li>
+<li><a href="https://qiita.com/dorachan1029/items/57b86116ae67e94ee1ff" target="_blank" rel="noopener">json schema のよく利用する機能まとめ - Qiita</a></li>
+<li><a href="https://gin0606.hatenablog.com/entry/2016/02/16/144910" target="_blank" rel="noopener">僕が考えた最強の API ドキュメント生成 - 銀の人のメモ帳</a></li>
+<li><a href="http://blog.wktk.co.jp/ja/entry/2016/01/19/json-schema-draft-v4" target="_blank" rel="noopener">JSON Schema Draft v.4 の規格書を読む</a></li>
+</ul>
+
+      
+    </div>
+    <footer class="article-footer">
+      <div data-url="https://t-kojima.github.io/2018/06/28/0022-sinatra-simple-json-api-4/" data-id="cjq51fhzr001fmtu7fs9uithc" class="article-share-items"></div>
+      <!-- <a data-url="https://t-kojima.github.io/2018/06/28/0022-sinatra-simple-json-api-4/" data-id="cjq51fhzr001fmtu7fs9uithc" class="article-share-link">共有</a> -->
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/ruby/">ruby</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/sinatra/">sinatra</a></li></ul>
+
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+    <a href="/2018/06/29/0023-using-embedly-card/" id="article-nav-newer" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">次の記事</strong>
+      <div class="article-nav-title">
+        
+          [Hexo] リンクをブログカード風にしてみる
+        
+      </div>
+    </a>
+  
+  
+    <a href="/2018/06/26/0021-sinatra-simple-json-api-3/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">前の記事</strong>
+      <div class="article-nav-title">[Sinatra] シンプルなJSON API サーバーに手を加える（RSpecでテスト）</div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">カテゴリ</h3>
+    <div class="widget">
+      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/Mac/">Mac</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/MySQL/">MySQL</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Node/">Node</a><span class="category-list-count">2</span><ul class="category-list-child"><li class="category-list-item"><a class="category-list-link" href="/categories/Node/Express/">Express</a><span class="category-list-count">2</span></li></ul></li><li class="category-list-item"><a class="category-list-link" href="/categories/Sinatra/">Sinatra</a><span class="category-list-count">1</span></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">タグ</h3>
+    <div class="widget">
+      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/axios/">axios</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/babel/">babel</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/bottle/">bottle</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/browserify/">browserify</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/csharp/">csharp</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/docker/">docker</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/eslint/">eslint</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/euler/">euler</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/express/">express</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/firebase/">firebase</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/flask/">flask</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/hexo/">hexo</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/javascript/">javascript</a><span class="tag-list-count">8</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/jupyter/">jupyter</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/karma/">karma</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/kintone/">kintone</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/linux/">linux</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/log4js/">log4js</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/luigi/">luigi</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mac/">mac</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mocha/">mocha</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mysql/">mysql</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/node-fetch/">node-fetch</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/nodejs/">nodejs</a><span class="tag-list-count">13</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/powerline/">powerline</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/prettier/">prettier</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/python/">python</a><span class="tag-list-count">8</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/rails/">rails</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/react/">react</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/redis/">redis</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/rpa/">rpa</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/rspec/">rspec</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ruby/">ruby</a><span class="tag-list-count">7</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/sidekiq/">sidekiq</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/sinatra/">sinatra</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/sqlalchemy/">sqlalchemy</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/vagrant/">vagrant</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/virtualbox/">virtualbox</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/vscode/">vscode</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/vue/">vue</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/webpack/">webpack</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/zipstream/">zipstream</a><span class="tag-list-count">1</span></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">タグクラウド</h3>
+    <div class="widget tagcloud">
+      <a href="/tags/axios/" style="font-size: 10px;">axios</a> <a href="/tags/babel/" style="font-size: 10px;">babel</a> <a href="/tags/bottle/" style="font-size: 10px;">bottle</a> <a href="/tags/browserify/" style="font-size: 10px;">browserify</a> <a href="/tags/csharp/" style="font-size: 10px;">csharp</a> <a href="/tags/docker/" style="font-size: 10px;">docker</a> <a href="/tags/eslint/" style="font-size: 11.43px;">eslint</a> <a href="/tags/euler/" style="font-size: 10px;">euler</a> <a href="/tags/express/" style="font-size: 11.43px;">express</a> <a href="/tags/firebase/" style="font-size: 12.86px;">firebase</a> <a href="/tags/flask/" style="font-size: 10px;">flask</a> <a href="/tags/hexo/" style="font-size: 11.43px;">hexo</a> <a href="/tags/javascript/" style="font-size: 18.57px;">javascript</a> <a href="/tags/jupyter/" style="font-size: 10px;">jupyter</a> <a href="/tags/karma/" style="font-size: 11.43px;">karma</a> <a href="/tags/kintone/" style="font-size: 12.86px;">kintone</a> <a href="/tags/linux/" style="font-size: 10px;">linux</a> <a href="/tags/log4js/" style="font-size: 10px;">log4js</a> <a href="/tags/luigi/" style="font-size: 15.71px;">luigi</a> <a href="/tags/mac/" style="font-size: 10px;">mac</a> <a href="/tags/mocha/" style="font-size: 10px;">mocha</a> <a href="/tags/mysql/" style="font-size: 11.43px;">mysql</a> <a href="/tags/node-fetch/" style="font-size: 10px;">node-fetch</a> <a href="/tags/nodejs/" style="font-size: 20px;">nodejs</a> <a href="/tags/powerline/" style="font-size: 11.43px;">powerline</a> <a href="/tags/prettier/" style="font-size: 10px;">prettier</a> <a href="/tags/python/" style="font-size: 18.57px;">python</a> <a href="/tags/rails/" style="font-size: 10px;">rails</a> <a href="/tags/react/" style="font-size: 12.86px;">react</a> <a href="/tags/redis/" style="font-size: 10px;">redis</a> <a href="/tags/rpa/" style="font-size: 10px;">rpa</a> <a href="/tags/rspec/" style="font-size: 10px;">rspec</a> <a href="/tags/ruby/" style="font-size: 17.14px;">ruby</a> <a href="/tags/sidekiq/" style="font-size: 10px;">sidekiq</a> <a href="/tags/sinatra/" style="font-size: 15.71px;">sinatra</a> <a href="/tags/sqlalchemy/" style="font-size: 11.43px;">sqlalchemy</a> <a href="/tags/vagrant/" style="font-size: 10px;">vagrant</a> <a href="/tags/virtualbox/" style="font-size: 10px;">virtualbox</a> <a href="/tags/vscode/" style="font-size: 14.29px;">vscode</a> <a href="/tags/vue/" style="font-size: 12.86px;">vue</a> <a href="/tags/webpack/" style="font-size: 10px;">webpack</a> <a href="/tags/zipstream/" style="font-size: 10px;">zipstream</a>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">アーカイブ</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/12/">12月 2018</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/11/">11月 2018</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/10/">10月 2018</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/09/">9月 2018</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/08/">8月 2018</a><span class="archive-list-count">6</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/07/">7月 2018</a><span class="archive-list-count">11</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/06/">6月 2018</a><span class="archive-list-count">12</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/05/">5月 2018</a><span class="archive-list-count">11</span></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">最近の投稿</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2018/12/20/0051-setup-macbook-pro-2018/">MacBookPro2018のセットアップ</a>
+          </li>
+        
+          <li>
+            <a href="/2018/11/29/0050-about-config-ru/">[Sinatra] config.ruとは</a>
+          </li>
+        
+          <li>
+            <a href="/2018/11/14/0049-docker-mysql-error-caching-sha2-password/">[MySQL] Unable to load authentication plugin &#39;caching_sha2_password&#39;</a>
+          </li>
+        
+          <li>
+            <a href="/2018/11/05/0048-express-with-log4js/">[Node] ExpressでAPIを作ったらログも吐く</a>
+          </li>
+        
+          <li>
+            <a href="/2018/11/02/0047-helloworld-express-with-json/">[Node] Expressを使って最速でJSONを返す</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      &copy; 2018 t-kojima<br>
+      Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+
+
+  <link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
+  <script src="/fancybox/jquery.fancybox.pack.js"></script>
+
+
+<script src="/js/script.js"></script>
+
+
+
+  </div>
+  <script async src="//cdn.embedly.com/widgets/platform.js" charset="UTF-8"></script>
+</body>
+</html>

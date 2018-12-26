@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+
+  
+  <title>全てがReduceになる(5) | Today&#39;s Commit</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="前回に続き、Array のメソッドを reduce で再実装する。 今回は Node における Array#sort のアルゴリズムの解明で非常に長い内容になってしまった。なので sort のみです。  sort  実装及びテストのリポジトリ(practice-all-becomes-reduce)">
+<meta name="keywords" content="javascript,nodejs">
+<meta property="og:type" content="article">
+<meta property="og:title" content="全てがReduceになる(5)">
+<meta property="og:url" content="https://t-kojima.github.io/2018/07/28/0034-all-becomes-reduce-5/index.html">
+<meta property="og:site_name" content="Today&#39;s Commit">
+<meta property="og:description" content="前回に続き、Array のメソッドを reduce で再実装する。 今回は Node における Array#sort のアルゴリズムの解明で非常に長い内容になってしまった。なので sort のみです。  sort  実装及びテストのリポジトリ(practice-all-becomes-reduce)">
+<meta property="og:locale" content="ja">
+<meta property="og:updated_time" content="2018-12-20T11:07:38.289Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="全てがReduceになる(5)">
+<meta name="twitter:description" content="前回に続き、Array のメソッドを reduce で再実装する。 今回は Node における Array#sort のアルゴリズムの解明で非常に長い内容になってしまった。なので sort のみです。  sort  実装及びテストのリポジトリ(practice-all-becomes-reduce)">
+  
+    <link rel="alternate" href="/atom.xml" title="Today&#39;s Commit" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  
+    <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
+  
+  <link rel="stylesheet" href="/css/style.css">
+  
+    <link rel="amphtml" href="https://t-kojima.github.io/2018/07/28/0034-all-becomes-reduce-5//amp/index.html">
+  
+</head>
+
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">Today&#39;s Commit</a>
+      </h1>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSSフィード"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="検索"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="https://t-kojima.github.io"></form>
+      </div>
+    </div>
+  </div>
+</header>
+      <div class="outer">
+        <section id="main"><article id="post-0034-all-becomes-reduce-5" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2018/07/28/0034-all-becomes-reduce-5/" class="article-date">
+  <time datetime="2018-07-27T16:16:49.000Z" itemprop="datePublished">2018-07-28</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      全てがReduceになる(5)
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p><a href="https://t-kojima.github.io/2018/07/26/0033-all-becomes-reduce-4/">前回</a>に続き、Array のメソッドを reduce で再実装する。</p>
+<p>今回は Node における Array#sort のアルゴリズムの解明で非常に長い内容になってしまった。なので sort のみです。</p>
+<ul>
+<li>sort</li>
+</ul>
+<p><a href="https://github.com/t-kojima/practice-all-becomes-reduce" target="_blank" rel="noopener">実装及びテストのリポジトリ(practice-all-becomes-reduce)</a></p>
+<a id="more"></a>
+<h1><span id="ルール">ルール</span></h1><p>引き続き以下のルールでやっていく。</p>
+<ul>
+<li>for 文禁止</li>
+<li>Array#reduce を必ず使用する</li>
+<li>Array のインスタンスメソッドは reduce 以外使用不可</li>
+<li>Array のプロパティ、クラスメソッドは使用可能</li>
+<li>スプレッド構文は使用不可（reduce すら不要になる場合があるから）</li>
+</ul>
+<hr>
+<h1 style="font-size: 4em;"><span id="sort">sort</span></h1>
+
+<p><a href="https://developer.mozilla.org/ja/docs/Web/JavaScript/Reference/Global_Objects/Array/sort" target="_blank" rel="noopener">Array.prototype.sort() - JavaScript | MDN</a></p>
+<p>sort なので当然配列の並び替えを行う。ただしこの sort メソッドは非常にクセがある。（後述）</p>
+<h2><span id="構文">構文</span></h2><figure class="highlight js"><table><tr><td class="code"><pre><span class="line">arr.sort([compareFunction])</span><br></pre></td></tr></table></figure>
+<p>sort はソートされた配列を戻り値として返すが、レシーバとなる配列を破壊的にソートする。</p>
+<p>compareFunction を指定した場合、その関数の結果に基づいたソートを行い、省略した場合は各要素を文字列比較した結果に基づき、辞書順次ソートする。</p>
+<h2><span id="再実装">再実装</span></h2><figure class="highlight js"><table><tr><td class="code"><pre><span class="line"><span class="keyword">const</span> concat = <span class="function">(<span class="params">...args</span>) =&gt;</span></span><br><span class="line">  args.reduce(<span class="function">(<span class="params">acc, array</span>) =&gt;</span> &#123;</span><br><span class="line">    <span class="built_in">Array</span>.from(array).reduce(<span class="function">(<span class="params">_, cur, index</span>) =&gt;</span> &#123;</span><br><span class="line">      <span class="keyword">if</span> (index <span class="keyword">in</span> array) &#123;</span><br><span class="line">        acc[acc.length] = array[index]</span><br><span class="line">      &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        acc.length += <span class="number">1</span></span><br><span class="line">      &#125;</span><br><span class="line">    &#125;, <span class="literal">null</span>)</span><br><span class="line">    <span class="keyword">return</span> acc</span><br><span class="line">  &#125;, [])</span><br><span class="line"></span><br><span class="line"><span class="keyword">const</span> push = <span class="function">(<span class="params"><span class="keyword">from</span>, to, index</span>) =&gt;</span> &#123;</span><br><span class="line">  <span class="keyword">if</span> (index <span class="keyword">in</span> <span class="keyword">from</span>) &#123;</span><br><span class="line">    to[to.length] = <span class="keyword">from</span>[index]</span><br><span class="line">  &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">    to.length += <span class="number">1</span></span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">const</span> quickSort = <span class="function">(<span class="params">array, compare</span>) =&gt;</span> &#123;</span><br><span class="line">  <span class="keyword">if</span> (array.length &lt; <span class="number">1</span>) <span class="keyword">return</span> array</span><br><span class="line">  <span class="comment">// 後でconcatする為配列で保持</span></span><br><span class="line">  <span class="keyword">const</span> pivot = <span class="number">0</span> <span class="keyword">in</span> array ? [array[<span class="number">0</span>]] : [,]</span><br><span class="line">  <span class="keyword">const</span> [left, right] = <span class="built_in">Array</span>.from(array).reduce(</span><br><span class="line">    (acc, cur, index) =&gt; &#123;</span><br><span class="line">      <span class="keyword">if</span> (index !== <span class="number">0</span>) &#123;</span><br><span class="line">        <span class="comment">// プロパティ有 &amp; compareが0以下ならright</span></span><br><span class="line">        <span class="keyword">const</span> idx =</span><br><span class="line">          <span class="number">0</span> <span class="keyword">in</span> pivot &amp;&amp; compare.call(<span class="literal">undefined</span>, pivot[<span class="number">0</span>], array[index]) &lt;= <span class="number">0</span></span><br><span class="line">        push(array, acc[<span class="built_in">Number</span>(idx)], index)</span><br><span class="line">      &#125;</span><br><span class="line">      <span class="keyword">return</span> acc</span><br><span class="line">    &#125;,</span><br><span class="line">    [[], []] <span class="comment">// [[left], [right]] を返す</span></span><br><span class="line">  )</span><br><span class="line">  <span class="keyword">return</span> concat(quickSort(left, compare), pivot, quickSort(right, compare))</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="built_in">Array</span>.prototype.sort = <span class="function"><span class="keyword">function</span>(<span class="params">compare</span>) </span>&#123;</span><br><span class="line">  <span class="keyword">const</span> sorted = quickSort(<span class="keyword">this</span>, (x, y) =&gt; &#123;</span><br><span class="line">    <span class="keyword">if</span> (x === <span class="literal">undefined</span> || y === <span class="literal">undefined</span>) &#123;</span><br><span class="line">      <span class="keyword">return</span> (x === <span class="literal">undefined</span> ? <span class="number">1</span> : <span class="number">0</span>) + (y === <span class="literal">undefined</span> ? <span class="number">-1</span> : <span class="number">0</span>)</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">if</span> (compare) &#123;</span><br><span class="line">      <span class="keyword">const</span> v = <span class="built_in">Number</span>(compare.call(<span class="literal">undefined</span>, x, y))</span><br><span class="line">      <span class="keyword">return</span> <span class="built_in">Number</span>.isNaN(v) ? <span class="number">0</span> : v</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> (<span class="built_in">String</span>(x) &gt; <span class="built_in">String</span>(y) ? <span class="number">1</span> : <span class="number">0</span>) + (<span class="built_in">String</span>(x) &lt; <span class="built_in">String</span>(y) ? <span class="number">-1</span> : <span class="number">0</span>)</span><br><span class="line">  &#125;)</span><br><span class="line"></span><br><span class="line">  <span class="keyword">this</span>.length = <span class="number">0</span></span><br><span class="line"></span><br><span class="line">  <span class="keyword">return</span> <span class="built_in">Array</span>.from(sorted).reduce(<span class="function">(<span class="params">acc, cur, index</span>) =&gt;</span> &#123;</span><br><span class="line">    push(sorted, acc, index)</span><br><span class="line">    <span class="keyword">return</span> acc</span><br><span class="line">  &#125;, <span class="keyword">this</span>)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>まずいきなりだが、配列をソートする。</p>
+<figure class="highlight js"><table><tr><td class="code"><pre><span class="line"><span class="keyword">const</span> sorted = quickSort(<span class="keyword">this</span>, (x, y) =&gt; &#123;</span><br><span class="line">  <span class="keyword">if</span> (x === <span class="literal">undefined</span> || y === <span class="literal">undefined</span>) &#123;</span><br><span class="line">    <span class="keyword">return</span> (x === <span class="literal">undefined</span> ? <span class="number">1</span> : <span class="number">0</span>) + (y === <span class="literal">undefined</span> ? <span class="number">-1</span> : <span class="number">0</span>)</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">if</span> (compare) &#123;</span><br><span class="line">    <span class="keyword">const</span> v = <span class="built_in">Number</span>(compare.call(<span class="literal">undefined</span>, x, y))</span><br><span class="line">    <span class="keyword">return</span> <span class="built_in">Number</span>.isNaN(v) ? <span class="number">0</span> : v</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">return</span> (<span class="built_in">String</span>(x) &gt; <span class="built_in">String</span>(y) ? <span class="number">1</span> : <span class="number">0</span>) + (<span class="built_in">String</span>(x) &lt; <span class="built_in">String</span>(y) ? <span class="number">-1</span> : <span class="number">0</span>)</span><br><span class="line">&#125;)</span><br></pre></td></tr></table></figure>
+<p>ソートにはクイックソートを使う。<br><code>quickSort</code> 関数は名前の通りクイックソートを行う関数で、第一引数にソート対象の配列、第二引数には callback を渡す。この時 quickSort に渡す callback は比較関数である compareFunction を渡すのだが、 sort メソッドの引数である compareFunction をそのまま渡すのではなく、 undefined の場合や compareFunction が未定義の場合の比較処理を追加した関数でラップしている。（仕様にある”文字列で比較し辞書順にソート”の部分である）</p>
+<p>これは ECMAScript 仕様書の<a href="https://www.ecma-international.org/ecma-262/6.0/#sec-sortcompare" target="_blank" rel="noopener">Runtime Semantics: SortCompare(x,y)</a>にある手順をそのまま実装している。</p>
+<p>クイックソート部分は<a href="https://www.codereading.com/algo_and_ds/algo/quick_sort.html" target="_blank" rel="noopener">クイックソート : アルゴリズム</a>を参考にさせて頂いて、以下のようになっている。</p>
+<figure class="highlight js"><table><tr><td class="code"><pre><span class="line"><span class="keyword">const</span> quickSort = <span class="function">(<span class="params">array, compare</span>) =&gt;</span> &#123;</span><br><span class="line">  <span class="keyword">if</span> (array.length &lt; <span class="number">1</span>) <span class="keyword">return</span> array</span><br><span class="line">  <span class="comment">// 後でconcatする為配列で保持</span></span><br><span class="line">  <span class="keyword">const</span> pivot = <span class="number">0</span> <span class="keyword">in</span> array ? [array[<span class="number">0</span>]] : [,]</span><br><span class="line">  <span class="keyword">const</span> [left, right] = <span class="built_in">Array</span>.from(array).reduce(</span><br><span class="line">    (acc, cur, index) =&gt; &#123;</span><br><span class="line">      <span class="keyword">if</span> (index !== <span class="number">0</span>) &#123;</span><br><span class="line">        <span class="comment">// プロパティ有 &amp; compareが0以下ならright</span></span><br><span class="line">        <span class="keyword">const</span> idx =</span><br><span class="line">          <span class="number">0</span> <span class="keyword">in</span> pivot &amp;&amp; compare.call(<span class="literal">undefined</span>, pivot[<span class="number">0</span>], array[index]) &lt;= <span class="number">0</span></span><br><span class="line">        push(array, acc[<span class="built_in">Number</span>(idx)], index)</span><br><span class="line">      &#125;</span><br><span class="line">      <span class="keyword">return</span> acc</span><br><span class="line">    &#125;,</span><br><span class="line">    [[], []] <span class="comment">// [[left], [right]] を返す</span></span><br><span class="line">  )</span><br><span class="line">  <span class="keyword">return</span> concat(quickSort(left, compare), pivot, quickSort(right, compare))</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>配列の先頭要素を pivot として取り出し、他の要素と compare 関数で比較し、left と right に割り振っていく。その後 left と right 配列は再帰的にクイックソートを繰り返し、最終的に left+pivot+right で配列を結合する形になる。</p>
+<p>concat は単純に配列を結合する関数、push は配列に要素を追加する関数だ。concat は配列同士しか結合できないようになっているので、pivot は配列で保持している。</p>
+<p>また、疎な配列であってもソートできるようにしていて、pivot がプロパティの無い要素（疎要素）ならば、他の要素は無条件で left（先頭側）にソートするようになっている。これによりプロパティの無い要素（疎要素）は compare の結果にかかわらず全て配列の末尾側にまとめられる。</p>
+<p>この仕様も<a href="https://www.ecma-international.org/ecma-262/6.0/#sec-sortcompare" target="_blank" rel="noopener">Runtime Semantics: SortCompare(x,y)</a>の NOTE1 に記載がある。</p>
+<blockquote>
+<p>Because non-existent property values always compare greater than undefined property values, and undefined always compares greater than any other value, undefined property values always sort to the end of the result, followed by non-existent property values.</p>
+</blockquote>
+<h2><span id="ネイティブの-sort-と結果が異なる問題">ネイティブの sort と結果が異なる問題</span></h2><p>大問題なわけで、僕のソート実装が間違ってるに等しいわけで</p>
+<p>具体的には以下の配列をに比較関数有りでソートした時に結果が異なる。（<code>※以降、node組み込みのsortをネイティブ、自作のsortをリメイクと呼ぶ</code>）</p>
+<figure class="highlight js"><table><tr><td class="code"><pre><span class="line"><span class="keyword">const</span> array = [<span class="number">1</span>, <span class="literal">undefined</span>, <span class="string">'z'</span>, <span class="number">2</span>, <span class="string">'a'</span>, <span class="number">0</span>, <span class="literal">null</span>]</span><br></pre></td></tr></table></figure>
+<p>比較関数無しの場合はネイティブもリメイクも同じ結果を返す。</p>
+<figure class="highlight js"><table><tr><td class="code"><pre><span class="line">&gt; array = [<span class="number">1</span>, <span class="literal">undefined</span>, <span class="string">'z'</span>, <span class="number">2</span>, <span class="string">'a'</span>, <span class="number">0</span>, <span class="literal">null</span>];</span><br><span class="line">&gt; array.sort();</span><br><span class="line">[<span class="number">0</span>, <span class="number">1</span>, <span class="number">2</span>, <span class="string">'a'</span>, <span class="literal">null</span>, <span class="string">'z'</span>, <span class="literal">undefined</span>]</span><br></pre></td></tr></table></figure>
+<p>しかし <code>(x, y) =&gt; x - y</code> という比較関数を与えると異なる結果を返してしまう。</p>
+<figure class="highlight js"><table><tr><td class="code"><pre><span class="line"><span class="comment">// ネイティブ</span></span><br><span class="line">&gt; array = [<span class="number">1</span>, <span class="literal">undefined</span>, <span class="string">'z'</span>, <span class="number">2</span>, <span class="string">'a'</span>, <span class="number">0</span>, <span class="literal">null</span>];</span><br><span class="line">&gt; array.sort(<span class="function">(<span class="params">x, y</span>) =&gt;</span> x - y);</span><br><span class="line">[<span class="literal">null</span>, <span class="number">1</span>, <span class="string">'z'</span>, <span class="number">2</span>, <span class="string">'a'</span>, <span class="number">0</span>, <span class="literal">undefined</span>]</span><br><span class="line"></span><br><span class="line"><span class="comment">// リメイク</span></span><br><span class="line">&gt; array = [<span class="number">1</span>, <span class="literal">undefined</span>, <span class="string">'z'</span>, <span class="number">2</span>, <span class="string">'a'</span>, <span class="number">0</span>, <span class="literal">null</span>];</span><br><span class="line">&gt; array.sort(<span class="function">(<span class="params">x, y</span>) =&gt;</span> x - y);</span><br><span class="line">[<span class="number">0</span>, <span class="literal">null</span>, <span class="number">1</span>, <span class="string">'z'</span>, <span class="number">2</span>, <span class="string">'a'</span>, <span class="literal">undefined</span>]</span><br></pre></td></tr></table></figure>
+<p>上記の通り、0 の位置が異なる。</p>
+<h3><span id="nodejsv8-のソースを見てみる">Node.js(v8) のソースを見てみる。</span></h3><p><a href="https://github.com/v8/v8/blob/676501a8d7e208e16356027925b2ee60bd4fbc9c/src/js/array.js#L645" target="_blank" rel="noopener">v8/array.js at master · v8/v8</a></p>
+<p>Node.js は v8 を使用しているので、sort のコードを確認してみる。（場所は上記の箇所で良いハズ…）</p>
+<p>いきなり大事なことが書いてある。ソートアルゴリズムはクイックソートを使用しているが、配列長が 10 以下の場合は挿入ソートを使用しているらしい。</p>
+<blockquote>
+<p>// In-place QuickSort algorithm.<br>// For short (length &lt;= 10) arrays, insertion sort is used for efficiency.</p>
+</blockquote>
+<p>その挿入ソートに対応するコードは以下のものだ</p>
+<figure class="highlight js"><table><tr><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">InsertionSort</span>(<span class="params">a, from, to</span>) </span>&#123;</span><br><span class="line">  <span class="keyword">for</span> (<span class="keyword">var</span> i = <span class="keyword">from</span> + <span class="number">1</span>; i &lt; to; i++) &#123;</span><br><span class="line">    <span class="keyword">var</span> element = a[i]</span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">var</span> j = i - <span class="number">1</span>; j &gt;= <span class="keyword">from</span>; j--) &#123;</span><br><span class="line">      <span class="keyword">var</span> tmp = a[j]</span><br><span class="line">      <span class="keyword">var</span> order = comparefn(tmp, element)</span><br><span class="line">      <span class="keyword">if</span> (order &gt; <span class="number">0</span>) &#123;</span><br><span class="line">        a[j + <span class="number">1</span>] = tmp</span><br><span class="line">      &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        <span class="keyword">break</span></span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    a[j + <span class="number">1</span>] = element</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>このコード使って疑似的なネイティブのソートを再現し、どのような結果を返すか確認してみる。</p>
+<figure class="highlight js"><table><tr><td class="code"><pre><span class="line"><span class="keyword">const</span> compare = <span class="function">(<span class="params">x, y</span>) =&gt;</span> x - y</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">comparefn</span>(<span class="params">x, y</span>) </span>&#123;</span><br><span class="line">  <span class="keyword">if</span> (x === <span class="literal">undefined</span> || y === <span class="literal">undefined</span>) &#123;</span><br><span class="line">    <span class="keyword">return</span> (x === <span class="literal">undefined</span> ? <span class="number">1</span> : <span class="number">0</span>) + (y === <span class="literal">undefined</span> ? <span class="number">-1</span> : <span class="number">0</span>)</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">if</span> (compare) &#123;</span><br><span class="line">    <span class="keyword">const</span> v = <span class="built_in">Number</span>(compare.call(<span class="literal">undefined</span>, x, y))</span><br><span class="line">    <span class="keyword">return</span> <span class="built_in">Number</span>.isNaN(v) ? <span class="number">0</span> : v</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">return</span> (<span class="built_in">String</span>(x) &gt; <span class="built_in">String</span>(y) ? <span class="number">1</span> : <span class="number">0</span>) + (<span class="built_in">String</span>(x) &lt; <span class="built_in">String</span>(y) ? <span class="number">-1</span> : <span class="number">0</span>)</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">InsertionSort</span>(<span class="params">a, from, to</span>) </span>&#123;</span><br><span class="line">  <span class="keyword">for</span> (<span class="keyword">var</span> i = <span class="keyword">from</span> + <span class="number">1</span>; i &lt; to; i++) &#123;</span><br><span class="line">    <span class="keyword">var</span> element = a[i]</span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">var</span> j = i - <span class="number">1</span>; j &gt;= <span class="keyword">from</span>; j--) &#123;</span><br><span class="line">      <span class="keyword">var</span> tmp = a[j]</span><br><span class="line">      <span class="keyword">var</span> order = comparefn(tmp, element)</span><br><span class="line">      <span class="keyword">if</span> (order &gt; <span class="number">0</span>) &#123;</span><br><span class="line">        a[j + <span class="number">1</span>] = tmp</span><br><span class="line">      &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        <span class="keyword">break</span></span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    a[j + <span class="number">1</span>] = element</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">array = [<span class="number">1</span>, <span class="literal">undefined</span>, <span class="string">'z'</span>, <span class="number">2</span>, <span class="string">'a'</span>, <span class="number">0</span>, <span class="literal">null</span>]</span><br><span class="line">InsertionSort(array, <span class="number">0</span>, array.length)</span><br><span class="line"><span class="built_in">console</span>.log(array)</span><br></pre></td></tr></table></figure>
+<p>結果、ネイティブと違うソート結果になってしまった。。。</p>
+<figure class="highlight js"><table><tr><td class="code"><pre><span class="line"><span class="comment">// 元配列</span></span><br><span class="line">&gt; [<span class="number">1</span>, <span class="literal">undefined</span>, <span class="string">'z'</span>, <span class="number">2</span>, <span class="string">'a'</span>, <span class="number">0</span>, <span class="literal">null</span>]</span><br><span class="line"></span><br><span class="line"><span class="comment">// ネイティブ</span></span><br><span class="line">&gt; [<span class="literal">null</span>, <span class="number">1</span>, <span class="string">'z'</span>, <span class="number">2</span>, <span class="string">'a'</span>, <span class="number">0</span>, <span class="literal">undefined</span>]</span><br><span class="line"><span class="comment">// リメイク</span></span><br><span class="line">&gt; [<span class="number">0</span>, <span class="literal">null</span>, <span class="number">1</span>, <span class="string">'z'</span>, <span class="number">2</span>, <span class="string">'a'</span>, <span class="literal">undefined</span>]</span><br><span class="line"><span class="comment">// 疑似ネイティブ</span></span><br><span class="line">&gt; [<span class="number">1</span>, <span class="string">'z'</span>, <span class="number">2</span>, <span class="string">'a'</span>, <span class="number">0</span>, <span class="literal">null</span>, <span class="literal">undefined</span>]</span><br><span class="line"></span><br><span class="line"><span class="comment">// 全部ちがう。。。</span></span><br></pre></td></tr></table></figure>
+<p>更に詳細な動作を確認するため、InsertionSort の <code>a[j + 1] = element</code> 箇所で console.log を仕込み、配列の途中経過を出力するようにしてみた。</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">[ 1, undefined, <span class="string">'z'</span>, 2, <span class="string">'a'</span>, 0, null ]</span><br><span class="line">[ 1, <span class="string">'z'</span>, undefined, 2, <span class="string">'a'</span>, 0, null ]</span><br><span class="line">[ 1, <span class="string">'z'</span>, 2, undefined, <span class="string">'a'</span>, 0, null ]</span><br><span class="line">[ 1, <span class="string">'z'</span>, 2, <span class="string">'a'</span>, undefined, 0, null ]</span><br><span class="line">[ 1, <span class="string">'z'</span>, 2, <span class="string">'a'</span>, 0, undefined, null ]</span><br><span class="line">[ 1, <span class="string">'z'</span>, 2, <span class="string">'a'</span>, 0, null, undefined ]</span><br><span class="line">[ 1, <span class="string">'z'</span>, 2, <span class="string">'a'</span>, 0, null, undefined ]</span><br></pre></td></tr></table></figure>
+<p>すると undefined がただ後ろに移動していくだけの動きをしていることが分かった。</p>
+<p>しかし<a href="https://www.codereading.com/algo_and_ds/algo/insertion_sort.html" target="_blank" rel="noopener">挿入ソートのアルゴリズム</a>を改めて確認すると、<code>1, z, 2, a, 0</code> の並びは 数値と文字を比較すると結果が全て 0 になるため、隣同士の比較だと動くことができなくて、さらに 0 と null の比較も結果は 0 になる（null は計算上 0 扱いの為）ので、0 と null の比較も動かない。結局 undefined だけが 0 以外の結果を返し、移動していく形になっている。つまり動作としては何ら問題がないことになる。</p>
+<p>ネイティブのようにnullを先頭にやらないといけないのだが、これどうやっても null は先頭にいかないよな…？</p>
+<h3><span id="改めて-v8-のコードを読む">改めて v8 のコードを読む</span></h3><p>改めて v8 のコードを読んでいると、<a href="https://github.com/v8/v8/blob/676501a8d7e208e16356027925b2ee60bd4fbc9c/src/js/array.js#L792" target="_blank" rel="noopener">大事なコメント</a>を見逃していた。</p>
+<blockquote>
+<p>We also move all non-undefined elements to the front of the array and move the undefineds after that. Holes are removed.</p>
+</blockquote>
+<p>（意訳）non-undefined な要素を配列の先頭に移動し、その後ろに undefined な要素を移動する。そうすると穴が消える</p>
+<p>この処理は <code>%PrepareElementsForSort(array, length);</code> というC++の関数で行われているようだ。ここから処理を辿っていき、動作を詳しく見てみる。</p>
+<ul>
+<li><a href="https://github.com/v8/v8/blob/676501a8d7e208e16356027925b2ee60bd4fbc9c/src/runtime/runtime-array.cc#L356" target="_blank" rel="noopener">v8/runtime-array.cc at v8/v8#L356</a></li>
+<li><a href="https://github.com/v8/v8/blob/676501a8d7e208e16356027925b2ee60bd4fbc9c/src/runtime/runtime-array.cc#L157" target="_blank" rel="noopener">v8/runtime-array.cc at v8/v8#L157</a></li>
+</ul>
+<p>すると配列の操作をしていると思われる場所が…あった</p>
+<figure class="highlight cpp"><table><tr><td class="code"><pre><span class="line">    <span class="keyword">unsigned</span> <span class="keyword">int</span> undefs = limit;</span><br><span class="line">    <span class="keyword">unsigned</span> <span class="keyword">int</span> holes = limit;</span><br><span class="line">    <span class="comment">// Assume most arrays contain no holes and undefined values, so minimize the</span></span><br><span class="line">    <span class="comment">// number of stores of non-undefined, non-the-hole values.</span></span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">unsigned</span> <span class="keyword">int</span> i = <span class="number">0</span>; i &lt; undefs; i++) &#123;</span><br><span class="line">      Object* current = elements-&gt;get(i);</span><br><span class="line">      <span class="keyword">if</span> (current-&gt;IsTheHole(isolate)) &#123;</span><br><span class="line">        holes--;</span><br><span class="line">        undefs--;</span><br><span class="line">      &#125; <span class="keyword">else</span> <span class="keyword">if</span> (current-&gt;IsUndefined(isolate)) &#123;</span><br><span class="line">        undefs--;</span><br><span class="line">      &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        <span class="keyword">continue</span>;</span><br><span class="line">      &#125;</span><br><span class="line">      <span class="comment">// Position i needs to be filled.</span></span><br><span class="line">      <span class="keyword">while</span> (undefs &gt; i) &#123;</span><br><span class="line">        current = elements-&gt;get(undefs);</span><br><span class="line">        <span class="keyword">if</span> (current-&gt;IsTheHole(isolate)) &#123;</span><br><span class="line">          holes--;</span><br><span class="line">          undefs--;</span><br><span class="line">        &#125; <span class="keyword">else</span> <span class="keyword">if</span> (current-&gt;IsUndefined(isolate)) &#123;</span><br><span class="line">          undefs--;</span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">          elements-&gt;<span class="built_in">set</span>(i, current, write_barrier);</span><br><span class="line">          <span class="keyword">break</span>;</span><br><span class="line">        &#125;</span><br><span class="line">      &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>前述のコメント通り、undefined と hole(疎要素)を配列の後方へ移動させる処理だ。その内容はざっくりと言うと、<strong>配列中に undefined か hole(疎要素)が見つかったら、最後尾の要素とスワップする</strong>というものだ。</p>
+<p>なので <code>%PrepareElementsForSort(array, length);</code> が実行された結果、array は以下の並びになっている（はずだ）。</p>
+<figure class="highlight js"><table><tr><td class="code"><pre><span class="line">;[<span class="number">1</span>, <span class="literal">null</span>, <span class="string">'z'</span>, <span class="number">2</span>, <span class="string">'a'</span>, <span class="number">0</span>, <span class="literal">undefined</span>]</span><br></pre></td></tr></table></figure>
+<p>改めてこの配列で擬似ネイティブのソートを実行すると、こんどはネイティブの結果と同等になった。</p>
+<figure class="highlight js"><table><tr><td class="code"><pre><span class="line">array = [<span class="number">1</span>, <span class="literal">null</span>, <span class="string">'z'</span>, <span class="number">2</span>, <span class="string">'a'</span>, <span class="number">0</span>, <span class="literal">undefined</span>]</span><br><span class="line">InsertionSort(array, <span class="number">0</span>, array.length)</span><br><span class="line"><span class="built_in">console</span>.log(array)</span><br><span class="line"><span class="comment">// &gt; [null, 1, 'z', 2, 'a', 0, undefined ]</span></span><br></pre></td></tr></table></figure>
+<p>つまりリメイクの sort メソッドは以下の点を改良するとネイティブと同じ結果を返すようになる。</p>
+<ul>
+<li>undefined と hole（疎要素）の移動はソート処理前に行い、最後尾の要素とのスワップで行う。</li>
+<li>配列長が 10 以下の場合、クイックソートではなく挿入ソートで実行する。</li>
+</ul>
+<h1><span id="で-直すの">で、直すの？</span></h1><p>じつはリメイクのコードでも undefined と hole（疎要素）の移動は実現できている。ただ移動のアルゴリズムでスワップを行っていないだけだ。そしてこの移動アルゴリズムとソートアルゴリズムは ECMAScript の仕様書では規定されておらず、実装依存となっている。</p>
+<p>今回リメイクとネイティブの差異が何処にあるかという点で深堀りしてみたが、リメイクのコードは現状でも仕様を満たしているので、修正はせずにこれで完成としたい。（というかこの調査でもう疲れきった…）</p>
+<p>Array のメソッドはまだ少しあるので、そちらに力を割くことにしよう…</p>
+<p>つづく</p>
+<h2><span id="余談ブラウザで実行してみたら">（余談）ブラウザで実行してみたら…</span></h2><p>JSFiddle で以下のコードを実行してみたところ、Firefox のみ違うソート結果となってしまった。node と Chrome は同じ v8 を使っているから同じ結果なのだろうか。Array#sort が頻繁に実装依存と言われているのはこういうことなんだな。</p>
+<h3><span id="node">node</span></h3><figure class="highlight js"><table><tr><td class="code"><pre><span class="line">array = [<span class="number">1</span>, <span class="literal">undefined</span>, <span class="string">'z'</span>, <span class="number">2</span>, <span class="string">'a'</span>, <span class="number">0</span>, <span class="literal">null</span>]</span><br><span class="line">array.sort(<span class="function">(<span class="params">x, y</span>) =&gt;</span> x - y)</span><br><span class="line"><span class="built_in">console</span>.log(array)</span><br><span class="line"></span><br><span class="line"><span class="comment">// &gt; [ null, 1, 'z', 2, 'a', 0, undefined ]</span></span><br></pre></td></tr></table></figure>
+<h3><span id="firefox">firefox</span></h3><figure class="highlight js"><table><tr><td class="code"><pre><span class="line">array = [<span class="number">1</span>, <span class="literal">undefined</span>, <span class="string">'z'</span>, <span class="number">2</span>, <span class="string">'a'</span>, <span class="number">0</span>, <span class="literal">null</span>]</span><br><span class="line">array.sort(<span class="function">(<span class="params">x, y</span>) =&gt;</span> x - y)</span><br><span class="line"><span class="built_in">console</span>.log(array)</span><br><span class="line"></span><br><span class="line"><span class="comment">// &gt; [0, null, 'a', 'z', 1, 2, undefined]</span></span><br></pre></td></tr></table></figure>
+<h2><span id="chrome">Chrome</span></h2><figure class="highlight js"><table><tr><td class="code"><pre><span class="line">array = [<span class="number">1</span>, <span class="literal">undefined</span>, <span class="string">'z'</span>, <span class="number">2</span>, <span class="string">'a'</span>, <span class="number">0</span>, <span class="literal">null</span>]</span><br><span class="line">array.sort(<span class="function">(<span class="params">x, y</span>) =&gt;</span> x - y)</span><br><span class="line"><span class="built_in">console</span>.log(array)</span><br><span class="line"><span class="comment">// &gt; [null, 1, "z", 2, "a", 0, undefined]</span></span><br></pre></td></tr></table></figure>
+<h1><span id="参考">参考</span></h1><ul>
+<li><a href="https://www.pandanoir.info/entry/2016/04/16/190000" target="_blank" rel="noopener">言語仕様から入る JavaScript 入門 その 1 - Panda Noir</a></li>
+<li><a href="https://www.ecma-international.org/ecma-262/6.0/#sec-array.prototype.sort" target="_blank" rel="noopener">ECMAScript 2015 Language Specification – ECMA-262 6th Edition</a></li>
+<li><a href="https://github.com/v8/v8" target="_blank" rel="noopener">v8/v8: The official mirror of the V8 Git repository</a></li>
+</ul>
+<!-- ### 謎な部分がある
+
+InsertionSort を実行する前、InnerArraySort を呼び出した直後に以下のブロックがある。`!IS_CALLABLE(comparefn)` となっていることから、comparefn が未定義の場合に comparefn のデフォルト動作を定義する箇所に思えるが、その定義される内容が[Runtime Semantics: SortCompare(x,y)](https://www.ecma-international.org/ecma-262/6.0/#sec-sortcompare)と若干異なるのだ。そもそも仕様上は comparefn の定義有無に関わらずこの処理はあるべき（Step4 で comparefn が呼ばれる為）なのだが、下記のロジックからは Step4 が抜けている。
+
+以下のコードが正しいのであれば、comparefn が定義されている場合、仕様通りの動きをしないのではないか？？
+
+<figure class="highlight js"><table><tr><td class="code"><pre><span class="line">  <span class="keyword">if</span> (!IS_CALLABLE(comparefn)) &#123;</span><br><span class="line">    comparefn = <span class="function"><span class="keyword">function</span> (<span class="params">x, y</span>) </span>&#123;</span><br><span class="line">      <span class="keyword">if</span> (x === y) <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">      <span class="keyword">if</span> (%_IsSmi(x) &amp;&amp; %_IsSmi(y)) &#123;</span><br><span class="line">        <span class="keyword">return</span> %SmiLexicographicCompare(x, y);</span><br><span class="line">      &#125;</span><br><span class="line">      x = TO_STRING(x);</span><br><span class="line">      y = TO_STRING(y);</span><br><span class="line">      <span class="keyword">if</span> (x == y) <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">      <span class="keyword">else</span> <span class="keyword">return</span> x &lt; y ? <span class="number">-1</span> : <span class="number">1</span>;</span><br><span class="line">    &#125;;</span><br><span class="line">&#125;</span><br><span class="line"><span class="string">``</span><span class="string">` --&gt;</span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">&lt;!-- ## 22.1.3.24 Array.prototype.sort (comparefn)</span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">`</span>このセクションはECMAScript仕様書の和訳（自力）です。<span class="string">`</span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">配列の要素をソートします。ソートは必ずしも安定はしません。（つまり、比較される要素は必ずしも最初の並び順にあるわけではありません。）comparefn が定義されている場合、それは x と y 二つの引数を持つ関数である必要があり、x &lt; y の場合は -1、x = y の場合は 0、x &gt; y の場合は 1 を返します。</span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">最初に、ソート機能を初期化する為に以下のステップが実行されます。</span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">`</span><span class="string">``</span>text</span><br><span class="line"><span class="number">1.</span> obj に ToObject(<span class="keyword">this</span>) が代入される。         Let obj be ToObject(<span class="keyword">this</span> value).</span><br><span class="line"><span class="number">2.</span> len に ToLength(obj.length) が代入される。   Let len be ToLength(Get(obj, <span class="string">"length"</span>)).</span><br><span class="line"><span class="number">3.</span> ReturnIfAbrupt(len) を実行する。             ReturnIfAbrupt(len).</span><br></pre></td></tr></table></figure>
+<p>ソートメソッドの仕様では、オブジェクト(obj)が下のアルゴリズムで true を返す時、疎であると言える。</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">1. 数値 i を 0 &lt;= i &lt; len の範囲で列挙する。                     For each integer i in the range 0≤i&lt; len</span><br><span class="line">    a. elem に obj.GetOwnProperty(ToString(i)) を代入する。     Let elem be obj.[[GetOwnProperty]](ToString(i)).</span><br><span class="line">    b. もし elem が未定義(undefined)の場合、trueを返す。         If elem is undefined, return true.</span><br><span class="line">2. falseを返す。                                               Return false.</span><br></pre></td></tr></table></figure>
+<p>ソートの順序は昇順で、このファンクションが完了した後に、整数インデックスが len 以下の obj のプロパティ値で並び替えされる。ソート機能の結果は次のように決定される。</p>
+<p>comparefn が定義済みかつ、この配列の要素に対し一貫性のある比較関数ではない場合（下記参照）、<strong>ソート順は実装定義です</strong>。comparefn が未定義で、SortCompare（22.1.3.24.1）が一貫性のある比較関数として動作しない時も、<strong>ソート順は実装定義です</strong>。</p>
+<p>proto に obj.GetPrototypeOf()を代入する。もし proto が null ではなく、以下の条件を全て満たす整数 j が存在する場合、<strong>ソート順は実装定義</strong>です。</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">- obj は疎                                  obj is sparse</span><br><span class="line">- 0 &lt;= j &lt; len                              0 ≤ j &lt; len</span><br><span class="line">- HasProperty(proto, ToString(j))は true    HasProperty(proto, ToString(j)) is true.</span><br></pre></td></tr></table></figure>
+<p>obj が疎で以下のいずれかの条件に合致するなら<strong>ソート順は実装定義</strong>です。</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">- IsExtensible(obj) is false.</span><br><span class="line">- 正の整数インデックスがlen以下のいずれかのプロパティで、Configurable属性がfalseのデータプロパティの場合</span><br><span class="line">        Any integer index property of obj whose name is a nonnegative integer less than len is a data property whose [[Configurable]] attribute is false.</span><br></pre></td></tr></table></figure>
+<p>obj が以下のいずれかの条件に合致するなら<strong>ソート順は実装定義</strong>です。</p>
+<p><code>`</code>text</p>
+<ul>
+<li><p>objが（プロキシエキゾチックオブジェクトを含む）エキゾチックオブジェクトで、Get、Set、Delete、GetOwnPropertyの動作はこれらの内部メソッドの通常のオブジェクト実装では無い場合<br>  If obj is an exotic object (including Proxy exotic objects) whose behaviour for [[Get]], [[Set]], [[Delete]], and [[GetOwnProperty]] is not the ordinary object implementation of these internal methods.</p>
+</li>
+<li><p>正の整数インデックスがlen以下のいずれかのプロパティでアクセサプロパティか、Writable属性がfalseのデータプロパティの場合<br>  If any index index property of obj whose name is a nonnegative integer less than len is an accessor property or is a data property whose [[Writable]] attribute is false.</p>
+</li>
+<li><p>comparefnが未定義で、SortCompareに変更されたobjかいくつかのオブジェクトのプロトタイプチェーンにToStringを適用した値を引数として渡した場合<br>  If comparefn is undefined and the application of ToString to any value passed as an argument to SortCompare modifies obj or any object on obj’s prototype chain.</p>
+</li>
+<li><p>comparefnが未定義かつ全てにToStringを適用した、SortCompareにいくつかの特定の値を引数として渡した<br>  If comparefn is undefined and all applications of ToString, to any specific value passed as an argument to SortCompare, do not produce the same result.<br><code>`</code> –&gt;</p>
+</li>
+</ul>
+-->
+      
+    </div>
+    <footer class="article-footer">
+      <div data-url="https://t-kojima.github.io/2018/07/28/0034-all-becomes-reduce-5/" data-id="cjq51fi1n006emtu7i2vknv5m" class="article-share-items"></div>
+      <!-- <a data-url="https://t-kojima.github.io/2018/07/28/0034-all-becomes-reduce-5/" data-id="cjq51fi1n006emtu7i2vknv5m" class="article-share-link">共有</a> -->
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/javascript/">javascript</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/nodejs/">nodejs</a></li></ul>
+
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+    <a href="/2018/08/01/0035-all-becomes-reduce-6/" id="article-nav-newer" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">次の記事</strong>
+      <div class="article-nav-title">
+        
+          全てがReduceになる(6)
+        
+      </div>
+    </a>
+  
+  
+    <a href="/2018/07/26/0033-all-becomes-reduce-4/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">前の記事</strong>
+      <div class="article-nav-title">全てがReduceになる(4)</div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">カテゴリ</h3>
+    <div class="widget">
+      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/Mac/">Mac</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/MySQL/">MySQL</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Node/">Node</a><span class="category-list-count">2</span><ul class="category-list-child"><li class="category-list-item"><a class="category-list-link" href="/categories/Node/Express/">Express</a><span class="category-list-count">2</span></li></ul></li><li class="category-list-item"><a class="category-list-link" href="/categories/Sinatra/">Sinatra</a><span class="category-list-count">1</span></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">タグ</h3>
+    <div class="widget">
+      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/axios/">axios</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/babel/">babel</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/bottle/">bottle</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/browserify/">browserify</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/csharp/">csharp</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/docker/">docker</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/eslint/">eslint</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/euler/">euler</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/express/">express</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/firebase/">firebase</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/flask/">flask</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/hexo/">hexo</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/javascript/">javascript</a><span class="tag-list-count">8</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/jupyter/">jupyter</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/karma/">karma</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/kintone/">kintone</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/linux/">linux</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/log4js/">log4js</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/luigi/">luigi</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mac/">mac</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mocha/">mocha</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mysql/">mysql</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/node-fetch/">node-fetch</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/nodejs/">nodejs</a><span class="tag-list-count">13</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/powerline/">powerline</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/prettier/">prettier</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/python/">python</a><span class="tag-list-count">8</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/rails/">rails</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/react/">react</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/redis/">redis</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/rpa/">rpa</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/rspec/">rspec</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ruby/">ruby</a><span class="tag-list-count">7</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/sidekiq/">sidekiq</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/sinatra/">sinatra</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/sqlalchemy/">sqlalchemy</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/vagrant/">vagrant</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/virtualbox/">virtualbox</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/vscode/">vscode</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/vue/">vue</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/webpack/">webpack</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/zipstream/">zipstream</a><span class="tag-list-count">1</span></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">タグクラウド</h3>
+    <div class="widget tagcloud">
+      <a href="/tags/axios/" style="font-size: 10px;">axios</a> <a href="/tags/babel/" style="font-size: 10px;">babel</a> <a href="/tags/bottle/" style="font-size: 10px;">bottle</a> <a href="/tags/browserify/" style="font-size: 10px;">browserify</a> <a href="/tags/csharp/" style="font-size: 10px;">csharp</a> <a href="/tags/docker/" style="font-size: 10px;">docker</a> <a href="/tags/eslint/" style="font-size: 11.43px;">eslint</a> <a href="/tags/euler/" style="font-size: 10px;">euler</a> <a href="/tags/express/" style="font-size: 11.43px;">express</a> <a href="/tags/firebase/" style="font-size: 12.86px;">firebase</a> <a href="/tags/flask/" style="font-size: 10px;">flask</a> <a href="/tags/hexo/" style="font-size: 11.43px;">hexo</a> <a href="/tags/javascript/" style="font-size: 18.57px;">javascript</a> <a href="/tags/jupyter/" style="font-size: 10px;">jupyter</a> <a href="/tags/karma/" style="font-size: 11.43px;">karma</a> <a href="/tags/kintone/" style="font-size: 12.86px;">kintone</a> <a href="/tags/linux/" style="font-size: 10px;">linux</a> <a href="/tags/log4js/" style="font-size: 10px;">log4js</a> <a href="/tags/luigi/" style="font-size: 15.71px;">luigi</a> <a href="/tags/mac/" style="font-size: 10px;">mac</a> <a href="/tags/mocha/" style="font-size: 10px;">mocha</a> <a href="/tags/mysql/" style="font-size: 11.43px;">mysql</a> <a href="/tags/node-fetch/" style="font-size: 10px;">node-fetch</a> <a href="/tags/nodejs/" style="font-size: 20px;">nodejs</a> <a href="/tags/powerline/" style="font-size: 11.43px;">powerline</a> <a href="/tags/prettier/" style="font-size: 10px;">prettier</a> <a href="/tags/python/" style="font-size: 18.57px;">python</a> <a href="/tags/rails/" style="font-size: 10px;">rails</a> <a href="/tags/react/" style="font-size: 12.86px;">react</a> <a href="/tags/redis/" style="font-size: 10px;">redis</a> <a href="/tags/rpa/" style="font-size: 10px;">rpa</a> <a href="/tags/rspec/" style="font-size: 10px;">rspec</a> <a href="/tags/ruby/" style="font-size: 17.14px;">ruby</a> <a href="/tags/sidekiq/" style="font-size: 10px;">sidekiq</a> <a href="/tags/sinatra/" style="font-size: 15.71px;">sinatra</a> <a href="/tags/sqlalchemy/" style="font-size: 11.43px;">sqlalchemy</a> <a href="/tags/vagrant/" style="font-size: 10px;">vagrant</a> <a href="/tags/virtualbox/" style="font-size: 10px;">virtualbox</a> <a href="/tags/vscode/" style="font-size: 14.29px;">vscode</a> <a href="/tags/vue/" style="font-size: 12.86px;">vue</a> <a href="/tags/webpack/" style="font-size: 10px;">webpack</a> <a href="/tags/zipstream/" style="font-size: 10px;">zipstream</a>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">アーカイブ</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/12/">12月 2018</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/11/">11月 2018</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/10/">10月 2018</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/09/">9月 2018</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/08/">8月 2018</a><span class="archive-list-count">6</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/07/">7月 2018</a><span class="archive-list-count">11</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/06/">6月 2018</a><span class="archive-list-count">12</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/05/">5月 2018</a><span class="archive-list-count">11</span></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">最近の投稿</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2018/12/20/0051-setup-macbook-pro-2018/">MacBookPro2018のセットアップ</a>
+          </li>
+        
+          <li>
+            <a href="/2018/11/29/0050-about-config-ru/">[Sinatra] config.ruとは</a>
+          </li>
+        
+          <li>
+            <a href="/2018/11/14/0049-docker-mysql-error-caching-sha2-password/">[MySQL] Unable to load authentication plugin &#39;caching_sha2_password&#39;</a>
+          </li>
+        
+          <li>
+            <a href="/2018/11/05/0048-express-with-log4js/">[Node] ExpressでAPIを作ったらログも吐く</a>
+          </li>
+        
+          <li>
+            <a href="/2018/11/02/0047-helloworld-express-with-json/">[Node] Expressを使って最速でJSONを返す</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      &copy; 2018 t-kojima<br>
+      Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+
+
+  <link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
+  <script src="/fancybox/jquery.fancybox.pack.js"></script>
+
+
+<script src="/js/script.js"></script>
+
+
+
+  </div>
+  <script async src="//cdn.embedly.com/widgets/platform.js" charset="UTF-8"></script>
+</body>
+</html>

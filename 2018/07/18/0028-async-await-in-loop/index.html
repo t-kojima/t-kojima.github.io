@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+
+  
+  <title>[Node] 高階関数内での非同期処理（async/await）をどう書くか | Today&#39;s Commit</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="JavaScript の Array には forEach や map や filter などの便利な高階関数が用意されている。これらは非常に便利なのだが、引数の関数（callback）内で非同期処理を行おうとすると途端に複雑になる。これらの高階関数内での非同期処理の利用について動作を確認したい。">
+<meta name="keywords" content="nodejs">
+<meta property="og:type" content="article">
+<meta property="og:title" content="[Node] 高階関数内での非同期処理（async&#x2F;await）をどう書くか">
+<meta property="og:url" content="https://t-kojima.github.io/2018/07/18/0028-async-await-in-loop/index.html">
+<meta property="og:site_name" content="Today&#39;s Commit">
+<meta property="og:description" content="JavaScript の Array には forEach や map や filter などの便利な高階関数が用意されている。これらは非常に便利なのだが、引数の関数（callback）内で非同期処理を行おうとすると途端に複雑になる。これらの高階関数内での非同期処理の利用について動作を確認したい。">
+<meta property="og:locale" content="ja">
+<meta property="og:updated_time" content="2018-12-20T11:07:38.288Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="[Node] 高階関数内での非同期処理（async&#x2F;await）をどう書くか">
+<meta name="twitter:description" content="JavaScript の Array には forEach や map や filter などの便利な高階関数が用意されている。これらは非常に便利なのだが、引数の関数（callback）内で非同期処理を行おうとすると途端に複雑になる。これらの高階関数内での非同期処理の利用について動作を確認したい。">
+  
+    <link rel="alternate" href="/atom.xml" title="Today&#39;s Commit" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  
+    <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
+  
+  <link rel="stylesheet" href="/css/style.css">
+  
+    <link rel="amphtml" href="https://t-kojima.github.io/2018/07/18/0028-async-await-in-loop//amp/index.html">
+  
+</head>
+
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">Today&#39;s Commit</a>
+      </h1>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSSフィード"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="検索"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="https://t-kojima.github.io"></form>
+      </div>
+    </div>
+  </div>
+</header>
+      <div class="outer">
+        <section id="main"><article id="post-0028-async-await-in-loop" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2018/07/18/0028-async-await-in-loop/" class="article-date">
+  <time datetime="2018-07-17T23:05:15.000Z" itemprop="datePublished">2018-07-18</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      [Node] 高階関数内での非同期処理（async/await）をどう書くか
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>JavaScript の Array には <code>forEach</code> や <code>map</code> や <code>filter</code> などの便利な高階関数が用意されている。これらは非常に便利なのだが、引数の関数（callback）内で非同期処理を行おうとすると途端に複雑になる。これらの高階関数内での非同期処理の利用について動作を確認したい。</p>
+<a id="more"></a>
+<h1><span id="準備">準備</span></h1><p>動作確認の準備として非同期の関数 <code>echo</code> を用意する。</p>
+<figure class="highlight js"><table><tr><td class="code"><pre><span class="line"><span class="keyword">const</span> echo = <span class="function"><span class="params">value</span> =&gt;</span> <span class="keyword">new</span> <span class="built_in">Promise</span>(<span class="function"><span class="params">resolve</span> =&gt;</span> setTimeout(resolve, <span class="number">1000</span>, value))</span><br></pre></td></tr></table></figure>
+<p>引数の値を 1 秒後に返すという関数で、以下のような動作をする。</p>
+<figure class="highlight js"><table><tr><td class="code"><pre><span class="line">echo(<span class="string">'test'</span>).then(<span class="built_in">console</span>.log)</span><br><span class="line"></span><br><span class="line"><span class="comment">// 1. 1000ms待機</span></span><br><span class="line"><span class="comment">// 2. 'test'と出力</span></span><br></pre></td></tr></table></figure>
+<p>また、高階関数のレシーバとして配列を作る。</p>
+<figure class="highlight js"><table><tr><td class="code"><pre><span class="line"><span class="keyword">const</span> array = [<span class="number">0</span>, <span class="number">10</span>, <span class="number">20</span>, <span class="number">30</span>, <span class="number">40</span>, <span class="number">50</span>, <span class="number">60</span>]</span><br></pre></td></tr></table></figure>
+<h1><span id="foreach">forEach</span></h1><p>まずはそのまま回して上手く動かないことを確認する。</p>
+<figure class="highlight js"><table><tr><td class="code"><pre><span class="line">array.forEach(<span class="function"><span class="params">i</span> =&gt;</span> echo(i).then(<span class="built_in">console</span>.log))</span><br></pre></td></tr></table></figure>
+<p>1 秒待機して全部一気に表示された</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">0</span><br><span class="line">10</span><br><span class="line">20</span><br><span class="line">30</span><br><span class="line">40</span><br><span class="line">50</span><br><span class="line">60</span><br></pre></td></tr></table></figure>
+<h2><span id="foreach-で-asyncawait">forEach で async/await</span></h2><p>async/await しても結果は同じだった。</p>
+<figure class="highlight js"><table><tr><td class="code"><pre><span class="line">array.forEach(<span class="keyword">async</span> i =&gt; &#123;</span><br><span class="line">  <span class="keyword">const</span> ret = <span class="keyword">await</span> echo(i)</span><br><span class="line">  <span class="built_in">console</span>.log(ret)</span><br><span class="line">&#125;)</span><br></pre></td></tr></table></figure>
+<p><a href="https://qiita.com/frameair/items/e7645066075666a13063" target="_blank" rel="noopener">async/await を、Array.prototype.forEach で使う際の注意点、という話 - Qiita</a> によると、forEach の <code>callback.call</code> に await が付いていないからそもそもダメで、for を使いなさいとのこと。</p>
+<h2><span id="foreach-に-reduce-を使う">forEach に reduce を使う</span></h2><p>変則的な方法として、forEach の代替として reduce を使う。</p>
+<figure class="highlight js"><table><tr><td class="code"><pre><span class="line">array.reduce(<span class="keyword">async</span> (promise, i) =&gt; &#123;</span><br><span class="line">  <span class="keyword">await</span> promise</span><br><span class="line">  <span class="keyword">const</span> ret = <span class="keyword">await</span> echo(i)</span><br><span class="line">  <span class="built_in">console</span>.log(ret)</span><br><span class="line">&#125;, <span class="built_in">Promise</span>.resolve())</span><br></pre></td></tr></table></figure>
+<p>これだと目論見通り、1 秒毎に console.log が実行される。</p>
+<p>また、async/await を排除した以下の書き方でも成功する。</p>
+<figure class="highlight js"><table><tr><td class="code"><pre><span class="line">array.reduce(<span class="function">(<span class="params">promise, i</span>) =&gt;</span> &#123;</span><br><span class="line">  <span class="keyword">return</span> promise.then(<span class="function"><span class="params">()</span> =&gt;</span> echo(i).then(<span class="built_in">console</span>.log))</span><br><span class="line">&#125;, <span class="built_in">Promise</span>.resolve())</span><br></pre></td></tr></table></figure>
+<h2><span id="foreach-の代わりに-forof-を使う">forEach の代わりに for…of を使う</span></h2><p>安牌の解決方法、変に reduce とか使うより素直で分かりやすい。</p>
+<figure class="highlight js"><table><tr><td class="code"><pre><span class="line">;<span class="function">(<span class="params"><span class="keyword">async</span> (</span>) =&gt;</span> &#123;</span><br><span class="line">  <span class="keyword">for</span> (<span class="keyword">const</span> i <span class="keyword">of</span> array) &#123;</span><br><span class="line">    <span class="keyword">await</span> echo(i).then(<span class="built_in">console</span>.log)</span><br><span class="line">  &#125;</span><br><span class="line">&#125;)()</span><br></pre></td></tr></table></figure>
+<h1><span id="map">map</span></h1><p>map では全部の要素を 2 倍して出力してみる。特に意味は無いけど…</p>
+<p>例によってそのまま動かすと正しい結果が得られず、全て NaN になってしまう。そして表示してから 1 秒待機してしまう。</p>
+<figure class="highlight js"><table><tr><td class="code"><pre><span class="line"><span class="built_in">console</span>.log(array.map(<span class="function"><span class="params">item</span> =&gt;</span> echo(item) * <span class="number">2</span>))</span><br><span class="line"><span class="comment">// &gt; [ NaN, NaN, NaN, NaN, NaN, NaN, NaN ]</span></span><br><span class="line"><span class="comment">// &gt; 1000ms待機</span></span><br></pre></td></tr></table></figure>
+<p>2 倍しない場合は <code>Promise { &lt;pending&gt; }</code> の配列が返ってくるので、これを 2 倍しようとして NaN になってしまうのだろう。</p>
+<h2><span id="map-で-asyncawait">map で async/await</span></h2><p>map の callback を async/await で装飾するだけだとやはり <code>Promise { &lt;pending&gt; }</code> の配列が返ってきてしまう。</p>
+<figure class="highlight js"><table><tr><td class="code"><pre><span class="line"><span class="built_in">console</span>.log(array.map(<span class="keyword">async</span> i =&gt; (<span class="keyword">await</span> echo(i)) * <span class="number">2</span>))</span><br></pre></td></tr></table></figure>
+<h2><span id="promiseall-で結果を待つ">Promise.all で結果を待つ</span></h2><p>上記に加え、全体を Promise.all で囲うことで正しい結果を得ることができた。map の各要素は並列で処理されるので、待機時間も全体で 1 秒掛かり問題ない。</p>
+<figure class="highlight js"><table><tr><td class="code"><pre><span class="line"><span class="built_in">Promise</span>.all(array.map(<span class="keyword">async</span> i =&gt; (<span class="keyword">await</span> echo(i)) * <span class="number">2</span>)).then(<span class="built_in">console</span>.log)</span><br><span class="line"><span class="comment">// &gt; 1000ms待機</span></span><br><span class="line"><span class="comment">// &gt; [ 0, 20, 40, 60, 80, 100, 120 ]</span></span><br></pre></td></tr></table></figure>
+<p>async/await 使わない版もいける</p>
+<figure class="highlight js"><table><tr><td class="code"><pre><span class="line"><span class="built_in">Promise</span>.all(array.map(<span class="function"><span class="params">i</span> =&gt;</span> echo(i).then(<span class="function"><span class="params">v</span> =&gt;</span> v * <span class="number">2</span>))).then(<span class="built_in">console</span>.log)</span><br></pre></td></tr></table></figure>
+<h2><span id="map-の代わりに-forof-を使う">map の代わりに for…of を使う</span></h2><p>結果自体は正しく取得できるが、シーケンシャルにループしてしまうので push が 1 回呼ばれる度に 1 秒掛かってしまう。</p>
+<figure class="highlight js"><table><tr><td class="code"><pre><span class="line">;<span class="function">(<span class="params"><span class="keyword">async</span> (</span>) =&gt;</span> &#123;</span><br><span class="line">  <span class="keyword">const</span> result = []</span><br><span class="line">  <span class="keyword">for</span> (<span class="keyword">const</span> i <span class="keyword">of</span> array) &#123;</span><br><span class="line">    result.push((<span class="keyword">await</span> echo(i)) * <span class="number">2</span>)</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="built_in">console</span>.log(result)</span><br><span class="line">&#125;)()</span><br></pre></td></tr></table></figure>
+<p>これに関しては Promise.all で map を使ったほうがいいだろう。</p>
+<h1><span id="filter">filter</span></h1><p>filter では 20 の倍数だけの配列に変換するようにしてみよう。</p>
+<p>素の状態ではやはり正しく結果は返ってこない。</p>
+<figure class="highlight js"><table><tr><td class="code"><pre><span class="line"><span class="built_in">console</span>.log(array.filter(<span class="function"><span class="params">i</span> =&gt;</span> echo(i) % <span class="number">20</span> === <span class="number">0</span>))</span><br><span class="line"><span class="comment">// &gt; []</span></span><br><span class="line"><span class="comment">// &gt; 1000ms待機</span></span><br></pre></td></tr></table></figure>
+<p>map と同様に Promise.all で括ってもダメだ。フィルタされない値が返ってきてしまう。</p>
+<figure class="highlight js"><table><tr><td class="code"><pre><span class="line"><span class="built_in">Promise</span>.all(array.filter(<span class="keyword">async</span> i =&gt; (<span class="keyword">await</span> echo(i)) % <span class="number">20</span> === <span class="number">0</span>)).then(</span><br><span class="line">  <span class="built_in">console</span>.log</span><br><span class="line">)</span><br><span class="line"><span class="comment">// &gt; [ 0, 10, 20, 30, 40, 50, 60 ]</span></span><br><span class="line"><span class="comment">// &gt; 1000ms待機</span></span><br></pre></td></tr></table></figure>
+<h2><span id="map-との合わせ技">map との合わせ技</span></h2><p>StackOverflow に良い方法があった。前述の Promise.all を使った map を組み合わせてフィルタする方法だ。</p>
+<p><a href="https://stackoverflow.com/questions/33355528/filtering-an-array-with-a-function-that-returns-a-promise" class="embedly-card" data-card-image="0" data-card-controls="0" data-card-align="left" target="_blank" rel="noopener"></a></p>
+<figure class="highlight js"><table><tr><td class="code"><pre><span class="line"><span class="built_in">Promise</span>.all(array.map(<span class="keyword">async</span> i =&gt; (<span class="keyword">await</span> echo(i)) % <span class="number">20</span> === <span class="number">0</span>))</span><br><span class="line">  .then(<span class="function"><span class="params">bits</span> =&gt;</span> array.filter(<span class="function"><span class="params">i</span> =&gt;</span> bits.shift()))</span><br><span class="line">  .then(<span class="built_in">console</span>.log)</span><br><span class="line"><span class="comment">// &gt; 1000ms待機</span></span><br><span class="line"><span class="comment">// &gt; [ 0, 20, 40, 60 ]</span></span><br><span class="line"></span><br><span class="line"><span class="comment">// 0 が含まれているので20の倍数でもなんでもなかった...本筋じゃないからまあいいや</span></span><br></pre></td></tr></table></figure>
+<p>この処理だと非同期部分を map に負わせることができるので正しい結果が得られる。この方法はよく考えられていてなるほどと思った。分解して処理を追ってみる。</p>
+<p>まず非同期の map を行っているが、map の callback に filter の条件を入れている。そうすると配列の<strong>どのインデックスが条件に合致するか</strong>という結果が boolean の配列で返される。</p>
+<figure class="highlight js"><table><tr><td class="code"><pre><span class="line"><span class="built_in">Promise</span>.all(array.map(<span class="keyword">async</span> i =&gt; (<span class="keyword">await</span> echo(i)) % <span class="number">20</span> === <span class="number">0</span>))</span><br><span class="line"><span class="comment">// &gt; [ true, false, true, false, true, false, true ]</span></span><br></pre></td></tr></table></figure>
+<p>次にフィルタを掛けるわけだが、注目すべきは <code>i =&gt; bits.shift()</code> だ。filter の callback では array の要素を i で参照できるが、それは全く使わずに bits の結果だけで判定している。bits は<strong>どのインデックスが条件に合致するか</strong>という boolean 配列なので、それを <code>shift()</code> で順番に取得し、判定しているのだ。</p>
+<figure class="highlight js"><table><tr><td class="code"><pre><span class="line">.then(<span class="function"><span class="params">bits</span> =&gt;</span> array.filter(<span class="function"><span class="params">i</span> =&gt;</span> bits.shift()))</span><br></pre></td></tr></table></figure>
+<h3><span id="asyncawait-で書き直してみる">async/await で書き直してみる</span></h3><p>……一緒だな、これ</p>
+<figure class="highlight js"><table><tr><td class="code"><pre><span class="line">;<span class="function">(<span class="params"><span class="keyword">async</span> (</span>) =&gt;</span> &#123;</span><br><span class="line">  <span class="keyword">const</span> bits = <span class="keyword">await</span> <span class="built_in">Promise</span>.all(</span><br><span class="line">    array.map(<span class="keyword">async</span> i =&gt; (<span class="keyword">await</span> echo(i)) % <span class="number">20</span> === <span class="number">0</span>)</span><br><span class="line">  )</span><br><span class="line">  <span class="keyword">const</span> result = array.filter(<span class="function"><span class="params">i</span> =&gt;</span> bits.shift())</span><br><span class="line">  <span class="built_in">console</span>.log(result)</span><br><span class="line">&#125;)()</span><br></pre></td></tr></table></figure>
+<h1><span id="reduce">reduce</span></h1><h2><span id="要素の合計">要素の合計</span></h2><p>最後に reduce、全要素の合計を算出してみる。</p>
+<p>例によってそのまま実行</p>
+<figure class="highlight js"><table><tr><td class="code"><pre><span class="line"><span class="keyword">const</span> sum = array.reduce(<span class="function">(<span class="params">acc, cur</span>) =&gt;</span> &#123;</span><br><span class="line">  <span class="keyword">return</span> acc + echo(cur)</span><br><span class="line">&#125;, <span class="number">0</span>)</span><br><span class="line"><span class="built_in">console</span>.log(sum)</span><br><span class="line"></span><br><span class="line"><span class="comment">// &gt; 0[object Promise][object Promise][object Promise][object Promise][object Promise][object Promise][object Promise]</span></span><br><span class="line"><span class="comment">// &gt; 1000ms待機</span></span><br></pre></td></tr></table></figure>
+<p>凄まじい結果が返ってきてしまった。もちろん NG だ。</p>
+<h3><span id="asyncawait-で回す">async/await で回す</span></h3><p>reduce の callback を async/await で装飾し、accumulator の初期値を Promise.resolve(0)とすることで、accumulator（累積値）を全て Promise で回すことができる。</p>
+<figure class="highlight js"><table><tr><td class="code"><pre><span class="line">array</span><br><span class="line">  .reduce(</span><br><span class="line">    <span class="keyword">async</span> (promise, cur) =&gt; (<span class="keyword">await</span> promise) + (<span class="keyword">await</span> echo(cur)),</span><br><span class="line">    <span class="built_in">Promise</span>.resolve(<span class="number">0</span>)</span><br><span class="line">  )</span><br><span class="line">  .then(<span class="built_in">console</span>.log)</span><br><span class="line"><span class="comment">// &gt; 7000ms待機</span></span><br><span class="line"><span class="comment">// &gt; 210</span></span><br></pre></td></tr></table></figure>
+<p>これで正しい値が取得できた。</p>
+<h2><span id="要素を再配列化">要素を再配列化</span></h2><p>reduce を使って map と同じことしてみる。</p>
+<figure class="highlight js"><table><tr><td class="code"><pre><span class="line">array</span><br><span class="line">  .reduce(<span class="keyword">async</span> (promise, cur) =&gt; &#123;</span><br><span class="line">    <span class="keyword">const</span> acc = <span class="keyword">await</span> promise</span><br><span class="line">    acc.push((<span class="keyword">await</span> echo(cur)) * <span class="number">2</span>)</span><br><span class="line">    <span class="keyword">return</span> <span class="built_in">Promise</span>.resolve(acc)</span><br><span class="line">  &#125;, <span class="built_in">Promise</span>.resolve([]))</span><br><span class="line">  .then(<span class="built_in">console</span>.log)</span><br><span class="line"><span class="comment">// &gt; 7000ms待機</span></span><br><span class="line"><span class="comment">// &gt; [ 0, 20, 40, 60, 80, 100, 120 ]</span></span><br></pre></td></tr></table></figure>
+<p>原理は一緒、ただ accumulator のメソッドを呼び出したい場合は一度変数（<code>acc</code>）を経由して Promise を resolve する。また、return する時に Promise で再パックする必要がある。ちょいめんどい。</p>
+<h3><span id="719-追記">7/19 追記</span></h3><p>もっと簡単に書けた</p>
+<figure class="highlight js"><table><tr><td class="code"><pre><span class="line">array</span><br><span class="line">  .reduce(</span><br><span class="line">    <span class="keyword">async</span> (promise, cur) =&gt; [...(<span class="keyword">await</span> promise), (<span class="keyword">await</span> echo(cur)) * <span class="number">2</span>],</span><br><span class="line">    <span class="built_in">Promise</span>.resolve([])</span><br><span class="line">  )</span><br><span class="line">  .then(<span class="built_in">console</span>.log)</span><br></pre></td></tr></table></figure>
+<h2><span id="要素をオブジェクト化">要素をオブジェクト化</span></h2><p>同様にオブジェクト化してみる。キーをインデックス、値はそのまま値として、以下のようなものに変換したい。</p>
+<figure class="highlight json"><table><tr><td class="code"><pre><span class="line">&#123;</span><br><span class="line">  <span class="attr">"0"</span>: <span class="number">0</span>,</span><br><span class="line">  <span class="attr">"1"</span>: <span class="number">10</span>,</span><br><span class="line">  <span class="attr">"2"</span>: <span class="number">20</span>,</span><br><span class="line">  <span class="attr">"3"</span>: <span class="number">30</span>,</span><br><span class="line">  <span class="attr">"4"</span>: <span class="number">40</span>,</span><br><span class="line">  <span class="attr">"5"</span>: <span class="number">50</span>,</span><br><span class="line">  <span class="attr">"6"</span>: <span class="number">60</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>配列にする場合とほとんど同じ、違いは引数で index を参照するくらいか</p>
+<figure class="highlight js"><table><tr><td class="code"><pre><span class="line">array</span><br><span class="line">  .reduce(<span class="keyword">async</span> (promise, cur, index) =&gt; &#123;</span><br><span class="line">    <span class="keyword">const</span> acc = <span class="keyword">await</span> promise</span><br><span class="line">    acc[index] = <span class="keyword">await</span> echo(cur)</span><br><span class="line">    <span class="keyword">return</span> <span class="built_in">Promise</span>.resolve(acc)</span><br><span class="line">  &#125;, <span class="built_in">Promise</span>.resolve(&#123;&#125;))</span><br><span class="line">  .then(<span class="built_in">console</span>.log)</span><br><span class="line"><span class="comment">// &gt; 7000ms待機</span></span><br><span class="line"><span class="comment">// &gt; &#123; '0': 0, '1': 10, '2': 20, '3': 30, '4': 40, '5': 50, '6': 60 &#125;</span></span><br></pre></td></tr></table></figure>
+<p>問題なく取得できた。</p>
+<h3><span id="719-追記-2">7/19 追記 2</span></h3><p>こっちももっと簡単に書けた</p>
+<figure class="highlight js"><table><tr><td class="code"><pre><span class="line">array</span><br><span class="line">  .reduce(</span><br><span class="line">    <span class="keyword">async</span> (promise, cur, index) =&gt; (&#123;</span><br><span class="line">      ...(<span class="keyword">await</span> promise),</span><br><span class="line">      [index]: <span class="keyword">await</span> echo(cur),</span><br><span class="line">    &#125;),</span><br><span class="line">    <span class="built_in">Promise</span>.resolve(&#123;&#125;)</span><br><span class="line">  )</span><br><span class="line">  .then(<span class="built_in">console</span>.log)</span><br></pre></td></tr></table></figure>
+<h1><span id="まとめ">まとめ</span></h1><table>
+<thead>
+<tr>
+<th>メソッド</th>
+<th>やり方</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>forEach</td>
+<td><code>for...of</code></td>
+</tr>
+<tr>
+<td>map</td>
+<td><code>Promise.all</code> + <code>async/await</code></td>
+</tr>
+<tr>
+<td>filter</td>
+<td>map(<code>Promise.all</code> + <code>async/await</code>) + filter</td>
+</tr>
+<tr>
+<td>reduce</td>
+<td><code>async/await</code> + <code>Promise.resolve</code></td>
+</tr>
+</tbody>
+</table>
+<p>色々書いているうちに Promise に対する理解が少し深まった気がした。</p>
+<h1><span id="余談">余談</span></h1><p>全部書いてから下記を見つけた。これでいいじゃん…</p>
+<p><a href="https://qiita.com/toniov/items/127267fb64a960e8166e" class="embedly-card" data-card-image="0" data-card-controls="0" data-card-align="left" target="_blank" rel="noopener"></a></p>
+<p><a href="https://github.com/toniov/p-iteration" class="embedly-card" data-card-image="0" data-card-controls="0" data-card-align="left" target="_blank" rel="noopener"></a></p>
+<p>まあ、探せばあるよねぇ。。。</p>
+<h1><span id="参考">参考</span></h1><ul>
+<li><a href="https://qiita.com/frameair/items/e7645066075666a13063" target="_blank" rel="noopener">async/await を、Array.prototype.forEach で使う際の注意点、という話 - Qiita</a></li>
+<li><a href="https://qiita.com/janus_wel/items/1dc491d866f49af76e98" target="_blank" rel="noopener">Array 操作関数の callback に async/await な関数を指定したい - Qiita</a></li>
+<li><a href="https://stackoverflow.com/questions/33355528/filtering-an-array-with-a-function-that-returns-a-promise" target="_blank" rel="noopener">javascript - Filtering an array with a function that returns a promise - Stack Overflow</a></li>
+<li><a href="https://stackoverflow.com/questions/41243468/javascript-array-reduce-with-async-await" target="_blank" rel="noopener">promise - JavaScript array .reduce with async/await - Stack Overflow</a></li>
+</ul>
+
+      
+    </div>
+    <footer class="article-footer">
+      <div data-url="https://t-kojima.github.io/2018/07/18/0028-async-await-in-loop/" data-id="cjq51fi1c005fmtu7yl1nnagd" class="article-share-items"></div>
+      <!-- <a data-url="https://t-kojima.github.io/2018/07/18/0028-async-await-in-loop/" data-id="cjq51fi1c005fmtu7yl1nnagd" class="article-share-link">共有</a> -->
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/nodejs/">nodejs</a></li></ul>
+
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+    <a href="/2018/07/19/0029-kinpost-is-custom-js-uploader/" id="article-nav-newer" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">次の記事</strong>
+      <div class="article-nav-title">
+        
+          [Kintone] カスタムJS（CSS)ファイルのアップロードモジュールを作った
+        
+      </div>
+    </a>
+  
+  
+    <a href="/2018/07/16/0027-mocha-async-error-handling/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">前の記事</strong>
+      <div class="article-nav-title">[Node] Mochaで非同期処理の例外ハンドリング</div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">カテゴリ</h3>
+    <div class="widget">
+      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/Mac/">Mac</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/MySQL/">MySQL</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Node/">Node</a><span class="category-list-count">2</span><ul class="category-list-child"><li class="category-list-item"><a class="category-list-link" href="/categories/Node/Express/">Express</a><span class="category-list-count">2</span></li></ul></li><li class="category-list-item"><a class="category-list-link" href="/categories/Sinatra/">Sinatra</a><span class="category-list-count">1</span></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">タグ</h3>
+    <div class="widget">
+      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/axios/">axios</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/babel/">babel</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/bottle/">bottle</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/browserify/">browserify</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/csharp/">csharp</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/docker/">docker</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/eslint/">eslint</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/euler/">euler</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/express/">express</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/firebase/">firebase</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/flask/">flask</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/hexo/">hexo</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/javascript/">javascript</a><span class="tag-list-count">8</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/jupyter/">jupyter</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/karma/">karma</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/kintone/">kintone</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/linux/">linux</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/log4js/">log4js</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/luigi/">luigi</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mac/">mac</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mocha/">mocha</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mysql/">mysql</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/node-fetch/">node-fetch</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/nodejs/">nodejs</a><span class="tag-list-count">13</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/powerline/">powerline</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/prettier/">prettier</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/python/">python</a><span class="tag-list-count">8</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/rails/">rails</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/react/">react</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/redis/">redis</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/rpa/">rpa</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/rspec/">rspec</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ruby/">ruby</a><span class="tag-list-count">7</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/sidekiq/">sidekiq</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/sinatra/">sinatra</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/sqlalchemy/">sqlalchemy</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/vagrant/">vagrant</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/virtualbox/">virtualbox</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/vscode/">vscode</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/vue/">vue</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/webpack/">webpack</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/zipstream/">zipstream</a><span class="tag-list-count">1</span></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">タグクラウド</h3>
+    <div class="widget tagcloud">
+      <a href="/tags/axios/" style="font-size: 10px;">axios</a> <a href="/tags/babel/" style="font-size: 10px;">babel</a> <a href="/tags/bottle/" style="font-size: 10px;">bottle</a> <a href="/tags/browserify/" style="font-size: 10px;">browserify</a> <a href="/tags/csharp/" style="font-size: 10px;">csharp</a> <a href="/tags/docker/" style="font-size: 10px;">docker</a> <a href="/tags/eslint/" style="font-size: 11.43px;">eslint</a> <a href="/tags/euler/" style="font-size: 10px;">euler</a> <a href="/tags/express/" style="font-size: 11.43px;">express</a> <a href="/tags/firebase/" style="font-size: 12.86px;">firebase</a> <a href="/tags/flask/" style="font-size: 10px;">flask</a> <a href="/tags/hexo/" style="font-size: 11.43px;">hexo</a> <a href="/tags/javascript/" style="font-size: 18.57px;">javascript</a> <a href="/tags/jupyter/" style="font-size: 10px;">jupyter</a> <a href="/tags/karma/" style="font-size: 11.43px;">karma</a> <a href="/tags/kintone/" style="font-size: 12.86px;">kintone</a> <a href="/tags/linux/" style="font-size: 10px;">linux</a> <a href="/tags/log4js/" style="font-size: 10px;">log4js</a> <a href="/tags/luigi/" style="font-size: 15.71px;">luigi</a> <a href="/tags/mac/" style="font-size: 10px;">mac</a> <a href="/tags/mocha/" style="font-size: 10px;">mocha</a> <a href="/tags/mysql/" style="font-size: 11.43px;">mysql</a> <a href="/tags/node-fetch/" style="font-size: 10px;">node-fetch</a> <a href="/tags/nodejs/" style="font-size: 20px;">nodejs</a> <a href="/tags/powerline/" style="font-size: 11.43px;">powerline</a> <a href="/tags/prettier/" style="font-size: 10px;">prettier</a> <a href="/tags/python/" style="font-size: 18.57px;">python</a> <a href="/tags/rails/" style="font-size: 10px;">rails</a> <a href="/tags/react/" style="font-size: 12.86px;">react</a> <a href="/tags/redis/" style="font-size: 10px;">redis</a> <a href="/tags/rpa/" style="font-size: 10px;">rpa</a> <a href="/tags/rspec/" style="font-size: 10px;">rspec</a> <a href="/tags/ruby/" style="font-size: 17.14px;">ruby</a> <a href="/tags/sidekiq/" style="font-size: 10px;">sidekiq</a> <a href="/tags/sinatra/" style="font-size: 15.71px;">sinatra</a> <a href="/tags/sqlalchemy/" style="font-size: 11.43px;">sqlalchemy</a> <a href="/tags/vagrant/" style="font-size: 10px;">vagrant</a> <a href="/tags/virtualbox/" style="font-size: 10px;">virtualbox</a> <a href="/tags/vscode/" style="font-size: 14.29px;">vscode</a> <a href="/tags/vue/" style="font-size: 12.86px;">vue</a> <a href="/tags/webpack/" style="font-size: 10px;">webpack</a> <a href="/tags/zipstream/" style="font-size: 10px;">zipstream</a>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">アーカイブ</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/12/">12月 2018</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/11/">11月 2018</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/10/">10月 2018</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/09/">9月 2018</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/08/">8月 2018</a><span class="archive-list-count">6</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/07/">7月 2018</a><span class="archive-list-count">11</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/06/">6月 2018</a><span class="archive-list-count">12</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/05/">5月 2018</a><span class="archive-list-count">11</span></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">最近の投稿</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2018/12/20/0051-setup-macbook-pro-2018/">MacBookPro2018のセットアップ</a>
+          </li>
+        
+          <li>
+            <a href="/2018/11/29/0050-about-config-ru/">[Sinatra] config.ruとは</a>
+          </li>
+        
+          <li>
+            <a href="/2018/11/14/0049-docker-mysql-error-caching-sha2-password/">[MySQL] Unable to load authentication plugin &#39;caching_sha2_password&#39;</a>
+          </li>
+        
+          <li>
+            <a href="/2018/11/05/0048-express-with-log4js/">[Node] ExpressでAPIを作ったらログも吐く</a>
+          </li>
+        
+          <li>
+            <a href="/2018/11/02/0047-helloworld-express-with-json/">[Node] Expressを使って最速でJSONを返す</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      &copy; 2018 t-kojima<br>
+      Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+
+
+  <link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
+  <script src="/fancybox/jquery.fancybox.pack.js"></script>
+
+
+<script src="/js/script.js"></script>
+
+
+
+  </div>
+  <script async src="//cdn.embedly.com/widgets/platform.js" charset="UTF-8"></script>
+</body>
+</html>

@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+
+  
+  <title>[Firebase x React] ReactをFirebaseでDatabase | Today&#39;s Commit</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="Firebase で静的サイトのホスティングと ESLint・Prettier の適用までやったので、Firebase Database を使って定番の ToDo アプリを作ってみたい。 ただ実際に写したり動かしたり色々検討しながらなので、内容がかなり乱暴になっているのはご容赦いただきたい。   9/24 大幅に書き直し、ちゃんとしました。">
+<meta name="keywords" content="firebase,react">
+<meta property="og:type" content="article">
+<meta property="og:title" content="[Firebase x React] ReactをFirebaseでDatabase">
+<meta property="og:url" content="https://t-kojima.github.io/2018/08/13/0040-firebase-react-database/index.html">
+<meta property="og:site_name" content="Today&#39;s Commit">
+<meta property="og:description" content="Firebase で静的サイトのホスティングと ESLint・Prettier の適用までやったので、Firebase Database を使って定番の ToDo アプリを作ってみたい。 ただ実際に写したり動かしたり色々検討しながらなので、内容がかなり乱暴になっているのはご容赦いただきたい。   9/24 大幅に書き直し、ちゃんとしました。">
+<meta property="og:locale" content="ja">
+<meta property="og:image" content="https://t-kojima.github.io/images/40-01.png">
+<meta property="og:image" content="https://t-kojima.github.io/images/38-03.png">
+<meta property="og:image" content="https://t-kojima.github.io/images/40-03.png">
+<meta property="og:updated_time" content="2018-12-20T11:07:38.291Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="[Firebase x React] ReactをFirebaseでDatabase">
+<meta name="twitter:description" content="Firebase で静的サイトのホスティングと ESLint・Prettier の適用までやったので、Firebase Database を使って定番の ToDo アプリを作ってみたい。 ただ実際に写したり動かしたり色々検討しながらなので、内容がかなり乱暴になっているのはご容赦いただきたい。   9/24 大幅に書き直し、ちゃんとしました。">
+<meta name="twitter:image" content="https://t-kojima.github.io/images/40-01.png">
+  
+    <link rel="alternate" href="/atom.xml" title="Today&#39;s Commit" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  
+    <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
+  
+  <link rel="stylesheet" href="/css/style.css">
+  
+    <link rel="amphtml" href="https://t-kojima.github.io/2018/08/13/0040-firebase-react-database//amp/index.html">
+  
+</head>
+
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">Today&#39;s Commit</a>
+      </h1>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSSフィード"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="検索"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="https://t-kojima.github.io"></form>
+      </div>
+    </div>
+  </div>
+</header>
+      <div class="outer">
+        <section id="main"><article id="post-0040-firebase-react-database" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2018/08/13/0040-firebase-react-database/" class="article-date">
+  <time datetime="2018-08-12T15:00:56.000Z" itemprop="datePublished">2018-08-13</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      [Firebase x React] ReactをFirebaseでDatabase
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>Firebase で静的サイトのホスティングと ESLint・Prettier の適用までやったので、Firebase Database を使って定番の ToDo アプリを作ってみたい。</p>
+<p>ただ実際に写したり動かしたり色々検討しながらなので、内容がかなり乱暴になっているのはご容赦いただきたい。</p>
+<hr>
+<ul>
+<li>9/24 大幅に書き直し、ちゃんとしました。</li>
+</ul>
+<hr>
+<a id="more"></a>
+<h1><span id="前提作業">前提作業</span></h1><p>事前にアプリの雛形の作成と、ESLint・Prettier の設定を行っておく。</p>
+<ul>
+<li><a href="https://t-kojima.github.io/2018/08/12/0038-firebase-react-hosting/">[Firebase x React] React を Firebase で Hosting</a></li>
+<li><a href="https://t-kojima.github.io/2018/08/12/0039-firebase-react-eslint-prettier/">[Firebase x React] ESLint と Prettier を React に適用</a></li>
+</ul>
+<p>まあ ESLint・Prettier の設定は必須では無いけど。。。</p>
+<h2><span id="firebase-database-の初期化">Firebase Database の初期化</span></h2><p>まずは Firebase Database を扱う為に、設定ファイルの生成や初期化を行う。</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">firebase init database</span><br></pre></td></tr></table></figure>
+<p>すると<code>database.rules.json</code>が作成され、<code>firebase.json</code>に database の設定が追記される。</p>
+<h1><span id="todo-アプリの作成">ToDo アプリの作成</span></h1><h2><span id="構成">構成</span></h2><p>ToDo アプリは以下の構成にする。</p>
+<ul>
+<li>index.js : App.js を呼び出すエントリーポイント</li>
+<li>App.js : アプリ全体のレイアウトを持つコンポーネント</li>
+<li>TodoList.jsx : TodoList のコンポーネント</li>
+<li>Todo.jsx : Todo 1 個に対するコンポーネント</li>
+<li>InputForm.jsx : Todo を登録するフォームのコンポーネント</li>
+</ul>
+<h3><span id="indexjs">index.js</span></h3><p>index.js はエントリーポイントとなるファイルになる。</p>
+<figure class="highlight js"><table><tr><td class="code"><pre><span class="line"><span class="keyword">import</span> React <span class="keyword">from</span> <span class="string">'react'</span>;</span><br><span class="line"><span class="keyword">import</span> ReactDOM <span class="keyword">from</span> <span class="string">'react-dom'</span>;</span><br><span class="line"><span class="keyword">import</span> <span class="string">'./index.css'</span>;</span><br><span class="line"><span class="keyword">import</span> App <span class="keyword">from</span> <span class="string">'./App'</span>;</span><br><span class="line"><span class="keyword">import</span> registerServiceWorker <span class="keyword">from</span> <span class="string">'./registerServiceWorker'</span>;</span><br><span class="line"></span><br><span class="line">ReactDOM.render(<span class="xml"><span class="tag">&lt;<span class="name">App</span> /&gt;</span>, document.getElementById('root'));</span></span><br><span class="line"><span class="xml">registerServiceWorker();</span></span><br></pre></td></tr></table></figure>
+<p>処理としては<code>#root</code>の要素に App コンポーネントをレンダリングするのみだ。<br>ここはある程度お決まりの記述になる。いわゆる<em>おまじない</em>だ。</p>
+<p>registerServiceWorker は create-react-app が自動生成したモジュールになる。ぶっちゃけ何をしているのか分かっていないので、近いうちに内容をよく確認したい。。。</p>
+<h3><span id="appjs">App.js</span></h3><p>App.js は実質的なルートになるコンポーネントになる。<br>ここではタイトルを表示し、TodoList コンポーネントを読み込んでいる。</p>
+<figure class="highlight jsx"><table><tr><td class="code"><pre><span class="line"><span class="keyword">import</span> React, &#123; Component &#125; <span class="keyword">from</span> <span class="string">'react'</span>;</span><br><span class="line"><span class="keyword">import</span> TodoList <span class="keyword">from</span> <span class="string">'./TodoList'</span>;</span><br><span class="line"><span class="keyword">import</span> <span class="string">'./App.css'</span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">export</span> <span class="keyword">default</span> <span class="class"><span class="keyword">class</span> <span class="title">App</span> <span class="keyword">extends</span> <span class="title">Component</span> </span>&#123;</span><br><span class="line">  render() &#123;</span><br><span class="line">    <span class="keyword">return</span> (</span><br><span class="line">      &lt;div className=<span class="string">"app"</span>&gt;</span><br><span class="line">        &lt;section className=<span class="string">"hero container is-info"</span>&gt;</span><br><span class="line">          &lt;div className=<span class="string">"hero-body"</span>&gt;</span><br><span class="line">            &lt;h1 className=<span class="string">"title"</span>&gt;ToDo Application.&lt;<span class="regexp">/h1&gt;</span></span><br><span class="line"><span class="regexp">          &lt;/</span>div&gt;</span><br><span class="line">        &lt;<span class="regexp">/section&gt;</span></span><br><span class="line"><span class="regexp">        &lt;section className="container"&gt;</span></span><br><span class="line"><span class="regexp">          &lt;TodoList /</span>&gt;</span><br><span class="line">        &lt;<span class="regexp">/section&gt;</span></span><br><span class="line"><span class="regexp">      &lt;/</span>div&gt;</span><br><span class="line">    );</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>ちなみに<code>hero</code>や<code>container</code>などのクラスは<a href="https://bulma.io/" target="_blank" rel="noopener">Bulma</a>を利用している。以下のように CDN で利用できるので非常にカンタンだ。</p>
+<figure class="highlight html"><table><tr><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">link</span> <span class="attr">rel</span>=<span class="string">"stylesheet"</span> <span class="attr">href</span>=<span class="string">"https://cdnjs.cloudflare.com/ajax/libs/bulma/0.7.1/css/bulma.min.css"</span>&gt;</span></span><br></pre></td></tr></table></figure>
+<p>最初は<a href="https://material-ui.com/" target="_blank" rel="noopener">Material-ui</a>などのコンポーネントセットの利用も検討したが、パラメータなどが多く、React 初心者にはちょっと辛そうだったので今回は CSS フレームワークにした。</p>
+<h3><span id="todolistjsx">TodoList.jsx</span></h3><p>次に Todo アイテムをリスト保持するコンポーネントを作成する。</p>
+<p>まだ Firebase database と繋いでいないのでとりあえず初期値をベタ書きしているが、このコンポーネントは Todo アイテムのリストを状態（state）として保持する。</p>
+<figure class="highlight jsx"><table><tr><td class="code"><pre><span class="line"><span class="keyword">import</span> React, &#123; Component &#125; <span class="keyword">from</span> <span class="string">'react'</span>;</span><br><span class="line"><span class="keyword">import</span> Todo <span class="keyword">from</span> <span class="string">'./Todo'</span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">export</span> <span class="keyword">default</span> <span class="class"><span class="keyword">class</span> <span class="title">TodoList</span> <span class="keyword">extends</span> <span class="title">Component</span> </span>&#123;</span><br><span class="line">  <span class="keyword">constructor</span>() &#123;</span><br><span class="line">    <span class="keyword">super</span>();</span><br><span class="line">    <span class="keyword">this</span>.state = &#123;</span><br><span class="line">      todos: [</span><br><span class="line">        &#123;</span><br><span class="line">          id: <span class="number">1</span>,</span><br><span class="line">          title: <span class="string">'Todo その1'</span>,</span><br><span class="line">          description: <span class="string">'Todo その1'</span>,</span><br><span class="line">          checked: <span class="literal">false</span>,</span><br><span class="line">        &#125;,</span><br><span class="line">        &#123;</span><br><span class="line">          id: <span class="number">2</span>,</span><br><span class="line">          title: <span class="string">'Todo その2'</span>,</span><br><span class="line">          description: <span class="string">'Todo その2'</span>,</span><br><span class="line">          checked: <span class="literal">false</span>,</span><br><span class="line">        &#125;,</span><br><span class="line">      ],</span><br><span class="line">    &#125;;</span><br><span class="line">  &#125;</span><br><span class="line">  render() &#123;</span><br><span class="line">    <span class="keyword">return</span> (</span><br><span class="line">      &lt;ul&gt;</span><br><span class="line">        &#123;<span class="keyword">this</span>.state.todos.map(<span class="function"><span class="params">todo</span> =&gt;</span> (</span><br><span class="line">          &lt;Todo key=&#123;todo.id&#125; &#123;...todo&#125; /&gt;</span><br><span class="line">        ))&#125;</span><br><span class="line">      &lt;<span class="regexp">/ul&gt;</span></span><br><span class="line"><span class="regexp">    );</span></span><br><span class="line"><span class="regexp">  &#125;</span></span><br><span class="line"><span class="regexp">&#125;</span></span><br></pre></td></tr></table></figure>
+<p>Todo コンポーネントを map で作成し、ul 配下に展開している。ちなみに<code>{...todo}</code>は要素を全て Todo コンポーネントの props に引き継ぐ記述だ。</p>
+<h3><span id="todojs">Todo.js</span></h3><p>最後に Todo 1 個あたりのコンポーネントを作る。</p>
+<figure class="highlight jsx"><table><tr><td class="code"><pre><span class="line"><span class="keyword">import</span> React, &#123; Component &#125; <span class="keyword">from</span> <span class="string">'react'</span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">export</span> <span class="keyword">default</span> <span class="class"><span class="keyword">class</span> <span class="title">Todo</span> <span class="keyword">extends</span> <span class="title">Component</span> </span>&#123;</span><br><span class="line">  render() &#123;</span><br><span class="line">    <span class="keyword">return</span> (</span><br><span class="line">      &lt;li className=<span class="string">"todo"</span>&gt;</span><br><span class="line">        &lt;nav className=<span class="string">"panel"</span>&gt;</span><br><span class="line">          &lt;div className=<span class="string">"panel-heading"</span>&gt;</span><br><span class="line">            &lt;p&gt;&#123;<span class="keyword">this</span>.props.title&#125;&lt;<span class="regexp">/p&gt;</span></span><br><span class="line"><span class="regexp">          &lt;/</span>div&gt;</span><br><span class="line">          &lt;div className=<span class="string">"panel-block"</span>&gt;</span><br><span class="line">            &lt;p&gt;&#123;<span class="keyword">this</span>.props.description&#125;&lt;<span class="regexp">/p&gt;</span></span><br><span class="line"><span class="regexp">          &lt;/</span>div&gt;</span><br><span class="line">          &lt;div className=<span class="string">"panel-block"</span>&gt;</span><br><span class="line">            &lt;a href=<span class="string">""</span>&gt;Completed&lt;<span class="regexp">/a&gt;</span></span><br><span class="line"><span class="regexp">          &lt;/</span>div&gt;</span><br><span class="line">        &lt;<span class="regexp">/nav&gt;</span></span><br><span class="line"><span class="regexp">      &lt;/</span>li&gt;</span><br><span class="line">    );</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>基本的には受け取った props の title や description を表示するだけ。それなりにタグが色々あるように見えるのは Bulma の panel を使っているからだ。</p>
+<p>ここで一度実行(<code>yarn start</code>)すると以下のような画面が立ち上がる。</p>
+<p><img src="/images/40-01.png" alt="実行画面"></p>
+<p>このようにベタ書きではあるが Todo が表示されれば OK だ。</p>
+<h1><span id="firebase-database-適用">Firebase Database 適用</span></h1><p>ここまでで静的な Todo アプリ（アプリと言ってよいのだろうか。。。？）が出来たが、ここに Firebase database との連携を追加して動きのあるページにしていく。</p>
+<p>まず Firebase SDK をインストールする。前に入れた Firebase CLI とは別物で、Firebase Database 等へのアクセスが可能になる。</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">yarn add firebase</span><br></pre></td></tr></table></figure>
+<h2><span id="database-アクセス用のモジュール作成">Database アクセス用のモジュール作成</span></h2><p>Firebase Database へのアクセスを簡易にするためモジュールを作成します。</p>
+<ul>
+<li>firebase/config.js</li>
+<li>firebase/index.js</li>
+</ul>
+<p>まずは config.js に Firebase へアクセスする為の設定情報を持たせます。</p>
+<p>Firebase Concole にアクセスし、以下のボタンから接続情報を確認する。</p>
+<p><img src="/images/38-03.png" alt="ウェブアプリにFirebaseを追加"></p>
+<p>確認できた接続情報を以下のように<code>firebase/config.js</code>に持たせる。</p>
+<figure class="highlight js"><table><tr><td class="code"><pre><span class="line"><span class="keyword">export</span> <span class="keyword">const</span> firebaseConfig = &#123;</span><br><span class="line">  apiKey: <span class="string">'**********'</span>,</span><br><span class="line">  authDomain: <span class="string">'**********.firebaseapp.com'</span>,</span><br><span class="line">  databaseURL: <span class="string">'https://**********.firebaseio.com'</span>,</span><br><span class="line">  projectId: <span class="string">'**********'</span>,</span><br><span class="line">  storageBucket: <span class="string">'**********.appspot.com'</span>,</span><br><span class="line">  messagingSenderId: <span class="string">'**********'</span>,</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<p>続いて<code>firebase/index.js</code>で config を読み出し、初期化したうえで export する。</p>
+<p>今回は database のみなので、<code>firebaseDb</code>のみを export する。</p>
+<figure class="highlight js"><table><tr><td class="code"><pre><span class="line"><span class="keyword">import</span> firebase <span class="keyword">from</span> <span class="string">'firebase'</span>;</span><br><span class="line"><span class="keyword">import</span> &#123; firebaseConfig &#125; <span class="keyword">from</span> <span class="string">'./config'</span>;</span><br><span class="line"></span><br><span class="line">firebase.initializeApp(firebaseConfig);</span><br><span class="line"><span class="keyword">export</span> <span class="keyword">const</span> firebaseDb = firebase.database();</span><br></pre></td></tr></table></figure>
+<p>これで各コンポーネントからは以下のように呼び出すことで、DB を利用することができるようになる。</p>
+<figure class="highlight js"><table><tr><td class="code"><pre><span class="line"><span class="keyword">import</span> &#123; firebaseDb &#125; <span class="keyword">from</span> <span class="string">'./firebase'</span>;</span><br></pre></td></tr></table></figure>
+<h2><span id="初期データのロード">初期データのロード</span></h2><p>初期データのロードということで、Firebase Database に登録されているデータを初回読み込み時にロードする。現時点ではデータを登録していないけど、データ登録処理を入れた時にスムーズにいくよう先にやっとく。</p>
+<p>TodoList.jsx を以下のように書き換える。</p>
+<figure class="highlight jsx"><table><tr><td class="code"><pre><span class="line"><span class="keyword">import</span> React, &#123; Component &#125; <span class="keyword">from</span> <span class="string">'react'</span>;</span><br><span class="line"><span class="keyword">import</span> Todo <span class="keyword">from</span> <span class="string">'./Todo'</span>;</span><br><span class="line"><span class="keyword">import</span> &#123; firebaseDb &#125; <span class="keyword">from</span> <span class="string">'./firebase'</span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">export</span> <span class="keyword">default</span> <span class="class"><span class="keyword">class</span> <span class="title">TodoList</span> <span class="keyword">extends</span> <span class="title">Component</span> </span>&#123;</span><br><span class="line">  <span class="keyword">constructor</span>() &#123;</span><br><span class="line">    <span class="keyword">super</span>();</span><br><span class="line">    <span class="keyword">this</span>.state = &#123;</span><br><span class="line">      todos: [],</span><br><span class="line">    &#125;;</span><br><span class="line">  &#125;</span><br><span class="line">  componentDidMount() &#123;</span><br><span class="line">    firebaseDb</span><br><span class="line">      .ref(<span class="string">'todos'</span>)</span><br><span class="line">      .on(<span class="string">'value'</span>, snapshot =&gt; <span class="keyword">this</span>.setState(&#123; <span class="attr">todos</span>: snapshot.val() || [] &#125;));</span><br><span class="line">  &#125;</span><br><span class="line">  render() &#123;</span><br><span class="line">    <span class="keyword">return</span> (</span><br><span class="line">      &lt;ul&gt;</span><br><span class="line">        &#123;<span class="built_in">Object</span>.entries(<span class="keyword">this</span>.state.todos).map(<span class="function">(<span class="params">[key, value]</span>) =&gt;</span> (</span><br><span class="line">          &lt;Todo key=&#123;key&#125; id=&#123;key&#125; &#123;...value&#125; /&gt;</span><br><span class="line">        ))&#125;</span><br><span class="line">      &lt;<span class="regexp">/ul&gt;</span></span><br><span class="line"><span class="regexp">    );</span></span><br><span class="line"><span class="regexp">  &#125;</span></span><br><span class="line"><span class="regexp">&#125;</span></span><br></pre></td></tr></table></figure>
+<p>state の todos をただの空配列にし、<code>componentDidMount</code>メソッドを追加した。このメソッドで Firebase Database のデータをロードし、state の todos に設定する。</p>
+<p>constructor と componentDidMount で処理を分けているのはデータのロードが非同期だからで、コンポーネントマウント時に改めて setState している。</p>
+<p>DB のデータを取得するメソッドとして、ここでは<code>on</code>を利用している。ざっくり言うとデータに変化がある度にロードする<code>on</code>と、一回限りロードする<code>once</code>がある。主な違いは以下の通りだ。</p>
+<h3><span id="on">on</span></h3><p>on メソッドでは<code>&#39;value&#39;</code>とコールバック関数が引数として渡される。</p>
+<figure class="highlight js"><table><tr><td class="code"><pre><span class="line">database.ref(<span class="string">'***'</span>).on(<span class="string">'value'</span>, callback);</span><br></pre></td></tr></table></figure>
+<p>ここで渡された callback はリスナーに登録され、データの状態を監視するようになり、データに変化があり次第 callback をキックするようになる。</p>
+<p>今回の用途では<code>snapshot =&gt; this.setState({ todos: snapshot.val() || [] })</code>というコールバックを登録しているので、データに変化がある度にこの関数が実行される。</p>
+<p>ちなみに on メソッドは戻り値としてリスナーに登録された callback 自体を返す。リスナーの登録を解除したい場合は、この返された callback を利用して off メソッドを呼んでやればいい。</p>
+<figure class="highlight js"><table><tr><td class="code"><pre><span class="line"><span class="comment">// onでリスナー登録</span></span><br><span class="line"><span class="keyword">const</span> callback = database</span><br><span class="line">  .ref(<span class="string">'***'</span>)</span><br><span class="line">  .on(<span class="string">'value'</span>, snapshot =&gt; <span class="keyword">this</span>.setState(&#123; <span class="attr">todos</span>: snapshot.val() || [] &#125;));</span><br><span class="line"><span class="comment">// 戻り値のcallbackを利用し、offでリスナー解除</span></span><br><span class="line">database.ref(<span class="string">'***'</span>).off(<span class="string">'value'</span>, callback);</span><br></pre></td></tr></table></figure>
+<h3><span id="once">once</span></h3><p>once メソッドでも<code>&#39;value&#39;</code>とコールバック関数が引数として渡されるが、on と異なりリスナーを登録するわけでは無く一度のみデータを取得する。</p>
+<figure class="highlight js"><table><tr><td class="code"><pre><span class="line">database.ref(<span class="string">'***'</span>).once(<span class="string">'value'</span>, callback);</span><br></pre></td></tr></table></figure>
+<p>また、on ではコールバックとしてでしか関数を呼べなかったが、once は Promise を返すこともできる。</p>
+<figure class="highlight js"><table><tr><td class="code"><pre><span class="line"><span class="comment">// これもOK</span></span><br><span class="line">database</span><br><span class="line">  .ref(<span class="string">'***'</span>)</span><br><span class="line">  .once(<span class="string">'value'</span>)</span><br><span class="line">  .then(callback);</span><br></pre></td></tr></table></figure>
+<h3><span id="id-を-key-にする">id を key にする</span></h3><p>もう一つ変化点として、todos のデータの持ち方を変えている。</p>
+<p>データをベタ書きしていた時は、todo 1 件のデータは以下のように id を持っているが</p>
+<figure class="highlight js"><table><tr><td class="code"><pre><span class="line">&#123;</span><br><span class="line">  id: <span class="number">1</span>,</span><br><span class="line">  title: <span class="string">'Todo その1'</span>,</span><br><span class="line">  description: <span class="string">'Todo その1'</span>,</span><br><span class="line">  checked: <span class="literal">false</span>,</span><br><span class="line">&#125;,</span><br></pre></td></tr></table></figure>
+<p>次のようなデータの持ち方に変更する。（次項参照）</p>
+<figure class="highlight js"><table><tr><td class="code"><pre><span class="line">id: &#123;</span><br><span class="line">  title: <span class="string">'Todo その1'</span>,</span><br><span class="line">  description: <span class="string">'Todo その1'</span>,</span><br><span class="line">  checked: <span class="literal">false</span>,</span><br><span class="line">&#125;,</span><br></pre></td></tr></table></figure>
+<p>何故かというと、id は Firebase Database が一意に作成するものを使用するようにする為、データの中に id というフィールドを持つのではなく、データのキーとして id を持つようになるからだ。（フィールドとして id を持ってもいいけど、冗長になるので排除する）</p>
+<p>そのため、todos を map で回す際は以下のように書き換える。key と value に分離して、props の id には明示的に key を設定してあげるようにする。</p>
+<figure class="highlight js"><table><tr><td class="code"><pre><span class="line">&#123;</span><br><span class="line">  <span class="built_in">Object</span>.entries(<span class="keyword">this</span>.state.todos).map(<span class="function">(<span class="params">[key, value]</span>) =&gt;</span> (</span><br><span class="line">    &lt;Todo key=&#123;key&#125; id=&#123;key&#125; &#123;...value&#125; /&gt;</span><br><span class="line">  ));</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h2><span id="データ登録フォームの作成">データ登録フォームの作成</span></h2><p>次に新規の ToDo タスクを登録するための入力フォームをコンポーネントで作成する。</p>
+<p>InputForm.jsx としよう</p>
+<figure class="highlight jsx"><table><tr><td class="code"><pre><span class="line"><span class="keyword">import</span> React, &#123; Component &#125; <span class="keyword">from</span> <span class="string">'react'</span>;</span><br><span class="line"><span class="keyword">import</span> &#123; firebaseDb &#125; <span class="keyword">from</span> <span class="string">'./firebase'</span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">export</span> <span class="keyword">default</span> <span class="class"><span class="keyword">class</span> <span class="title">InputForm</span> <span class="keyword">extends</span> <span class="title">Component</span> </span>&#123;</span><br><span class="line">  <span class="keyword">constructor</span>(props) &#123;</span><br><span class="line">    <span class="keyword">super</span>(props);</span><br><span class="line">    <span class="keyword">this</span>.state = &#123;</span><br><span class="line">      title: <span class="string">''</span>,</span><br><span class="line">      desc: <span class="string">''</span>,</span><br><span class="line">    &#125;;</span><br><span class="line">    <span class="keyword">this</span>.onClick = <span class="keyword">this</span>.onClick.bind(<span class="keyword">this</span>);</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  onClick() &#123;</span><br><span class="line">    firebaseDb.ref(<span class="string">`todos`</span>).push(&#123;</span><br><span class="line">      title: <span class="keyword">this</span>.state.title,</span><br><span class="line">      description: <span class="keyword">this</span>.state.desc,</span><br><span class="line">      checked: <span class="literal">false</span>,</span><br><span class="line">    &#125;);</span><br><span class="line">    <span class="keyword">this</span>.setState(&#123; <span class="attr">title</span>: <span class="string">''</span>, <span class="attr">desc</span>: <span class="string">''</span> &#125;);</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  render() &#123;</span><br><span class="line">    <span class="keyword">const</span> &#123; title, desc &#125; = <span class="keyword">this</span>.state;</span><br><span class="line">    <span class="keyword">return</span> (</span><br><span class="line">      &lt;div className=<span class="string">"container"</span>&gt;</span><br><span class="line">        &lt;div className=<span class="string">"field"</span>&gt;</span><br><span class="line">          &lt;label className=<span class="string">"label"</span>&gt;Title&lt;<span class="regexp">/label&gt;</span></span><br><span class="line"><span class="regexp">          &lt;input</span></span><br><span class="line"><span class="regexp">            className="input"</span></span><br><span class="line"><span class="regexp">            value=&#123;this.state.title&#125;</span></span><br><span class="line"><span class="regexp">            onChange=&#123;e =&gt; this.setState(&#123; title: e.target.value &#125;)&#125;</span></span><br><span class="line"><span class="regexp">          /</span>&gt;</span><br><span class="line">        &lt;<span class="regexp">/div&gt;</span></span><br><span class="line"><span class="regexp">        &lt;div className="field"&gt;</span></span><br><span class="line"><span class="regexp">          &lt;label className="label"&gt;Description&lt;/</span>label&gt;</span><br><span class="line">          &lt;input</span><br><span class="line">            className=<span class="string">"input"</span></span><br><span class="line">            value=&#123;<span class="keyword">this</span>.state.desc&#125;</span><br><span class="line">            onChange=&#123;e =&gt; <span class="keyword">this</span>.setState(&#123; <span class="attr">desc</span>: e.target.value &#125;)&#125;</span><br><span class="line">          /&gt;</span><br><span class="line">        &lt;<span class="regexp">/div&gt;</span></span><br><span class="line"><span class="regexp"></span></span><br><span class="line"><span class="regexp">        &lt;div className="control"&gt;</span></span><br><span class="line"><span class="regexp">          &#123;title &amp;&amp;</span></span><br><span class="line"><span class="regexp">            desc &amp;&amp; (</span></span><br><span class="line"><span class="regexp">              &lt;button className="button is-link" onClick=&#123;this.onClick&#125;&gt;</span></span><br><span class="line"><span class="regexp">                Submit</span></span><br><span class="line"><span class="regexp">              &lt;/</span>button&gt;</span><br><span class="line">            )&#125;</span><br><span class="line">        &lt;<span class="regexp">/div&gt;</span></span><br><span class="line"><span class="regexp">      &lt;/</span>div&gt;</span><br><span class="line">    );</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>入力フォームではタスクの Title と Description を登録できるようにする。</p>
+<figure class="highlight js"><table><tr><td class="code"><pre><span class="line"><span class="keyword">constructor</span>(props) &#123;</span><br><span class="line">  <span class="keyword">super</span>(props)</span><br><span class="line">  <span class="keyword">this</span>.state = &#123;</span><br><span class="line">    text: <span class="string">''</span>,</span><br><span class="line">    desc: <span class="string">''</span></span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">this</span>.onClick = <span class="keyword">this</span>.onClick.bind(<span class="keyword">this</span>)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>コンストラクタでは state の初期化と、イベントの bind を行う。イベントの bind は<a href="https://qiita.com/cubdesign/items/ee8bff7073ebe1979936" target="_blank" rel="noopener">React.createClass ではなく React.Component を使う場合に必要</a>なようだ。</p>
+<p>submit の onClick で firebase の API を呼び出す。</p>
+<figure class="highlight js"><table><tr><td class="code"><pre><span class="line">onClick() &#123;</span><br><span class="line">  firebaseDb.ref(<span class="string">`todos`</span>).push(&#123;</span><br><span class="line">    title: <span class="keyword">this</span>.state.title,</span><br><span class="line">    description: <span class="keyword">this</span>.state.desc,</span><br><span class="line">    checked: <span class="literal">false</span>,</span><br><span class="line">  &#125;);</span><br><span class="line">  <span class="keyword">this</span>.setState(&#123; <span class="attr">title</span>: <span class="string">''</span>, <span class="attr">desc</span>: <span class="string">''</span> &#125;);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><code>.push()</code>を使ってデータ登録することにより、Todo に対して一意の ID を付与しつつ登録することができる。</p>
+<p>そしてこのコンポーネントを App.js から呼びだす。</p>
+<figure class="highlight html"><table><tr><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">section</span> <span class="attr">className</span>=<span class="string">"container"</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">InputForm</span> /&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">TodoList</span> /&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">section</span>&gt;</span></span><br></pre></td></tr></table></figure>
+<p>以下のような画面になるはずだ</p>
+<p><img src="/images/40-03.png" alt="フォームを追加した画面"></p>
+<h2><span id="todo-を消せるようにする">Todo を消せるようにする</span></h2><p>最後に Todo を削除できるようにする。</p>
+<p>完了のチェックボックスを付けて、チェックしたら削除ボタンが押せるようになる。だと Todo リストっぽい（よね？）</p>
+<p>以下のように Todo コンポーネントに処理を追加する。</p>
+<figure class="highlight jsx"><table><tr><td class="code"><pre><span class="line"><span class="keyword">import</span> React, &#123; Component &#125; <span class="keyword">from</span> <span class="string">'react'</span>;</span><br><span class="line"><span class="keyword">import</span> &#123; firebaseDb &#125; <span class="keyword">from</span> <span class="string">'./firebase'</span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">export</span> <span class="keyword">default</span> <span class="class"><span class="keyword">class</span> <span class="title">Todo</span> <span class="keyword">extends</span> <span class="title">Component</span> </span>&#123;</span><br><span class="line">  <span class="keyword">constructor</span>() &#123;</span><br><span class="line">    <span class="keyword">super</span>();</span><br><span class="line">    <span class="keyword">this</span>.handleCheck = <span class="keyword">this</span>.handleCheck.bind(<span class="keyword">this</span>);</span><br><span class="line">    <span class="keyword">this</span>.handleDelete = <span class="keyword">this</span>.handleDelete.bind(<span class="keyword">this</span>);</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  handleCheck() &#123;</span><br><span class="line">    firebaseDb.ref(<span class="string">`todos/<span class="subst">$&#123;<span class="keyword">this</span>.props.id&#125;</span>`</span>).update(&#123;</span><br><span class="line">      checked: !<span class="keyword">this</span>.props.checked,</span><br><span class="line">    &#125;);</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  handleDelete() &#123;</span><br><span class="line">    firebaseDb.ref(<span class="string">`todos/<span class="subst">$&#123;<span class="keyword">this</span>.props.id&#125;</span>`</span>).remove();</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  render() &#123;</span><br><span class="line">    <span class="keyword">return</span> (</span><br><span class="line">      &lt;li className=<span class="string">"todo"</span>&gt;</span><br><span class="line">        &lt;nav className=<span class="string">"panel"</span>&gt;</span><br><span class="line">          &lt;div className=<span class="string">"panel-heading"</span>&gt;</span><br><span class="line">            &lt;p&gt;&#123;<span class="keyword">this</span>.props.title&#125;&lt;<span class="regexp">/p&gt;</span></span><br><span class="line"><span class="regexp">          &lt;/</span>div&gt;</span><br><span class="line">          &lt;div className=<span class="string">"panel-block"</span>&gt;</span><br><span class="line">            &lt;label className=<span class="string">"checkbox"</span>&gt;</span><br><span class="line">              &lt;input</span><br><span class="line">                type=<span class="string">"checkbox"</span></span><br><span class="line">                onChange=&#123;<span class="keyword">this</span>.handleCheck&#125;</span><br><span class="line">                checked=&#123;<span class="keyword">this</span>.props.checked&#125;</span><br><span class="line">              /&gt;</span><br><span class="line">              &#123;<span class="keyword">this</span>.props.description&#125;</span><br><span class="line">            &lt;<span class="regexp">/label&gt;</span></span><br><span class="line"><span class="regexp">          &lt;/</span>div&gt;</span><br><span class="line">          &lt;div className=<span class="string">"panel-block"</span>&gt;</span><br><span class="line">            &#123;<span class="keyword">this</span>.props.checked &amp;&amp; (</span><br><span class="line">              &lt;button className=<span class="string">"button is-link"</span> onClick=&#123;<span class="keyword">this</span>.handleDelete&#125;&gt;</span><br><span class="line">                Delete</span><br><span class="line">              &lt;<span class="regexp">/button&gt;</span></span><br><span class="line"><span class="regexp">            )&#125;</span></span><br><span class="line"><span class="regexp">          &lt;/</span>div&gt;</span><br><span class="line">        &lt;<span class="regexp">/nav&gt;</span></span><br><span class="line"><span class="regexp">      &lt;/</span>li&gt;</span><br><span class="line">    );</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3><span id="チェックボックスを付ける">チェックボックスを付ける</span></h3><p>チェックボックスを追加する。チェック状態は<code>this.props.checked</code>と同期させ、クリックすると<code>handleCheck</code>という関数を呼ぶようにする。</p>
+<figure class="highlight html"><table><tr><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">input</span></span></span><br><span class="line"><span class="tag">  <span class="attr">type</span>=<span class="string">"checkbox"</span></span></span><br><span class="line"><span class="tag">  <span class="attr">onChange</span>=<span class="string">&#123;this.handleCheck&#125;</span></span></span><br><span class="line"><span class="tag">  <span class="attr">checked</span>=<span class="string">&#123;this.props.checked&#125;</span></span></span><br><span class="line"><span class="tag">/&gt;</span></span><br></pre></td></tr></table></figure>
+<p>呼ばれる関数は以下のものだ</p>
+<figure class="highlight js"><table><tr><td class="code"><pre><span class="line">handleCheck() &#123;</span><br><span class="line">  firebaseDb.ref(<span class="string">`todos/<span class="subst">$&#123;<span class="keyword">this</span>.props.id&#125;</span>`</span>).update(&#123;</span><br><span class="line">    checked: !<span class="keyword">this</span>.props.checked,</span><br><span class="line">  &#125;);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>props の id をキーとして todos からデータを指定し、checked のみを update かける。ここで update を掛けると DB の変更を TodoList.jsx で検知するので、checked が変更されたデータが自動的にロードされる。</p>
+<p>これでチェックボックスをクリックする度にチェックが切り替わる動作ができるようになる。</p>
+<h3><span id="削除ボタンを付ける">削除ボタンを付ける</span></h3><p>次に、チェックボックスが ON になったら表示される削除ボタンを追加する。</p>
+<figure class="highlight jsx"><table><tr><td class="code"><pre><span class="line">&#123;</span><br><span class="line">  <span class="keyword">this</span>.props.checked &amp;&amp; (</span><br><span class="line">    &lt;button className=<span class="string">"button is-link"</span> onClick=&#123;<span class="keyword">this</span>.handleDelete&#125;&gt;</span><br><span class="line">      Delete</span><br><span class="line">    &lt;<span class="regexp">/button&gt;</span></span><br><span class="line"><span class="regexp">  );</span></span><br><span class="line"><span class="regexp">&#125;</span></span><br></pre></td></tr></table></figure>
+<p>チェックボックスと同様に、クリックすると<code>handleDelete</code>関数を呼ぶ。</p>
+<figure class="highlight js"><table><tr><td class="code"><pre><span class="line">handleDelete() &#123;</span><br><span class="line">  firebaseDb.ref(<span class="string">`todos/<span class="subst">$&#123;<span class="keyword">this</span>.props.id&#125;</span>`</span>).remove();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>props の id をキーとして DB からデータを削除する。これも update と同様に、データの変更を検知して、画面表示の一覧が自動的に更新される。</p>
+<h1><span id="さいごに">さいごに</span></h1><p>Todo リストとして必要最小限の機能は実装することはできたが、React も Firebase も<strong>ギリギリ動かせた</strong>というのが正直なところ。</p>
+<p>しかしこのお手軽さでリアルタイムな Web アプリを作れるのは非常に可能性を感じる。もっと色々いじり倒してみたいものだ。</p>
+<h1><span id="環境">環境</span></h1><ul>
+<li>Windows 10</li>
+<li>React 16.4.2</li>
+<li>create-react-app 1.5.2</li>
+<li>Firebase 5.3.1</li>
+</ul>
+<h1><span id="参考">参考</span></h1><ul>
+<li><a href="https://qiita.com/mikan3rd/items/20152cdd63a708264a9e" target="_blank" rel="noopener">【React】ToDo アプリを作ってみよう【前編】 - Qiita</a></li>
+<li><a href="https://qiita.com/gonta616/items/278a7e81a8b624d9621e#firebase%E3%81%A7%E3%83%97%E3%83%AD%E3%82%B8%E3%82%A7%E3%82%AF%E3%83%88%E3%82%92%E4%BD%9C%E6%88%90%E3%81%99%E3%82%8B" target="_blank" rel="noopener">React + Redux + Firebase で作る Todo App - Qiita</a></li>
+<li><a href="https://github.com/r-park/todo-react-redux" target="_blank" rel="noopener">r-park/todo-react-redux: Todo app with Create-React-App • React-Redux • Firebase • OAuth</a></li>
+<li><a href="https://firebase.google.com/docs/database/web/read-and-write?hl=ja#listen_for_value_events" target="_blank" rel="noopener">ウェブでのデータの読み取りと書き込み  |  Firebase Realtime Database  |  Firebase</a></li>
+</ul>
+
+      
+    </div>
+    <footer class="article-footer">
+      <div data-url="https://t-kojima.github.io/2018/08/13/0040-firebase-react-database/" data-id="cjq51fi1s006kmtu7as9ut655" class="article-share-items"></div>
+      <!-- <a data-url="https://t-kojima.github.io/2018/08/13/0040-firebase-react-database/" data-id="cjq51fi1s006kmtu7as9ut655" class="article-share-link">共有</a> -->
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/firebase/">firebase</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/react/">react</a></li></ul>
+
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+    <a href="/2018/09/24/0041-windows-cmder-vscode-powerline/" id="article-nav-newer" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">次の記事</strong>
+      <div class="article-nav-title">
+        
+          WindowsでCmderでVSCodeでPowerline
+        
+      </div>
+    </a>
+  
+  
+    <a href="/2018/08/12/0039-firebase-react-eslint-prettier/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">前の記事</strong>
+      <div class="article-nav-title">[Firebase x React] ESLintとPrettierをReactに適用</div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">カテゴリ</h3>
+    <div class="widget">
+      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/Mac/">Mac</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/MySQL/">MySQL</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Node/">Node</a><span class="category-list-count">2</span><ul class="category-list-child"><li class="category-list-item"><a class="category-list-link" href="/categories/Node/Express/">Express</a><span class="category-list-count">2</span></li></ul></li><li class="category-list-item"><a class="category-list-link" href="/categories/Sinatra/">Sinatra</a><span class="category-list-count">1</span></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">タグ</h3>
+    <div class="widget">
+      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/axios/">axios</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/babel/">babel</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/bottle/">bottle</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/browserify/">browserify</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/csharp/">csharp</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/docker/">docker</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/eslint/">eslint</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/euler/">euler</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/express/">express</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/firebase/">firebase</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/flask/">flask</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/hexo/">hexo</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/javascript/">javascript</a><span class="tag-list-count">8</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/jupyter/">jupyter</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/karma/">karma</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/kintone/">kintone</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/linux/">linux</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/log4js/">log4js</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/luigi/">luigi</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mac/">mac</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mocha/">mocha</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mysql/">mysql</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/node-fetch/">node-fetch</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/nodejs/">nodejs</a><span class="tag-list-count">13</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/powerline/">powerline</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/prettier/">prettier</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/python/">python</a><span class="tag-list-count">8</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/rails/">rails</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/react/">react</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/redis/">redis</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/rpa/">rpa</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/rspec/">rspec</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ruby/">ruby</a><span class="tag-list-count">7</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/sidekiq/">sidekiq</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/sinatra/">sinatra</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/sqlalchemy/">sqlalchemy</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/vagrant/">vagrant</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/virtualbox/">virtualbox</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/vscode/">vscode</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/vue/">vue</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/webpack/">webpack</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/zipstream/">zipstream</a><span class="tag-list-count">1</span></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">タグクラウド</h3>
+    <div class="widget tagcloud">
+      <a href="/tags/axios/" style="font-size: 10px;">axios</a> <a href="/tags/babel/" style="font-size: 10px;">babel</a> <a href="/tags/bottle/" style="font-size: 10px;">bottle</a> <a href="/tags/browserify/" style="font-size: 10px;">browserify</a> <a href="/tags/csharp/" style="font-size: 10px;">csharp</a> <a href="/tags/docker/" style="font-size: 10px;">docker</a> <a href="/tags/eslint/" style="font-size: 11.43px;">eslint</a> <a href="/tags/euler/" style="font-size: 10px;">euler</a> <a href="/tags/express/" style="font-size: 11.43px;">express</a> <a href="/tags/firebase/" style="font-size: 12.86px;">firebase</a> <a href="/tags/flask/" style="font-size: 10px;">flask</a> <a href="/tags/hexo/" style="font-size: 11.43px;">hexo</a> <a href="/tags/javascript/" style="font-size: 18.57px;">javascript</a> <a href="/tags/jupyter/" style="font-size: 10px;">jupyter</a> <a href="/tags/karma/" style="font-size: 11.43px;">karma</a> <a href="/tags/kintone/" style="font-size: 12.86px;">kintone</a> <a href="/tags/linux/" style="font-size: 10px;">linux</a> <a href="/tags/log4js/" style="font-size: 10px;">log4js</a> <a href="/tags/luigi/" style="font-size: 15.71px;">luigi</a> <a href="/tags/mac/" style="font-size: 10px;">mac</a> <a href="/tags/mocha/" style="font-size: 10px;">mocha</a> <a href="/tags/mysql/" style="font-size: 11.43px;">mysql</a> <a href="/tags/node-fetch/" style="font-size: 10px;">node-fetch</a> <a href="/tags/nodejs/" style="font-size: 20px;">nodejs</a> <a href="/tags/powerline/" style="font-size: 11.43px;">powerline</a> <a href="/tags/prettier/" style="font-size: 10px;">prettier</a> <a href="/tags/python/" style="font-size: 18.57px;">python</a> <a href="/tags/rails/" style="font-size: 10px;">rails</a> <a href="/tags/react/" style="font-size: 12.86px;">react</a> <a href="/tags/redis/" style="font-size: 10px;">redis</a> <a href="/tags/rpa/" style="font-size: 10px;">rpa</a> <a href="/tags/rspec/" style="font-size: 10px;">rspec</a> <a href="/tags/ruby/" style="font-size: 17.14px;">ruby</a> <a href="/tags/sidekiq/" style="font-size: 10px;">sidekiq</a> <a href="/tags/sinatra/" style="font-size: 15.71px;">sinatra</a> <a href="/tags/sqlalchemy/" style="font-size: 11.43px;">sqlalchemy</a> <a href="/tags/vagrant/" style="font-size: 10px;">vagrant</a> <a href="/tags/virtualbox/" style="font-size: 10px;">virtualbox</a> <a href="/tags/vscode/" style="font-size: 14.29px;">vscode</a> <a href="/tags/vue/" style="font-size: 12.86px;">vue</a> <a href="/tags/webpack/" style="font-size: 10px;">webpack</a> <a href="/tags/zipstream/" style="font-size: 10px;">zipstream</a>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">アーカイブ</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/12/">12月 2018</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/11/">11月 2018</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/10/">10月 2018</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/09/">9月 2018</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/08/">8月 2018</a><span class="archive-list-count">6</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/07/">7月 2018</a><span class="archive-list-count">11</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/06/">6月 2018</a><span class="archive-list-count">12</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/05/">5月 2018</a><span class="archive-list-count">11</span></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">最近の投稿</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2018/12/20/0051-setup-macbook-pro-2018/">MacBookPro2018のセットアップ</a>
+          </li>
+        
+          <li>
+            <a href="/2018/11/29/0050-about-config-ru/">[Sinatra] config.ruとは</a>
+          </li>
+        
+          <li>
+            <a href="/2018/11/14/0049-docker-mysql-error-caching-sha2-password/">[MySQL] Unable to load authentication plugin &#39;caching_sha2_password&#39;</a>
+          </li>
+        
+          <li>
+            <a href="/2018/11/05/0048-express-with-log4js/">[Node] ExpressでAPIを作ったらログも吐く</a>
+          </li>
+        
+          <li>
+            <a href="/2018/11/02/0047-helloworld-express-with-json/">[Node] Expressを使って最速でJSONを返す</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      &copy; 2018 t-kojima<br>
+      Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+
+
+  <link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
+  <script src="/fancybox/jquery.fancybox.pack.js"></script>
+
+
+<script src="/js/script.js"></script>
+
+
+
+  </div>
+  <script async src="//cdn.embedly.com/widgets/platform.js" charset="UTF-8"></script>
+</body>
+</html>

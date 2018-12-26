@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+
+  
+  <title>[karma-kintuba] ES2017で書かれたモジュール・テストをIEで動かしたい | Today&#39;s Commit</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="karma-kintubaはモダンブラウザでしか動かない。しかし MS Edge はモダンブラウザのはず（？）なのに動かない。これはトランスパイルで何とかならないかと思い、babel してみた。 Edge は動きました。以後 IE との闘いです。">
+<meta name="keywords" content="karma,webpack,babel">
+<meta property="og:type" content="article">
+<meta property="og:title" content="[karma-kintuba] ES2017で書かれたモジュール・テストをIEで動かしたい">
+<meta property="og:url" content="https://t-kojima.github.io/2018/07/06/0025-karma-kintuba-in-ie-and-edge/index.html">
+<meta property="og:site_name" content="Today&#39;s Commit">
+<meta property="og:description" content="karma-kintubaはモダンブラウザでしか動かない。しかし MS Edge はモダンブラウザのはず（？）なのに動かない。これはトランスパイルで何とかならないかと思い、babel してみた。 Edge は動きました。以後 IE との闘いです。">
+<meta property="og:locale" content="ja">
+<meta property="og:image" content="https://t-kojima.github.io/images/25-babel.png">
+<meta property="og:updated_time" content="2018-12-20T11:07:38.286Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="[karma-kintuba] ES2017で書かれたモジュール・テストをIEで動かしたい">
+<meta name="twitter:description" content="karma-kintubaはモダンブラウザでしか動かない。しかし MS Edge はモダンブラウザのはず（？）なのに動かない。これはトランスパイルで何とかならないかと思い、babel してみた。 Edge は動きました。以後 IE との闘いです。">
+<meta name="twitter:image" content="https://t-kojima.github.io/images/25-babel.png">
+  
+    <link rel="alternate" href="/atom.xml" title="Today&#39;s Commit" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  
+    <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
+  
+  <link rel="stylesheet" href="/css/style.css">
+  
+    <link rel="amphtml" href="https://t-kojima.github.io/2018/07/06/0025-karma-kintuba-in-ie-and-edge//amp/index.html">
+  
+</head>
+
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">Today&#39;s Commit</a>
+      </h1>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSSフィード"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="検索"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="https://t-kojima.github.io"></form>
+      </div>
+    </div>
+  </div>
+</header>
+      <div class="outer">
+        <section id="main"><article id="post-0025-karma-kintuba-in-ie-and-edge" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2018/07/06/0025-karma-kintuba-in-ie-and-edge/" class="article-date">
+  <time datetime="2018-07-06T02:43:55.000Z" itemprop="datePublished">2018-07-06</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      [karma-kintuba] ES2017で書かれたモジュール・テストをIEで動かしたい
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p><img src="/images/25-babel.png" alt="babel logo"></p>
+<p><a href="https://github.com/t-kojima/karma-kintuba" target="_blank" rel="noopener">karma-kintuba</a>はモダンブラウザでしか動かない。<br><del>しかし MS Edge はモダンブラウザのはず（？）なのに動かない。これはトランスパイルで何とかならないかと思い、babel してみた。</del></p>
+<p>Edge は動きました。以後 IE との闘いです。</p>
+<a id="more"></a>
+<h2><span id="トランスパイルの対象">トランスパイルの対象</span></h2><p>トランスパイルの対象になるのは以下 3 つだ</p>
+<ul>
+<li>kintuba 本体</li>
+<li>karma-kintuba の adapter</li>
+<li>karma のテストコード</li>
+</ul>
+<p>ちなみに karma-kintuba の adapter とは、karma-kintuba が kintuba 本体と一緒にロードするスクリプトで、テスト時にローカルファイルを読み込む為に必要となる。</p>
+<h2><span id="karma-kintuba-のテスト環境">karma-kintuba のテスト環境</span></h2><p>作った。</p>
+<p><a href="https://github.com/t-kojima/kintuba-test" class="embedly-card" data-card-image="0" data-card-controls="0" data-card-align="left" target="_blank" rel="noopener"></a></p>
+<p>適当にソースとテストコードを用意した。</p>
+<h2><span id="素の状態でテスト">素の状態でテスト</span></h2><p>まずは素の状態（というか現時点の最新の状態）で Chrome、Firefox、IE、Edge、PhantomJS に対してテストを流してみる。</p>
+<table>
+<thead>
+<tr>
+<th>対象</th>
+<th>記法</th>
+<th>処理</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>kintuba 本体</td>
+<td>CommonJS + ES2016</td>
+<td>webpack</td>
+</tr>
+<tr>
+<td>karma-kintuba の adapter</td>
+<td>ES2016</td>
+<td></td>
+</tr>
+<tr>
+<td>karma のテストコード</td>
+<td>ES2016</td>
+</tr>
+</tbody>
+</table>
+<h3><span id="chrome">Chrome</span></h3><p>問題なくテスト OK</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">SUMMARY:</span><br><span class="line">√ 19 tests completed</span><br><span class="line">Done <span class="keyword">in</span> 8.49s.</span><br></pre></td></tr></table></figure>
+<h3><span id="firefox">Firefox</span></h3><p>こちらも OK</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">SUMMARY:</span><br><span class="line">√ 19 tests completed</span><br><span class="line">Done <span class="keyword">in</span> 8.27s.</span><br></pre></td></tr></table></figure>
+<h3><span id="ie">IE</span></h3><p>盛大にエラーが出た、省略したけどこれ以外にも 7 点ほど構文エラーが出ている</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">IE 11.0.0 (Windows 10 0.0.0) ERROR</span><br><span class="line">  &#123;</span><br><span class="line">    <span class="string">"message"</span>: <span class="string">"構文エラーです。\nat node_modules/karma-kintuba/adapter.js:1:47"</span>,</span><br><span class="line">    <span class="string">"str"</span>: <span class="string">"構文エラーです。\nat node_modules/karma-kintuba/adapter.js:1:47"</span></span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">Finished <span class="keyword">in</span> 0.17 secs / 0 secs @ 12:07:16 GMT+0900 (東京 (標準時))</span><br><span class="line"></span><br><span class="line">SUMMARY:</span><br><span class="line">√ 0 tests completed</span><br><span class="line">IE 11.0.0 (Windows 10 0.0.0) ERROR</span><br><span class="line">  &#123;</span><br><span class="line">    <span class="string">"message"</span>: <span class="string">"構文エラーです。\nat node_modules/kintuba/index.js:1:962"</span>,</span><br><span class="line">    <span class="string">"str"</span>: <span class="string">"構文エラーです。\nat node_modules/kintuba/index.js:1:962"</span></span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">× Error <span class="keyword">while</span> running the tests! Exit code: 1</span><br></pre></td></tr></table></figure>
+<h3><span id="edge">Edge</span></h3><p><code>※事前に「試験的なJavaScript機能を有効にする」必要がある。Edgeを立ち上げてアドレスに about:flag を入力し、設定画面で設定する。</code></p>
+<p>OK だった。</p>
+<p>「試験的な JavaScript 機能を有効にする」に気づかず、ずっと async/await がエラーを吐いていたが、そこさえクリアできれば問題なかった。</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">SUMMARY:</span><br><span class="line">√ 19 tests completed</span><br><span class="line">Done <span class="keyword">in</span> 5.61s.</span><br></pre></td></tr></table></figure>
+<h3><span id="phantomjs">PhantomJS</span></h3><p>こちらもエラー、SyntaxError が 2 件だ</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">PhantomJS 2.1.1 (Windows 8 0.0.0) ERROR</span><br><span class="line">  &#123;</span><br><span class="line">    <span class="string">"message"</span>: <span class="string">"SyntaxError: Unexpected token '&gt;'\nat node_modules/karma-kintuba/adapter.js:1:0"</span>,</span><br><span class="line">    <span class="string">"str"</span>: <span class="string">"SyntaxError: Unexpected token '&gt;'\nat node_modules/karma-kintuba/adapter.js:1:0"</span></span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">Finished <span class="keyword">in</span> 0.076 secs / 0 secs @ 12:10:06 GMT+0900 (東京 (標準時))</span><br><span class="line"></span><br><span class="line">SUMMARY:</span><br><span class="line">√ 0 tests completed</span><br><span class="line">PhantomJS 2.1.1 (Windows 8 0.0.0) ERROR</span><br><span class="line">  &#123;</span><br><span class="line">    <span class="string">"message"</span>: <span class="string">"SyntaxError: Unexpected token '&gt;'\nat node_modules/kintuba/index.js:1:0"</span>,</span><br><span class="line">    <span class="string">"str"</span>: <span class="string">"SyntaxError: Unexpected token '&gt;'\nat node_modules/kintuba/index.js:1:0"</span></span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">× Error <span class="keyword">while</span> running the tests! Exit code: 1</span><br></pre></td></tr></table></figure>
+<h2><span id="ie-との闘い">IE との闘い</span></h2><h3><span id="adapter-を-webpackbabelpolyfill">adapter を webpack(babel+polyfill)</span></h3><p>Chrome、Firefox、Edge がクリアできたので正直いいかなって気分だけど、IE で動くまで頑張ってみる。</p>
+<p>まず adapter の構文エラー、<code>adapter.js:1:47</code> は <code>=&gt;</code> を指している。そうだよね、ES2015 の書き方はダメだよねってことで、adapter を webpack する。</p>
+<table>
+<thead>
+<tr>
+<th>対象</th>
+<th>記法</th>
+<th>処理</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>kintuba 本体</td>
+<td>CommonJS + ES2016</td>
+<td>webpack</td>
+</tr>
+<tr>
+<td>karma-kintuba の adapter</td>
+<td>ES2016</td>
+<td>webpack+babel</td>
+</tr>
+<tr>
+<td>karma のテストコード</td>
+<td>ES2016</td>
+</tr>
+</tbody>
+</table>
+<p>karma-kintuba プロジェクトに webpack と babel をインストール</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">yarn add --dev webpack webpack-cli babel-core babel-loader babel-preset-env</span><br></pre></td></tr></table></figure>
+<p>そして以下の設定で webpack する</p>
+<figure class="highlight js"><table><tr><td class="code"><pre><span class="line"><span class="comment">// webpack.config.js</span></span><br><span class="line"><span class="keyword">const</span> path = <span class="built_in">require</span>(<span class="string">'path'</span>)</span><br><span class="line"></span><br><span class="line"><span class="built_in">module</span>.exports = &#123;</span><br><span class="line">  mode: <span class="string">'development'</span>,</span><br><span class="line">  entry: <span class="string">'./adapter.js'</span>,</span><br><span class="line">  output: &#123;</span><br><span class="line">    filename: <span class="string">'bundle.adapter.js'</span>,</span><br><span class="line">    path: path.join(__dirname, <span class="string">'.'</span>),</span><br><span class="line">  &#125;,</span><br><span class="line">  <span class="built_in">module</span>: &#123;</span><br><span class="line">    rules: [</span><br><span class="line">      &#123;</span><br><span class="line">        test: <span class="regexp">/\.js$/</span>,</span><br><span class="line">        exclude: <span class="regexp">/node_modules/</span>,</span><br><span class="line">        use: [</span><br><span class="line">          &#123;</span><br><span class="line">            loader: <span class="string">'babel-loader'</span>,</span><br><span class="line">            options: &#123;</span><br><span class="line">              presets: [[<span class="string">'env'</span>, &#123; <span class="attr">modules</span>: <span class="literal">false</span> &#125;]],</span><br><span class="line">            &#125;,</span><br><span class="line">          &#125;,</span><br><span class="line">        ],</span><br><span class="line">      &#125;,</span><br><span class="line">    ],</span><br><span class="line">  &#125;,</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>できた adapter をテストプロジェクトに移植して…テスト実行！</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">IE 11.0.0 (Windows 10 0.0.0) ERROR</span><br><span class="line">  &#123;</span><br><span class="line">    <span class="string">"message"</span>: <span class="string">"'regeneratorRuntime' は定義されていません。\nat :6:3\n\nReferenceError: 'regeneratorRuntime' は定義されていません。\n   at Anonymous function (eval code:6:3)\n   at eval code (eval code:5:1)\n</span></span><br><span class="line"><span class="string">  at ./adapter_e.js (node_modules/karma-kintuba/adapter.js:96:1)\n   at __webpack_require__ (node_modules/karma-kintuba/adapter.js:20:12)\n   at Anonymous function (node_modules/karma-kintuba/adapter.js:84:11)\n   at Global code (node_modules/karma-kintuba/adapter.js:1:11)"</span>,</span><br><span class="line">    <span class="string">"str"</span>: <span class="string">"'regeneratorRuntime' は定義されていません。\nat :6:3\n\nReferenceError: 'regeneratorRuntime' は定義されていません。\n   at Anonymous function (eval code:6:3)\n   at eval code (eval code:5:1)\n   at ./adapter_e.js (node_modules/karma-kintuba/adapter.js:96:1)\n   at __webpack_require__ (node_modules/karma-kintuba/adapter.js:20:12)\n   at Anonymous function (node_modules/karma-kintuba/adapter.js:84:11)\n</span></span><br><span class="line"><span class="string"> at Global code (node_modules/karma-kintuba/adapter.js:1:11)"</span></span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">Finished <span class="keyword">in</span> 0.105 secs / 0 secs @ 14:06:50 GMT+0900 (東京 (標準時))</span><br><span class="line"></span><br><span class="line">SUMMARY:</span><br><span class="line">√ 0 tests completed</span><br></pre></td></tr></table></figure>
+<p>はい、エラーが変わりました。regeneratorRuntime が無い…と</p>
+<p><a href="https://qiita.com/devneko/items/c7ddb31f504c8c2a5ac5" target="_blank" rel="noopener">Node.js &amp; webpack &amp; babel で「 regeneratorRuntime is not defined」が発生する場合の対処</a>を見るに、blacklist に入れるのがベストとあるが、今回 node ではないのでこれでいいのかわからないのと、そもそも babel6 から blacklist は廃止されてることから、polyfill するしかないかなと思う。</p>
+<table>
+<thead>
+<tr>
+<th>対象</th>
+<th>記法</th>
+<th>処理</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>kintuba 本体</td>
+<td>CommonJS + ES2016</td>
+<td>webpack</td>
+</tr>
+<tr>
+<td>karma-kintuba の adapter</td>
+<td>ES2016</td>
+<td>webpack+babel+polyfill</td>
+</tr>
+<tr>
+<td>karma のテストコード</td>
+<td>ES2016</td>
+</tr>
+</tbody>
+</table>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">yarn add --dev babel-polyfill</span><br></pre></td></tr></table></figure>
+<figure class="highlight js"><table><tr><td class="code"><pre><span class="line"><span class="comment">// webpack.config.js</span></span><br><span class="line"><span class="keyword">const</span> path = <span class="built_in">require</span>(<span class="string">'path'</span>)</span><br><span class="line"></span><br><span class="line"><span class="built_in">module</span>.exports = &#123;</span><br><span class="line">  mode: <span class="string">'development'</span>,</span><br><span class="line">  entry: [<span class="string">'babel-polyfill'</span>, <span class="string">'./adapter.js'</span>],</span><br><span class="line">  output: &#123;</span><br><span class="line">      <span class="comment">// ... 省略</span></span><br></pre></td></tr></table></figure>
+<p>polyfill して再度テストを回すと、adapter 関係のエラーは無くなった。しかしまだエラーはある、kintuba 本体だ。</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">IE 11.0.0 (Windows 10 0.0.0) ERROR</span><br><span class="line">  &#123;</span><br><span class="line">    <span class="string">"message"</span>: <span class="string">"構文エラーです。\nat node_modules/kintuba/index.js:1:962"</span>,</span><br><span class="line">    <span class="string">"str"</span>: <span class="string">"構文エラーです。\nat node_modules/kintuba/index.js:1:962"</span></span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">Finished <span class="keyword">in</span> 0.222 secs / 0 secs @ 14:31:06 GMT+0900 (東京 (標準時))</span><br><span class="line"></span><br><span class="line">SUMMARY:</span><br><span class="line">√ 0 tests completed</span><br></pre></td></tr></table></figure>
+<h3><span id="kintuba-とテストコードでも-webpackbabelpolyfill">kintuba とテストコードでも webpack(babel+polyfill)</span></h3><p>エラーの対応は同じで、kintuba 本体側でも babel+polyfill を掛けてあげる</p>
+<table>
+<thead>
+<tr>
+<th>対象</th>
+<th>記法</th>
+<th>処理</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>kintuba 本体</td>
+<td>CommonJS + ES2016</td>
+<td>webpack+babel+polyfill</td>
+</tr>
+<tr>
+<td>karma-kintuba の adapter</td>
+<td>ES2016</td>
+<td>webpack+babel+polyfill</td>
+</tr>
+<tr>
+<td>karma のテストコード</td>
+<td>ES2016</td>
+</tr>
+</tbody>
+</table>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">IE 11.0.0 (Windows 10 0.0.0) ERROR</span><br><span class="line">  &#123;</span><br><span class="line">    <span class="string">"message"</span>: <span class="string">"構文エラーです。\nat test/add_button_test.js:3:24"</span>,</span><br><span class="line">    <span class="string">"str"</span>: <span class="string">"構文エラーです。\nat test/add_button_test.js:3:24"</span></span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">Finished <span class="keyword">in</span> 0.12 secs / 0 secs @ 14:44:46 GMT+0900 (東京 (標準時))</span><br><span class="line"></span><br><span class="line">SUMMARY:</span><br><span class="line">√ 0 tests completed</span><br></pre></td></tr></table></figure>
+<p>ほい、今度はテストコードでエラー</p>
+<h4><span id="テストコードのトランスパイル">テストコードのトランスパイル</span></h4><table>
+<thead>
+<tr>
+<th>対象</th>
+<th>記法</th>
+<th>処理</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>kintuba 本体</td>
+<td>CommonJS + ES2016</td>
+<td>webpack+babel+polyfill</td>
+</tr>
+<tr>
+<td>karma-kintuba の adapter</td>
+<td>ES2016</td>
+<td>webpack+babel+polyfill</td>
+</tr>
+<tr>
+<td>karma のテストコード</td>
+<td>ES2016</td>
+<td>webpack+babel+polyfill</td>
+</tr>
+</tbody>
+</table>
+<p>テストコードの webpack と polyfill は karma プラグインとして追加する。まずは webpack のみ適用してみる。</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">yarn add --dev karma-webpack babel-core babel-loader babel-preset-env</span><br></pre></td></tr></table></figure>
+<p>karma の設定ファイルに preprocessers と webpack を追加</p>
+<figure class="highlight js"><table><tr><td class="code"><pre><span class="line"><span class="comment">// karma.conf.js</span></span><br><span class="line"><span class="built_in">module</span>.exports = <span class="function"><span class="params">config</span> =&gt;</span> &#123;</span><br><span class="line">  config.set(&#123;</span><br><span class="line">    basePath: <span class="string">''</span>,</span><br><span class="line">    frameworks: [<span class="string">'mocha'</span>, <span class="string">'chai'</span>, <span class="string">'kintuba'</span>],</span><br><span class="line">    files: [</span><br><span class="line">      <span class="string">'src/**/*.js'</span>,</span><br><span class="line">      <span class="string">'test/**/*.js'</span>,</span><br><span class="line">      &#123;</span><br><span class="line">        pattern: <span class="string">'.kintuba/**/*.json'</span>,</span><br><span class="line">        watched: <span class="literal">false</span>,</span><br><span class="line">        included: <span class="literal">false</span>,</span><br><span class="line">        served: <span class="literal">true</span>,</span><br><span class="line">        nocache: <span class="literal">false</span>,</span><br><span class="line">      &#125;,</span><br><span class="line">    ],</span><br><span class="line">    exclude: [],</span><br><span class="line">    preprocessors: &#123;</span><br><span class="line">      <span class="string">'test/**/*.js'</span>: [<span class="string">'webpack'</span>],</span><br><span class="line">    &#125;,</span><br><span class="line">    webpack: &#123;</span><br><span class="line">      mode: <span class="string">'development'</span>,</span><br><span class="line">      <span class="built_in">module</span>: &#123;</span><br><span class="line">        rules: [</span><br><span class="line">          &#123;</span><br><span class="line">            test: <span class="regexp">/\.js$/</span>,</span><br><span class="line">            exclude: <span class="regexp">/node_modules/</span>,</span><br><span class="line">            use: [</span><br><span class="line">              &#123;</span><br><span class="line">                loader: <span class="string">'babel-loader'</span>,</span><br><span class="line">                options: &#123;</span><br><span class="line">                  presets: [<span class="string">'env'</span>],</span><br><span class="line">                &#125;,</span><br><span class="line">              &#125;,</span><br><span class="line">            ],</span><br><span class="line">          &#125;,</span><br><span class="line">        ],</span><br><span class="line">      &#125;,</span><br><span class="line">    &#125;,</span><br><span class="line">    reporters: [<span class="string">'mocha'</span>],</span><br><span class="line">    port: <span class="number">9876</span>,</span><br><span class="line">    colors: <span class="literal">true</span>,</span><br><span class="line">    logLevel: config.LOG_INFO,</span><br><span class="line">    autoWatch: <span class="literal">true</span>,</span><br><span class="line">    <span class="comment">// browsers: ['Chrome', 'Firefox', 'PhantomJS', 'Edge', 'IE'],</span></span><br><span class="line">    browsers: [<span class="string">'IE'</span>],</span><br><span class="line">    singleRun: <span class="literal">true</span>,</span><br><span class="line">    concurrency: <span class="literal">Infinity</span>,</span><br><span class="line">  &#125;)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>これで実行すると…テストは動くようになった</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">  example</span><br><span class="line">    √ ボタンが追加されていること</span><br><span class="line">  app.record.index.show</span><br><span class="line">    × <span class="string">"before all"</span> hook</span><br><span class="line">  app.report.show</span><br><span class="line">    × <span class="string">"before each"</span> hook <span class="keyword">for</span> <span class="string">"イベントが発火すること"</span></span><br><span class="line">  kintone関数</span><br><span class="line">    × <span class="string">"before all"</span> hook</span><br><span class="line"></span><br><span class="line">Finished <span class="keyword">in</span> 0.02 secs / 0.002 secs @ 14:49:21 GMT+0900 (東京 (標準時))</span><br><span class="line"></span><br><span class="line">SUMMARY:</span><br><span class="line">√ 1 <span class="built_in">test</span> completed</span><br><span class="line">× 3 tests failed</span><br></pre></td></tr></table></figure>
+<h4><span id="karma-polyfill-で-fetch-回避">karma-polyfill で fetch 回避</span></h4><p>しかし以下のエラーが出ている</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">× <span class="string">"before all"</span> hook</span><br><span class="line">  IE 11.0.0 (Windows 10 0.0.0)</span><br><span class="line">ReferenceError: <span class="string">'fetch'</span> は定義されていません。</span><br></pre></td></tr></table></figure>
+<p>fetch が無い、polyfill が必要だ</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">yarn add --dev karma-polyfill</span><br></pre></td></tr></table></figure>
+<p>frameworks に polyfill を追加するのと、<code>polyfill: [&#39;fetch&#39;]</code> を追加する。</p>
+<figure class="highlight js"><table><tr><td class="code"><pre><span class="line"><span class="comment">// karma.conf.js</span></span><br><span class="line"><span class="built_in">module</span>.exports = <span class="function"><span class="params">config</span> =&gt;</span> &#123;</span><br><span class="line">  config.set(&#123;</span><br><span class="line">    basePath: <span class="string">''</span>,</span><br><span class="line">    frameworks: [<span class="string">'mocha'</span>, <span class="string">'chai'</span>, <span class="string">'kintuba'</span>, <span class="string">'polyfill'</span>],</span><br><span class="line">    polyfill: [<span class="string">'fetch'</span>],</span><br><span class="line">    <span class="comment">// ...省略</span></span><br></pre></td></tr></table></figure>
+<h4><span id="mocha-のタイムアウト">mocha のタイムアウト</span></h4><p>fetch のエラーは解消されるようになった</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">Finished <span class="keyword">in</span> 14.526 secs / 12.083 secs @ 14:53:00 GMT+0900 (東京 (標準時))</span><br><span class="line"></span><br><span class="line">SUMMARY:</span><br><span class="line">√ 8 tests completed</span><br><span class="line">× 6 tests failed</span><br></pre></td></tr></table></figure>
+<p>が、次の問題、タイムアウトしてしまう。</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">Timeout of 2000ms exceeded. For async tests and hooks, ensure <span class="string">"done()"</span> is called; <span class="keyword">if</span> returning a Promise, ensure it resolves.</span><br></pre></td></tr></table></figure>
+<p>これはタイムアウトを伸ばす。karma.conf.js に以下を追加する。</p>
+<figure class="highlight js"><table><tr><td class="code"><pre><span class="line">client: &#123;</span><br><span class="line">  mocha: &#123;</span><br><span class="line">    timeout: <span class="number">10000</span></span><br><span class="line">  &#125;</span><br><span class="line">&#125;,</span><br></pre></td></tr></table></figure>
+<p>結果、テストはオールクリアーできた！</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">SUMMARY:</span><br><span class="line">√ 19 tests completed</span><br><span class="line">Done <span class="keyword">in</span> 30.33s.</span><br></pre></td></tr></table></figure>
+<p>全部のブラウザを有効にして流しても OK だった。</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">SUMMARY:</span><br><span class="line">√ 95 tests completed</span><br><span class="line">Done <span class="keyword">in</span> 36.06s.</span><br></pre></td></tr></table></figure>
+<h2><span id="イケたかと思いきや">イケたかと思いきや</span></h2><p>今度は node でのテストがコケるようになってしまった。</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">ReferenceError: regeneratorRuntime is not defined</span><br></pre></td></tr></table></figure>
+<p>kintuba の webpack.config.js で preset のターゲットを node にすると回避はできるが、逆に web 側がまたコケるようになった。</p>
+<figure class="highlight js"><table><tr><td class="code"><pre><span class="line"><span class="string">"presets"</span>: [</span><br><span class="line">  [ <span class="string">"env"</span>, &#123;</span><br><span class="line">    <span class="string">"targets"</span>: &#123;</span><br><span class="line">      <span class="string">"node"</span>: <span class="string">"current"</span></span><br><span class="line">    &#125;</span><br><span class="line">  &#125; ]</span><br><span class="line">]</span><br></pre></td></tr></table></figure>
+<p>ここでまた web と node の環境差で板挟みになってしまった。やはり両方で動くようトランスパイルするのは無謀なんだろうか…</p>
+<p>無謀なんだろうな</p>
+<h2><span id="さいごに">さいごに</span></h2><p>IE との闘いは勝ったのか負けたのか有耶無耶な結果だったけど、結局 kintuba は babel も polyfill も無しでモダンブラウザのみのサポートとすることにした。</p>
+<h2><span id="実行環境">実行環境</span></h2><ul>
+<li>Node 8.9.1</li>
+<li>Karma 2.0.4<ul>
+<li>karma-webpack 3.0.0</li>
+<li>karma-polyfill 1.0.0</li>
+</ul>
+</li>
+<li>Webpack 4.15.1</li>
+<li>Babel<ul>
+<li>babel-core 6.26.3</li>
+<li>babel-loader 7.1.5</li>
+<li>babel-preset-env 1.7.0</li>
+<li>babel-polyfill 6.26.0</li>
+</ul>
+</li>
+</ul>
+
+      
+    </div>
+    <footer class="article-footer">
+      <div data-url="https://t-kojima.github.io/2018/07/06/0025-karma-kintuba-in-ie-and-edge/" data-id="cjq51fi1b005amtu7yzbq9uui" class="article-share-items"></div>
+      <!-- <a data-url="https://t-kojima.github.io/2018/07/06/0025-karma-kintuba-in-ie-and-edge/" data-id="cjq51fi1b005amtu7yzbq9uui" class="article-share-link">共有</a> -->
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/babel/">babel</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/karma/">karma</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/webpack/">webpack</a></li></ul>
+
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+    <a href="/2018/07/09/0026-rpa-negative-campaign/" id="article-nav-newer" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">次の記事</strong>
+      <div class="article-nav-title">
+        
+          [RPA] RPAを導入したら思ってたのと違った
+        
+      </div>
+    </a>
+  
+  
+    <a href="/2018/07/04/0024-browserify-fs-error/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">前の記事</strong>
+      <div class="article-nav-title">Browserifyで&#34;fs.readFileSync is not a function&#34;</div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">カテゴリ</h3>
+    <div class="widget">
+      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/Mac/">Mac</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/MySQL/">MySQL</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Node/">Node</a><span class="category-list-count">2</span><ul class="category-list-child"><li class="category-list-item"><a class="category-list-link" href="/categories/Node/Express/">Express</a><span class="category-list-count">2</span></li></ul></li><li class="category-list-item"><a class="category-list-link" href="/categories/Sinatra/">Sinatra</a><span class="category-list-count">1</span></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">タグ</h3>
+    <div class="widget">
+      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/axios/">axios</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/babel/">babel</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/bottle/">bottle</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/browserify/">browserify</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/csharp/">csharp</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/docker/">docker</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/eslint/">eslint</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/euler/">euler</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/express/">express</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/firebase/">firebase</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/flask/">flask</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/hexo/">hexo</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/javascript/">javascript</a><span class="tag-list-count">8</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/jupyter/">jupyter</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/karma/">karma</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/kintone/">kintone</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/linux/">linux</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/log4js/">log4js</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/luigi/">luigi</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mac/">mac</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mocha/">mocha</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mysql/">mysql</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/node-fetch/">node-fetch</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/nodejs/">nodejs</a><span class="tag-list-count">13</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/powerline/">powerline</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/prettier/">prettier</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/python/">python</a><span class="tag-list-count">8</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/rails/">rails</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/react/">react</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/redis/">redis</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/rpa/">rpa</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/rspec/">rspec</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ruby/">ruby</a><span class="tag-list-count">7</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/sidekiq/">sidekiq</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/sinatra/">sinatra</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/sqlalchemy/">sqlalchemy</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/vagrant/">vagrant</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/virtualbox/">virtualbox</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/vscode/">vscode</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/vue/">vue</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/webpack/">webpack</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/zipstream/">zipstream</a><span class="tag-list-count">1</span></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">タグクラウド</h3>
+    <div class="widget tagcloud">
+      <a href="/tags/axios/" style="font-size: 10px;">axios</a> <a href="/tags/babel/" style="font-size: 10px;">babel</a> <a href="/tags/bottle/" style="font-size: 10px;">bottle</a> <a href="/tags/browserify/" style="font-size: 10px;">browserify</a> <a href="/tags/csharp/" style="font-size: 10px;">csharp</a> <a href="/tags/docker/" style="font-size: 10px;">docker</a> <a href="/tags/eslint/" style="font-size: 11.43px;">eslint</a> <a href="/tags/euler/" style="font-size: 10px;">euler</a> <a href="/tags/express/" style="font-size: 11.43px;">express</a> <a href="/tags/firebase/" style="font-size: 12.86px;">firebase</a> <a href="/tags/flask/" style="font-size: 10px;">flask</a> <a href="/tags/hexo/" style="font-size: 11.43px;">hexo</a> <a href="/tags/javascript/" style="font-size: 18.57px;">javascript</a> <a href="/tags/jupyter/" style="font-size: 10px;">jupyter</a> <a href="/tags/karma/" style="font-size: 11.43px;">karma</a> <a href="/tags/kintone/" style="font-size: 12.86px;">kintone</a> <a href="/tags/linux/" style="font-size: 10px;">linux</a> <a href="/tags/log4js/" style="font-size: 10px;">log4js</a> <a href="/tags/luigi/" style="font-size: 15.71px;">luigi</a> <a href="/tags/mac/" style="font-size: 10px;">mac</a> <a href="/tags/mocha/" style="font-size: 10px;">mocha</a> <a href="/tags/mysql/" style="font-size: 11.43px;">mysql</a> <a href="/tags/node-fetch/" style="font-size: 10px;">node-fetch</a> <a href="/tags/nodejs/" style="font-size: 20px;">nodejs</a> <a href="/tags/powerline/" style="font-size: 11.43px;">powerline</a> <a href="/tags/prettier/" style="font-size: 10px;">prettier</a> <a href="/tags/python/" style="font-size: 18.57px;">python</a> <a href="/tags/rails/" style="font-size: 10px;">rails</a> <a href="/tags/react/" style="font-size: 12.86px;">react</a> <a href="/tags/redis/" style="font-size: 10px;">redis</a> <a href="/tags/rpa/" style="font-size: 10px;">rpa</a> <a href="/tags/rspec/" style="font-size: 10px;">rspec</a> <a href="/tags/ruby/" style="font-size: 17.14px;">ruby</a> <a href="/tags/sidekiq/" style="font-size: 10px;">sidekiq</a> <a href="/tags/sinatra/" style="font-size: 15.71px;">sinatra</a> <a href="/tags/sqlalchemy/" style="font-size: 11.43px;">sqlalchemy</a> <a href="/tags/vagrant/" style="font-size: 10px;">vagrant</a> <a href="/tags/virtualbox/" style="font-size: 10px;">virtualbox</a> <a href="/tags/vscode/" style="font-size: 14.29px;">vscode</a> <a href="/tags/vue/" style="font-size: 12.86px;">vue</a> <a href="/tags/webpack/" style="font-size: 10px;">webpack</a> <a href="/tags/zipstream/" style="font-size: 10px;">zipstream</a>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">アーカイブ</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/12/">12月 2018</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/11/">11月 2018</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/10/">10月 2018</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/09/">9月 2018</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/08/">8月 2018</a><span class="archive-list-count">6</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/07/">7月 2018</a><span class="archive-list-count">11</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/06/">6月 2018</a><span class="archive-list-count">12</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/05/">5月 2018</a><span class="archive-list-count">11</span></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">最近の投稿</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2018/12/20/0051-setup-macbook-pro-2018/">MacBookPro2018のセットアップ</a>
+          </li>
+        
+          <li>
+            <a href="/2018/11/29/0050-about-config-ru/">[Sinatra] config.ruとは</a>
+          </li>
+        
+          <li>
+            <a href="/2018/11/14/0049-docker-mysql-error-caching-sha2-password/">[MySQL] Unable to load authentication plugin &#39;caching_sha2_password&#39;</a>
+          </li>
+        
+          <li>
+            <a href="/2018/11/05/0048-express-with-log4js/">[Node] ExpressでAPIを作ったらログも吐く</a>
+          </li>
+        
+          <li>
+            <a href="/2018/11/02/0047-helloworld-express-with-json/">[Node] Expressを使って最速でJSONを返す</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      &copy; 2018 t-kojima<br>
+      Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+
+
+  <link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
+  <script src="/fancybox/jquery.fancybox.pack.js"></script>
+
+
+<script src="/js/script.js"></script>
+
+
+
+  </div>
+  <script async src="//cdn.embedly.com/widgets/platform.js" charset="UTF-8"></script>
+</body>
+</html>

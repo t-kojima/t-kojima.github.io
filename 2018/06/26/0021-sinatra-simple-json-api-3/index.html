@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+
+  
+  <title>[Sinatra] シンプルなJSON API サーバーに手を加える（RSpecでテスト） | Today&#39;s Commit</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="前の記事（[Sinatra] シンプルな JSON API サーバーに手を加える（POST で DB 登録））に続いて、RSpec でテストを実施する。 おしながき POST でデータを登録できるようにする RSpec でテストする データを JSON Schema でバリデーションする">
+<meta name="keywords" content="ruby,sinatra,rspec">
+<meta property="og:type" content="article">
+<meta property="og:title" content="[Sinatra] シンプルなJSON API サーバーに手を加える（RSpecでテスト）">
+<meta property="og:url" content="https://t-kojima.github.io/2018/06/26/0021-sinatra-simple-json-api-3/index.html">
+<meta property="og:site_name" content="Today&#39;s Commit">
+<meta property="og:description" content="前の記事（[Sinatra] シンプルな JSON API サーバーに手を加える（POST で DB 登録））に続いて、RSpec でテストを実施する。 おしながき POST でデータを登録できるようにする RSpec でテストする データを JSON Schema でバリデーションする">
+<meta property="og:locale" content="ja">
+<meta property="og:updated_time" content="2018-12-20T11:07:38.284Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="[Sinatra] シンプルなJSON API サーバーに手を加える（RSpecでテスト）">
+<meta name="twitter:description" content="前の記事（[Sinatra] シンプルな JSON API サーバーに手を加える（POST で DB 登録））に続いて、RSpec でテストを実施する。 おしながき POST でデータを登録できるようにする RSpec でテストする データを JSON Schema でバリデーションする">
+  
+    <link rel="alternate" href="/atom.xml" title="Today&#39;s Commit" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  
+    <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
+  
+  <link rel="stylesheet" href="/css/style.css">
+  
+    <link rel="amphtml" href="https://t-kojima.github.io/2018/06/26/0021-sinatra-simple-json-api-3//amp/index.html">
+  
+</head>
+
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">Today&#39;s Commit</a>
+      </h1>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSSフィード"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="検索"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="https://t-kojima.github.io"></form>
+      </div>
+    </div>
+  </div>
+</header>
+      <div class="outer">
+        <section id="main"><article id="post-0021-sinatra-simple-json-api-3" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2018/06/26/0021-sinatra-simple-json-api-3/" class="article-date">
+  <time datetime="2018-06-26T02:21:02.000Z" itemprop="datePublished">2018-06-26</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      [Sinatra] シンプルなJSON API サーバーに手を加える（RSpecでテスト）
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>前の記事（<a href="https://t-kojima.github.io/2018/06/26/0020-sinatra-simple-json-api-2/">[Sinatra] シンプルな JSON API サーバーに手を加える（POST で DB 登録）</a>）に続いて、RSpec でテストを実施する。</p>
+<h4><span id="おしながき">おしながき</span></h4><ul>
+<li>POST でデータを登録できるようにする</li>
+<li><strong>RSpec でテストする</strong></li>
+<li>データを JSON Schema でバリデーションする</li>
+</ul>
+<a id="more"></a>
+<h2><span id="rspec-導入">RSpec 導入</span></h2><p>Gemfile に以下を追記し、<code>bundle install</code> する。</p>
+<figure class="highlight rb"><table><tr><td class="code"><pre><span class="line"><span class="comment"># Gemfile</span></span><br><span class="line"></span><br><span class="line">group <span class="symbol">:test</span> <span class="keyword">do</span></span><br><span class="line">  gem <span class="string">'rspec'</span></span><br><span class="line">  gem <span class="string">'rack-test'</span></span><br><span class="line"><span class="keyword">end</span></span><br></pre></td></tr></table></figure>
+<p>rspec init で <code>.rspec</code> と <code>spec/spec_helper.rb</code> を生成する。</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">bundle <span class="built_in">exec</span> rspec --init</span><br></pre></td></tr></table></figure>
+<p>.rspec に以下を追記、結果が見やすくなる</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">--color</span><br><span class="line">--format documentation</span><br></pre></td></tr></table></figure>
+<h3><span id="sinatra-用の設定">Sinatra 用の設定</span></h3><p>生成された <code>spec/spec_helper.rb</code> に sinatra 用の設定を追記していく</p>
+<figure class="highlight rb"><table><tr><td class="code"><pre><span class="line"><span class="keyword">require</span> <span class="string">'rack/test'</span></span><br><span class="line"></span><br><span class="line">RSpec.configure <span class="keyword">do</span> <span class="params">|config|</span></span><br><span class="line"></span><br><span class="line">  config.expect_with <span class="symbol">:rspec</span> <span class="keyword">do</span> <span class="params">|expectations|</span></span><br><span class="line">    expectations.include_chain_clauses_in_custom_matcher_descriptions = <span class="literal">true</span></span><br><span class="line">  <span class="keyword">end</span></span><br><span class="line"></span><br><span class="line">  config.mock_with <span class="symbol">:rspec</span> <span class="keyword">do</span> <span class="params">|mocks|</span></span><br><span class="line">    mocks.verify_partial_doubles = <span class="literal">true</span></span><br><span class="line">  <span class="keyword">end</span></span><br><span class="line"></span><br><span class="line">  config.shared_context_metadata_behavior = <span class="symbol">:apply_to_host_groups</span></span><br><span class="line"></span><br><span class="line">  <span class="comment"># ここから追記</span></span><br><span class="line">  config.<span class="keyword">include</span> Rack::Test::Methods</span><br><span class="line">  ENV[<span class="string">'SINATRA_ENV'</span>] = <span class="string">'test'</span></span><br><span class="line">  ENV[<span class="string">'RACK_ENV'</span>] = <span class="string">'test'</span></span><br><span class="line">  <span class="keyword">require</span> <span class="string">'./index'</span></span><br><span class="line">  <span class="function"><span class="keyword">def</span> <span class="title">app</span></span></span><br><span class="line">    Sinatra::Application</span><br><span class="line">  <span class="keyword">end</span></span><br><span class="line"><span class="keyword">end</span></span><br></pre></td></tr></table></figure>
+<h3><span id="get-のテスト">GET のテスト</span></h3><p>まずは GET のみテストしてみる。以下のように <code>spec/index_spec.rb</code> ファイルを作成する。</p>
+<figure class="highlight rb"><table><tr><td class="code"><pre><span class="line"><span class="comment"># index_spec.rb</span></span><br><span class="line"></span><br><span class="line">describe <span class="string">'get /(root)'</span> <span class="keyword">do</span></span><br><span class="line">  before <span class="keyword">do</span></span><br><span class="line">    get <span class="string">'/'</span></span><br><span class="line">  <span class="keyword">end</span></span><br><span class="line"></span><br><span class="line">  it <span class="string">'response is ok'</span> <span class="keyword">do</span></span><br><span class="line">    expect(last_response).to be_ok</span><br><span class="line">  <span class="keyword">end</span></span><br><span class="line"></span><br><span class="line">  it <span class="string">"returns 'welcome to sinatra' message"</span> <span class="keyword">do</span></span><br><span class="line">    body = JSON.parse(last_response.body)</span><br><span class="line">    expect(body[<span class="string">"message"</span>]).to eq <span class="string">'welcome to sinatra'</span></span><br><span class="line">  <span class="keyword">end</span></span><br><span class="line"><span class="keyword">end</span></span><br></pre></td></tr></table></figure>
+<p>実行すると成功することが確認できる</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">&gt; bundle <span class="built_in">exec</span> rspec</span><br><span class="line"></span><br><span class="line">get /(root)</span><br><span class="line">  response is ok</span><br><span class="line">  returns <span class="string">'welcome to sinatra'</span> message</span><br><span class="line"></span><br><span class="line">Finished <span class="keyword">in</span> 0.11508 seconds (files took 8.2 seconds to load)</span><br><span class="line">2 examples, 0 failures</span><br></pre></td></tr></table></figure>
+<h3><span id="post-のテスト">POST のテスト</span></h3><p>POST のテストは DB の登録を含むので、まずテスト用 DB 環境を検める。</p>
+<ul>
+<li>docker でローカルに mysql サーバを立ててテスト用 DB を作る</li>
+<li><a href="https://github.com/openstack/sqlalchemy-migrate" target="_blank" rel="noopener">sqlalchemy-migrate</a>で DB のマイグレーションをする</li>
+<li>RSpec でテストを行うたびに DB のデータはクリーンアップする</li>
+</ul>
+<p><code>ここも sqlalchemy-migrate を使うのは、実際の開発で使っているから… なので、DB のリセットに rake db:reset は使えない。</code></p>
+<h4><span id="factorybot-を使う">FactoryBot を使う</span></h4><p>テストデータの投入に FactoryBot を使います。</p>
+<figure class="highlight rb"><table><tr><td class="code"><pre><span class="line"><span class="comment"># Gemfile</span></span><br><span class="line"></span><br><span class="line">group <span class="symbol">:test</span> <span class="keyword">do</span></span><br><span class="line">  gem <span class="string">'rspec'</span></span><br><span class="line">  gem <span class="string">'rack-test'</span></span><br><span class="line">  gem <span class="string">'factory_bot'</span> <span class="comment"># &lt;= 追加</span></span><br><span class="line"><span class="keyword">end</span></span><br></pre></td></tr></table></figure>
+<p><code>spec/spec_helper.rb</code> にも以下を追記</p>
+<figure class="highlight rb"><table><tr><td class="code"><pre><span class="line"><span class="keyword">require</span> <span class="string">'rack/test'</span></span><br><span class="line"><span class="keyword">require</span> <span class="string">'factory_bot'</span></span><br><span class="line"></span><br><span class="line">RSpec.configure <span class="keyword">do</span> <span class="params">|config|</span></span><br><span class="line"></span><br><span class="line">  <span class="comment"># 省略</span></span><br><span class="line"></span><br><span class="line">  config.<span class="keyword">include</span> FactoryBot::Syntax::Methods</span><br><span class="line">  FactoryBot.find_definitions</span><br><span class="line"><span class="keyword">end</span></span><br></pre></td></tr></table></figure>
+<p>そして定義ファイル（<code>spec/factories/books.rb</code>）を作成</p>
+<figure class="highlight rb"><table><tr><td class="code"><pre><span class="line">FactoryBot.define <span class="keyword">do</span></span><br><span class="line">  factory <span class="symbol">:book</span> <span class="keyword">do</span></span><br><span class="line">    title <span class="string">"すごいHaskellたのしく学ぼう!"</span></span><br><span class="line">    author <span class="string">"Miran Lipovaca"</span></span><br><span class="line">    pages <span class="number">391</span></span><br><span class="line">  <span class="keyword">end</span></span><br><span class="line"><span class="keyword">end</span></span><br></pre></td></tr></table></figure>
+<p>まずは POST を飛ばせるかだけを確認する為、<code>spec/index_spec.rb</code> に以下を追記する。</p>
+<figure class="highlight rb"><table><tr><td class="code"><pre><span class="line">describe <span class="string">'post /books'</span> <span class="keyword">do</span></span><br><span class="line">  context <span class="string">'valid params'</span> <span class="keyword">do</span></span><br><span class="line">    let(<span class="symbol">:headers</span>) <span class="keyword">do</span></span><br><span class="line">      &#123; <span class="string">'Content-Type'</span> =&gt; <span class="string">'application/json'</span>, <span class="string">'Accept'</span> =&gt; <span class="string">'application/json'</span> &#125;</span><br><span class="line">    <span class="keyword">end</span></span><br><span class="line"></span><br><span class="line">    it <span class="string">'response is ok'</span> <span class="keyword">do</span></span><br><span class="line">      post <span class="string">'/books'</span>, attributes_for(<span class="symbol">:book</span>).to_json.to_s, headers</span><br><span class="line">      expect(last_response).to be_ok</span><br><span class="line">    <span class="keyword">end</span></span><br><span class="line">  <span class="keyword">end</span></span><br><span class="line"><span class="keyword">end</span></span><br></pre></td></tr></table></figure>
+<p>いくつかハマったポイントがある。</p>
+<ul>
+<li>POST を json で飛ばすため、<code>headers</code> を与えてやる必要がある。</li>
+<li>FactoryBot の attributes_for はハッシュを返すが、POST の Body は<strong>JSON 形式の文字列</strong>である必要がある。つまり以下のような変換が必要</li>
+</ul>
+<figure class="highlight rb"><table><tr><td class="code"><pre><span class="line"><span class="comment"># attributes_for(:book)</span></span><br><span class="line">&#123; <span class="symbol">:title</span> =&gt; <span class="string">"すごいHaskellたのしく学ぼう!"</span>, <span class="symbol">:author</span> =&gt; <span class="string">"Miran Lipovaca"</span>, <span class="symbol">:pages</span> =&gt; <span class="number">391</span> &#125;</span><br><span class="line"></span><br><span class="line"><span class="comment"># attributes_for(:book).to_json</span></span><br><span class="line">&#123; <span class="string">"title"</span>: <span class="string">"すごいHaskellたのしく学ぼう!"</span>, <span class="string">"author"</span>: <span class="string">"Miran Lipovaca"</span>, <span class="string">"pages"</span>: <span class="number">391</span> &#125;</span><br><span class="line"></span><br><span class="line"><span class="comment"># attributes_for(:book).to_json.to_s</span></span><br><span class="line"><span class="string">'&#123; "title": "すごいHaskellたのしく学ぼう!", "author": "Miran Lipovaca", "pages": 391 &#125;'</span></span><br></pre></td></tr></table></figure>
+<p>このままレコードが正常登録されるかの spec も追加したいが、このままでは spec 毎に post が走ってレコードがその分登録されてしまう。レコードのカラムにユニーク制約が付いている場合はエラーにもなる。</p>
+<figure class="highlight rb"><table><tr><td class="code"><pre><span class="line">it <span class="string">'register book'</span> <span class="keyword">do</span></span><br><span class="line">  expect <span class="keyword">do</span></span><br><span class="line">    post <span class="string">'/books'</span>, attributes_for(<span class="symbol">:book</span>).to_json.to_s, headers</span><br><span class="line">  <span class="keyword">end</span>.to change(Book, <span class="symbol">:count</span>).by(<span class="number">1</span>)</span><br><span class="line"><span class="keyword">end</span></span><br></pre></td></tr></table></figure>
+<h4><span id="database-cleaner-を使う">Database Cleaner を使う</span></h4><p>上記の問題を解消するため、<code>database_cleaner</code> を使う</p>
+<figure class="highlight rb"><table><tr><td class="code"><pre><span class="line"><span class="comment"># Gemfile</span></span><br><span class="line"></span><br><span class="line">group <span class="symbol">:test</span> <span class="keyword">do</span></span><br><span class="line">  gem <span class="string">'rspec'</span></span><br><span class="line">  gem <span class="string">'rack-test'</span></span><br><span class="line">  gem <span class="string">'factory_bot'</span></span><br><span class="line">  gem <span class="string">'database_cleaner'</span> <span class="comment"># &lt;= 追加</span></span><br><span class="line"><span class="keyword">end</span></span><br></pre></td></tr></table></figure>
+<p><code>spec/spec_helper.rb</code> に以下追記</p>
+<figure class="highlight rb"><table><tr><td class="code"><pre><span class="line"><span class="keyword">require</span> <span class="string">'rack/test'</span></span><br><span class="line"><span class="keyword">require</span> <span class="string">'factory_bot'</span></span><br><span class="line"><span class="keyword">require</span> <span class="string">'database_cleaner'</span></span><br><span class="line"></span><br><span class="line">RSpec.configure <span class="keyword">do</span> <span class="params">|config|</span></span><br><span class="line"></span><br><span class="line">  <span class="comment"># 省略</span></span><br><span class="line"></span><br><span class="line">  config.before(<span class="symbol">:suite</span>) <span class="keyword">do</span></span><br><span class="line">    DatabaseCleaner.strategy = <span class="symbol">:truncation</span></span><br><span class="line">  <span class="keyword">end</span></span><br><span class="line"></span><br><span class="line">  config.before(<span class="symbol">:each</span>) <span class="keyword">do</span></span><br><span class="line">    DatabaseCleaner.start</span><br><span class="line">  <span class="keyword">end</span></span><br><span class="line"></span><br><span class="line">  config.after(<span class="symbol">:each</span>) <span class="keyword">do</span></span><br><span class="line">    DatabaseCleaner.clean</span><br><span class="line">  <span class="keyword">end</span></span><br><span class="line"><span class="keyword">end</span></span><br></pre></td></tr></table></figure>
+<p>これで spec 毎に DB のレコードをクリーンアップするようになった。</p>
+<p>RSpec の実行結果もこの通りだ</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">&gt; bundle <span class="built_in">exec</span> rspec</span><br><span class="line"></span><br><span class="line">get /(root)</span><br><span class="line">  response is ok</span><br><span class="line">  returns <span class="string">'welcome to sinatra'</span> message</span><br><span class="line"></span><br><span class="line">post /books</span><br><span class="line">  valid params</span><br><span class="line">    response is ok</span><br><span class="line">    register book</span><br><span class="line"></span><br><span class="line">Finished <span class="keyword">in</span> 4.79 seconds (files took 9.58 seconds to load)</span><br><span class="line">4 examples, 0 failures</span><br></pre></td></tr></table></figure>
+<p>ただ database_cleaner を入れてから、あからさまに RSpec が遅くなった。もう、目に見えて</p>
+<h2><span id="さいごに">さいごに</span></h2><p>今まで Rails でしか RSpec を使っていなかったので、素の RSpec を動かすのがすごいしんどかった。特にテスト用 DB を意識することなく扱えてたのはものすごい Rail に乗ってたんだなというのを実感</p>
+<h2><span id="実行環境">実行環境</span></h2><ul>
+<li>Ruby 2.3.3</li>
+<li>Sinatra 2.0.3</li>
+<li>RSpec 3.7.0</li>
+<li>FactoryBot 4.10.0</li>
+<li>DatabaseCleaner 1.7.0</li>
+</ul>
+<h2><span id="参考">参考</span></h2><ul>
+<li><a href="http://48n.jp/blog/2016/04/20/try-sinatra/" target="_blank" rel="noopener">Sinatra のインストールと Rspec でテストする</a></li>
+<li><a href="https://www.qoosky.io/techs/f20cbb9b26" target="_blank" rel="noopener">rspec の基本的な使い方 (ruby/sinatra を含む)</a></li>
+<li><a href="http://www.tom08.net/entry/2016/08/03/115143" target="_blank" rel="noopener">JSON の POST リクエストと Rspec でテストする方法</a></li>
+<li><a href="http://j-caw.co.jp/blog/?p=1042" target="_blank" rel="noopener">Sinatra + RSpec + FactoryGirl のスケルトンがやっと出来た</a></li>
+</ul>
+
+      
+    </div>
+    <footer class="article-footer">
+      <div data-url="https://t-kojima.github.io/2018/06/26/0021-sinatra-simple-json-api-3/" data-id="cjq51fhzl0013mtu72c17yd1s" class="article-share-items"></div>
+      <!-- <a data-url="https://t-kojima.github.io/2018/06/26/0021-sinatra-simple-json-api-3/" data-id="cjq51fhzl0013mtu72c17yd1s" class="article-share-link">共有</a> -->
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/rspec/">rspec</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/ruby/">ruby</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/sinatra/">sinatra</a></li></ul>
+
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+    <a href="/2018/06/28/0022-sinatra-simple-json-api-4/" id="article-nav-newer" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">次の記事</strong>
+      <div class="article-nav-title">
+        
+          [Sinatra] シンプルなJSON API サーバーに手を加える（JSON Schema）
+        
+      </div>
+    </a>
+  
+  
+    <a href="/2018/06/26/0020-sinatra-simple-json-api-2/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">前の記事</strong>
+      <div class="article-nav-title">[Sinatra] シンプルなJSON API サーバーに手を加える（POSTでDB登録）</div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">カテゴリ</h3>
+    <div class="widget">
+      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/Mac/">Mac</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/MySQL/">MySQL</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Node/">Node</a><span class="category-list-count">2</span><ul class="category-list-child"><li class="category-list-item"><a class="category-list-link" href="/categories/Node/Express/">Express</a><span class="category-list-count">2</span></li></ul></li><li class="category-list-item"><a class="category-list-link" href="/categories/Sinatra/">Sinatra</a><span class="category-list-count">1</span></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">タグ</h3>
+    <div class="widget">
+      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/axios/">axios</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/babel/">babel</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/bottle/">bottle</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/browserify/">browserify</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/csharp/">csharp</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/docker/">docker</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/eslint/">eslint</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/euler/">euler</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/express/">express</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/firebase/">firebase</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/flask/">flask</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/hexo/">hexo</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/javascript/">javascript</a><span class="tag-list-count">8</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/jupyter/">jupyter</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/karma/">karma</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/kintone/">kintone</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/linux/">linux</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/log4js/">log4js</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/luigi/">luigi</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mac/">mac</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mocha/">mocha</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mysql/">mysql</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/node-fetch/">node-fetch</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/nodejs/">nodejs</a><span class="tag-list-count">13</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/powerline/">powerline</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/prettier/">prettier</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/python/">python</a><span class="tag-list-count">8</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/rails/">rails</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/react/">react</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/redis/">redis</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/rpa/">rpa</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/rspec/">rspec</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ruby/">ruby</a><span class="tag-list-count">7</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/sidekiq/">sidekiq</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/sinatra/">sinatra</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/sqlalchemy/">sqlalchemy</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/vagrant/">vagrant</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/virtualbox/">virtualbox</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/vscode/">vscode</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/vue/">vue</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/webpack/">webpack</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/zipstream/">zipstream</a><span class="tag-list-count">1</span></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">タグクラウド</h3>
+    <div class="widget tagcloud">
+      <a href="/tags/axios/" style="font-size: 10px;">axios</a> <a href="/tags/babel/" style="font-size: 10px;">babel</a> <a href="/tags/bottle/" style="font-size: 10px;">bottle</a> <a href="/tags/browserify/" style="font-size: 10px;">browserify</a> <a href="/tags/csharp/" style="font-size: 10px;">csharp</a> <a href="/tags/docker/" style="font-size: 10px;">docker</a> <a href="/tags/eslint/" style="font-size: 11.43px;">eslint</a> <a href="/tags/euler/" style="font-size: 10px;">euler</a> <a href="/tags/express/" style="font-size: 11.43px;">express</a> <a href="/tags/firebase/" style="font-size: 12.86px;">firebase</a> <a href="/tags/flask/" style="font-size: 10px;">flask</a> <a href="/tags/hexo/" style="font-size: 11.43px;">hexo</a> <a href="/tags/javascript/" style="font-size: 18.57px;">javascript</a> <a href="/tags/jupyter/" style="font-size: 10px;">jupyter</a> <a href="/tags/karma/" style="font-size: 11.43px;">karma</a> <a href="/tags/kintone/" style="font-size: 12.86px;">kintone</a> <a href="/tags/linux/" style="font-size: 10px;">linux</a> <a href="/tags/log4js/" style="font-size: 10px;">log4js</a> <a href="/tags/luigi/" style="font-size: 15.71px;">luigi</a> <a href="/tags/mac/" style="font-size: 10px;">mac</a> <a href="/tags/mocha/" style="font-size: 10px;">mocha</a> <a href="/tags/mysql/" style="font-size: 11.43px;">mysql</a> <a href="/tags/node-fetch/" style="font-size: 10px;">node-fetch</a> <a href="/tags/nodejs/" style="font-size: 20px;">nodejs</a> <a href="/tags/powerline/" style="font-size: 11.43px;">powerline</a> <a href="/tags/prettier/" style="font-size: 10px;">prettier</a> <a href="/tags/python/" style="font-size: 18.57px;">python</a> <a href="/tags/rails/" style="font-size: 10px;">rails</a> <a href="/tags/react/" style="font-size: 12.86px;">react</a> <a href="/tags/redis/" style="font-size: 10px;">redis</a> <a href="/tags/rpa/" style="font-size: 10px;">rpa</a> <a href="/tags/rspec/" style="font-size: 10px;">rspec</a> <a href="/tags/ruby/" style="font-size: 17.14px;">ruby</a> <a href="/tags/sidekiq/" style="font-size: 10px;">sidekiq</a> <a href="/tags/sinatra/" style="font-size: 15.71px;">sinatra</a> <a href="/tags/sqlalchemy/" style="font-size: 11.43px;">sqlalchemy</a> <a href="/tags/vagrant/" style="font-size: 10px;">vagrant</a> <a href="/tags/virtualbox/" style="font-size: 10px;">virtualbox</a> <a href="/tags/vscode/" style="font-size: 14.29px;">vscode</a> <a href="/tags/vue/" style="font-size: 12.86px;">vue</a> <a href="/tags/webpack/" style="font-size: 10px;">webpack</a> <a href="/tags/zipstream/" style="font-size: 10px;">zipstream</a>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">アーカイブ</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/12/">12月 2018</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/11/">11月 2018</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/10/">10月 2018</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/09/">9月 2018</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/08/">8月 2018</a><span class="archive-list-count">6</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/07/">7月 2018</a><span class="archive-list-count">11</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/06/">6月 2018</a><span class="archive-list-count">12</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/05/">5月 2018</a><span class="archive-list-count">11</span></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">最近の投稿</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2018/12/20/0051-setup-macbook-pro-2018/">MacBookPro2018のセットアップ</a>
+          </li>
+        
+          <li>
+            <a href="/2018/11/29/0050-about-config-ru/">[Sinatra] config.ruとは</a>
+          </li>
+        
+          <li>
+            <a href="/2018/11/14/0049-docker-mysql-error-caching-sha2-password/">[MySQL] Unable to load authentication plugin &#39;caching_sha2_password&#39;</a>
+          </li>
+        
+          <li>
+            <a href="/2018/11/05/0048-express-with-log4js/">[Node] ExpressでAPIを作ったらログも吐く</a>
+          </li>
+        
+          <li>
+            <a href="/2018/11/02/0047-helloworld-express-with-json/">[Node] Expressを使って最速でJSONを返す</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      &copy; 2018 t-kojima<br>
+      Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+
+
+  <link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
+  <script src="/fancybox/jquery.fancybox.pack.js"></script>
+
+
+<script src="/js/script.js"></script>
+
+
+
+  </div>
+  <script async src="//cdn.embedly.com/widgets/platform.js" charset="UTF-8"></script>
+</body>
+</html>

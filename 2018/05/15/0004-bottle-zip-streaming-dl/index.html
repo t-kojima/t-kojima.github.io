@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+
+  
+  <title>[Python] Bottleでzipをストリーミングダウンロード | Today&#39;s Commit</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="適当なキーワードでパッケージを探したら本当にあった Ruby にziplineという gem がある。ファイルのリストを渡すと zip に固めてストリーミングダウンロードしてくれるという Rails 向けの gem だ。今回同じことを Python で行いたく、似たような機能のパッケージ探してみた。">
+<meta name="keywords" content="python,bottle,zipstream">
+<meta property="og:type" content="article">
+<meta property="og:title" content="[Python] Bottleでzipをストリーミングダウンロード">
+<meta property="og:url" content="https://t-kojima.github.io/2018/05/15/0004-bottle-zip-streaming-dl/index.html">
+<meta property="og:site_name" content="Today&#39;s Commit">
+<meta property="og:description" content="適当なキーワードでパッケージを探したら本当にあった Ruby にziplineという gem がある。ファイルのリストを渡すと zip に固めてストリーミングダウンロードしてくれるという Rails 向けの gem だ。今回同じことを Python で行いたく、似たような機能のパッケージ探してみた。">
+<meta property="og:locale" content="ja">
+<meta property="og:updated_time" content="2018-12-20T11:07:38.280Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="[Python] Bottleでzipをストリーミングダウンロード">
+<meta name="twitter:description" content="適当なキーワードでパッケージを探したら本当にあった Ruby にziplineという gem がある。ファイルのリストを渡すと zip に固めてストリーミングダウンロードしてくれるという Rails 向けの gem だ。今回同じことを Python で行いたく、似たような機能のパッケージ探してみた。">
+  
+    <link rel="alternate" href="/atom.xml" title="Today&#39;s Commit" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  
+    <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
+  
+  <link rel="stylesheet" href="/css/style.css">
+  
+    <link rel="amphtml" href="https://t-kojima.github.io/2018/05/15/0004-bottle-zip-streaming-dl//amp/index.html">
+  
+</head>
+
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">Today&#39;s Commit</a>
+      </h1>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSSフィード"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="検索"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="https://t-kojima.github.io"></form>
+      </div>
+    </div>
+  </div>
+</header>
+      <div class="outer">
+        <section id="main"><article id="post-0004-bottle-zip-streaming-dl" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2018/05/15/0004-bottle-zip-streaming-dl/" class="article-date">
+  <time datetime="2018-05-15T11:47:01.000Z" itemprop="datePublished">2018-05-15</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      [Python] Bottleでzipをストリーミングダウンロード
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h2><span id="適当なキーワードでパッケージを探したら本当にあった">適当なキーワードでパッケージを探したら本当にあった</span></h2><p><a href="https://github.com/fringd/zipline" class="embedly-card" data-card-image="0" data-card-controls="0" data-card-align="left" target="_blank" rel="noopener"></a></p>
+<p>Ruby に<a href="https://github.com/fringd/zipline" target="_blank" rel="noopener">zipline</a>という gem がある。ファイルのリストを渡すと zip に固めてストリーミングダウンロードしてくれるという Rails 向けの gem だ。今回同じことを Python で行いたく、似たような機能のパッケージ探してみた。</p>
+<a id="more"></a>
+<p>すると全く同じ名前のパッケージを見つけたけど、これ<a href="https://github.com/quantopian/zipline" target="_blank" rel="noopener">zipline</a>アルゴリズムトレードライブラリだ！</p>
+<p>しょうがないから google で「python zip stream」あたりのキーワードで適当に検索を掛けてみると、ドンピシャなパッケージ<a href="https://github.com/allanlei/python-zipstream" target="_blank" rel="noopener">python-zipstream</a>が一発ヒットしてビビる。<br>これは使えそうだ</p>
+<p><a href="https://github.com/allanlei/python-zipstream" class="embedly-card" data-card-image="0" data-card-controls="0" data-card-align="left" target="_blank" rel="noopener"></a></p>
+<h2><span id="ダミーファイル作成">ダミーファイル作成</span></h2><p>まずダウンロードテスト用のダミーファイルを作る</p>
+<p><code>dd if=/dev/random of=dummy1.txt bs=1M count=100</code><br><code>for i in {1..10} ; do dd if=/dev/random of=dummy${i}.txt bs=1M count=100; done</code></p>
+<p>参考：<a href="https://qiita.com/ytyng/items/d7afe80ef9da7aa8b721" target="_blank" rel="noopener">Bash でいろいろループする - Qiita</a></p>
+<p>これで<code>dummy1.txt</code>～<code>dummy10.txt</code>まで 100MB のファイルが 10 個作成された。</p>
+<h2><span id="zip-をストリーミングダウンロード">zip をストリーミングダウンロード</span></h2><p>先に成功したコードを挙げておく。<br>これで開発環境の場合は<code>http://localhost:3030/zip</code>にアクセスすると、<code>dummy1.txt</code>～<code>dummy10.txt</code>を zip した<code>files.zip</code>がストリーミングでダウンロードされる。</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="keyword">import</span> zipstream</span><br><span class="line"><span class="keyword">from</span> pathlib <span class="keyword">import</span> Path</span><br><span class="line"></span><br><span class="line"><span class="meta">@route('/zip')</span></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">zip</span><span class="params">()</span>:</span></span><br><span class="line">    <span class="string">""" download zip with streaming """</span></span><br><span class="line">    path = Path(<span class="string">'&lt;temp files dir&gt;'</span>)</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">generator</span><span class="params">()</span>:</span></span><br><span class="line">        zip = zipstream.ZipFile(mode=<span class="string">'w'</span>, compression=zipstream.ZIP_DEFLATED)</span><br><span class="line">        zip.write((path / <span class="string">'dummy1.txt'</span>).as_posix(), arcname=<span class="string">'1.txt'</span>)</span><br><span class="line">        zip.write((path / <span class="string">'dummy2.txt'</span>).as_posix(), arcname=<span class="string">'2.txt'</span>)</span><br><span class="line">        zip.write((path / <span class="string">'dummy3.txt'</span>).as_posix(), arcname=<span class="string">'3.txt'</span>)</span><br><span class="line">        zip.write((path / <span class="string">'dummy4.txt'</span>).as_posix(), arcname=<span class="string">'4.txt'</span>)</span><br><span class="line">        zip.write((path / <span class="string">'dummy5.txt'</span>).as_posix(), arcname=<span class="string">'5.txt'</span>)</span><br><span class="line">        zip.write((path / <span class="string">'dummy6.txt'</span>).as_posix(), arcname=<span class="string">'6.txt'</span>)</span><br><span class="line">        zip.write((path / <span class="string">'dummy7.txt'</span>).as_posix(), arcname=<span class="string">'7.txt'</span>)</span><br><span class="line">        zip.write((path / <span class="string">'dummy8.txt'</span>).as_posix(), arcname=<span class="string">'8.txt'</span>)</span><br><span class="line">        zip.write((path / <span class="string">'dummy9.txt'</span>).as_posix(), arcname=<span class="string">'9.txt'</span>)</span><br><span class="line">        <span class="keyword">for</span> chunk <span class="keyword">in</span> zip:</span><br><span class="line">            <span class="keyword">yield</span> chunk</span><br><span class="line"></span><br><span class="line">    zip_filename = <span class="string">'files.zip'</span></span><br><span class="line">    response.content_type = <span class="string">'application/zip'</span></span><br><span class="line">    response.set_header(<span class="string">'Content-Disposition'</span>, <span class="string">f'attachment; filename="<span class="subst">&#123;zip_filename&#125;</span>"'</span>)</span><br><span class="line">    response.body = generator()</span><br><span class="line">    <span class="keyword">return</span> response</span><br></pre></td></tr></table></figure>
+<p>本家の<code>README</code>を読んだ感じ、使い方がよく理解できなかったので軽く解説を入れてみる。</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line">zip = zipstream.ZipFile(mode=<span class="string">'w'</span>, compression=zipstream.ZIP_DEFLATED)</span><br></pre></td></tr></table></figure>
+<p>まずは ZipFile のインスタンスを作る。<code>zipstream.ZipFile</code>は<code>zipfile.ZipFile</code>を継承したラッパークラスなので、共通のインターフェースになっている。<a href="https://docs.python.jp/3/library/zipfile.html" target="_blank" rel="noopener">ここ</a>を読むと分かりやすいかもしれない。</p>
+<p><code>mode=&#39;w&#39;</code>を指定しているが、ここはデフォルトも<code>&#39;w&#39;</code>だし、<code>&#39;w&#39;</code>が含まれないと<code>RuntimeError</code>になる。<br><code>compression</code>はデフォルト<code>ZIP_STORED</code>なのでデフォルトだと圧縮されない。取り合えず圧縮したいレベルなら<code>ZIP_DEFLATED</code>でお K。</p>
+<ul>
+<li>ZIP_STORED : 圧縮無しでファイルをまとめるだけ</li>
+<li>ZIP_DEFLATED : 通常の ZIP 圧縮、<code>zlib</code>モジュールが必要</li>
+<li>ZIP_BZIP2 : BZIP2 での圧縮を行う、<code>bz2</code>モジュールが必要</li>
+<li>ZIP_LZMA : LZMA での圧縮を行う、<code>lzma</code>モジュールが必要</li>
+</ul>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line">zip.write((path / <span class="string">'dummy1.txt'</span>).as_posix(), arcname=<span class="string">'1.txt'</span>)</span><br></pre></td></tr></table></figure>
+<p>ZipFile インスタンスにファイルを渡していく。ここも<code>zipfile.ZipFile#write</code>とインターフェースは同じで、<code>write(&#39;ファイルパス&#39;, arcname=&#39;アーカイブされるファイル名&#39;, compress_type=&#39;個別の圧縮指定&#39;)</code>になる。<br>ここでディレクトリを渡してしまうと<strong>空のディレクトリ</strong>が入ってしまうので注意が必要。</p>
+<p><code>write_iter(arcname, iterable, compress_type)</code>メソッドではファイルパスではなくイテレータを渡すこともできるようだ。</p>
+<p><code>.as_posix()</code>してるのはファイルパスとして<code>pathlib</code>を受け付けないから…残念！</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line"><span class="keyword">for</span> chunk <span class="keyword">in</span> zip:</span><br><span class="line">    <span class="keyword">yield</span> chunk</span><br></pre></td></tr></table></figure>
+<p><code>zipstream.ZipFile</code>はイテレータで圧縮済みデータを返してくれる。<br>具体的には<code>write</code>したファイルのリストからファイルを順次読み出し、<code>1024 * 8</code>バイト読んで圧縮して都度データを返す。</p>
+<figure class="highlight python"><table><tr><td class="code"><pre><span class="line">zip_filename = <span class="string">'files.zip'</span></span><br><span class="line">response.content_type = <span class="string">'application/zip'</span></span><br><span class="line">response.set_header(<span class="string">'Content-Disposition'</span>, <span class="string">f'attachment; filename="<span class="subst">&#123;zip_filename&#125;</span>"'</span>)</span><br><span class="line">response.body = generator()</span><br><span class="line"><span class="keyword">return</span> response</span><br></pre></td></tr></table></figure>
+<p>最後は<code>bottle</code>の<code>response</code>部分だ。<code>Content-Type</code>は<code>&#39;application/zip&#39;</code>を指定する。<code>Content-Disposition</code>にはファイルをアタッチすることで即ダウンロードする動きをしてくれる。<code>response.body</code>はジェネレータを受けることができるので、<code>generator()</code>関数をそのままセットするとストリーム処理するようになってくれる、ありがたい。</p>
+<h2><span id="content-length-は">Content-Length は？</span></h2><p><code>Content-Length</code>を指定しないとダウンロードの残り時間表示が「<strong>不明</strong>」になってしまうが、圧縮後のサイズが事前に分からないのでここはしょうがない。<br>試しに<code>Content-Length</code>に適当な値を設定してみたら、ダウンロードが強制中断になってしまった。</p>
+<h2><span id="実行環境">実行環境</span></h2><ul>
+<li>Python 3.6.3</li>
+<li>bottle 0.12.13</li>
+<li>zipstream 1.1.4</li>
+</ul>
+
+      
+    </div>
+    <footer class="article-footer">
+      <div data-url="https://t-kojima.github.io/2018/05/15/0004-bottle-zip-streaming-dl/" data-id="cjq51fhz4000hmtu7aupsxr0k" class="article-share-items"></div>
+      <!-- <a data-url="https://t-kojima.github.io/2018/05/15/0004-bottle-zip-streaming-dl/" data-id="cjq51fhz4000hmtu7aupsxr0k" class="article-share-link">共有</a> -->
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/bottle/">bottle</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/python/">python</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/zipstream/">zipstream</a></li></ul>
+
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+    <a href="/2018/05/15/0005-luigi-dynamic-output/" id="article-nav-newer" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">次の記事</strong>
+      <div class="article-nav-title">
+        
+          [Python] luigiで動的アウトプット
+        
+      </div>
+    </a>
+  
+  
+    <a href="/2018/05/10/0003-python-debug-vscode/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">前の記事</strong>
+      <div class="article-nav-title">[VSCode] Pythonデバッグの挙動 - 2018.3.0 (28 Mar 2018)</div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">カテゴリ</h3>
+    <div class="widget">
+      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/Mac/">Mac</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/MySQL/">MySQL</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Node/">Node</a><span class="category-list-count">2</span><ul class="category-list-child"><li class="category-list-item"><a class="category-list-link" href="/categories/Node/Express/">Express</a><span class="category-list-count">2</span></li></ul></li><li class="category-list-item"><a class="category-list-link" href="/categories/Sinatra/">Sinatra</a><span class="category-list-count">1</span></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">タグ</h3>
+    <div class="widget">
+      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/axios/">axios</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/babel/">babel</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/bottle/">bottle</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/browserify/">browserify</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/csharp/">csharp</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/docker/">docker</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/eslint/">eslint</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/euler/">euler</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/express/">express</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/firebase/">firebase</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/flask/">flask</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/hexo/">hexo</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/javascript/">javascript</a><span class="tag-list-count">8</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/jupyter/">jupyter</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/karma/">karma</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/kintone/">kintone</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/linux/">linux</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/log4js/">log4js</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/luigi/">luigi</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mac/">mac</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mocha/">mocha</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mysql/">mysql</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/node-fetch/">node-fetch</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/nodejs/">nodejs</a><span class="tag-list-count">13</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/powerline/">powerline</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/prettier/">prettier</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/python/">python</a><span class="tag-list-count">8</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/rails/">rails</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/react/">react</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/redis/">redis</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/rpa/">rpa</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/rspec/">rspec</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ruby/">ruby</a><span class="tag-list-count">7</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/sidekiq/">sidekiq</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/sinatra/">sinatra</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/sqlalchemy/">sqlalchemy</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/vagrant/">vagrant</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/virtualbox/">virtualbox</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/vscode/">vscode</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/vue/">vue</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/webpack/">webpack</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/zipstream/">zipstream</a><span class="tag-list-count">1</span></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">タグクラウド</h3>
+    <div class="widget tagcloud">
+      <a href="/tags/axios/" style="font-size: 10px;">axios</a> <a href="/tags/babel/" style="font-size: 10px;">babel</a> <a href="/tags/bottle/" style="font-size: 10px;">bottle</a> <a href="/tags/browserify/" style="font-size: 10px;">browserify</a> <a href="/tags/csharp/" style="font-size: 10px;">csharp</a> <a href="/tags/docker/" style="font-size: 10px;">docker</a> <a href="/tags/eslint/" style="font-size: 11.43px;">eslint</a> <a href="/tags/euler/" style="font-size: 10px;">euler</a> <a href="/tags/express/" style="font-size: 11.43px;">express</a> <a href="/tags/firebase/" style="font-size: 12.86px;">firebase</a> <a href="/tags/flask/" style="font-size: 10px;">flask</a> <a href="/tags/hexo/" style="font-size: 11.43px;">hexo</a> <a href="/tags/javascript/" style="font-size: 18.57px;">javascript</a> <a href="/tags/jupyter/" style="font-size: 10px;">jupyter</a> <a href="/tags/karma/" style="font-size: 11.43px;">karma</a> <a href="/tags/kintone/" style="font-size: 12.86px;">kintone</a> <a href="/tags/linux/" style="font-size: 10px;">linux</a> <a href="/tags/log4js/" style="font-size: 10px;">log4js</a> <a href="/tags/luigi/" style="font-size: 15.71px;">luigi</a> <a href="/tags/mac/" style="font-size: 10px;">mac</a> <a href="/tags/mocha/" style="font-size: 10px;">mocha</a> <a href="/tags/mysql/" style="font-size: 11.43px;">mysql</a> <a href="/tags/node-fetch/" style="font-size: 10px;">node-fetch</a> <a href="/tags/nodejs/" style="font-size: 20px;">nodejs</a> <a href="/tags/powerline/" style="font-size: 11.43px;">powerline</a> <a href="/tags/prettier/" style="font-size: 10px;">prettier</a> <a href="/tags/python/" style="font-size: 18.57px;">python</a> <a href="/tags/rails/" style="font-size: 10px;">rails</a> <a href="/tags/react/" style="font-size: 12.86px;">react</a> <a href="/tags/redis/" style="font-size: 10px;">redis</a> <a href="/tags/rpa/" style="font-size: 10px;">rpa</a> <a href="/tags/rspec/" style="font-size: 10px;">rspec</a> <a href="/tags/ruby/" style="font-size: 17.14px;">ruby</a> <a href="/tags/sidekiq/" style="font-size: 10px;">sidekiq</a> <a href="/tags/sinatra/" style="font-size: 15.71px;">sinatra</a> <a href="/tags/sqlalchemy/" style="font-size: 11.43px;">sqlalchemy</a> <a href="/tags/vagrant/" style="font-size: 10px;">vagrant</a> <a href="/tags/virtualbox/" style="font-size: 10px;">virtualbox</a> <a href="/tags/vscode/" style="font-size: 14.29px;">vscode</a> <a href="/tags/vue/" style="font-size: 12.86px;">vue</a> <a href="/tags/webpack/" style="font-size: 10px;">webpack</a> <a href="/tags/zipstream/" style="font-size: 10px;">zipstream</a>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">アーカイブ</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/12/">12月 2018</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/11/">11月 2018</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/10/">10月 2018</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/09/">9月 2018</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/08/">8月 2018</a><span class="archive-list-count">6</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/07/">7月 2018</a><span class="archive-list-count">11</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/06/">6月 2018</a><span class="archive-list-count">12</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/05/">5月 2018</a><span class="archive-list-count">11</span></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">最近の投稿</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2018/12/20/0051-setup-macbook-pro-2018/">MacBookPro2018のセットアップ</a>
+          </li>
+        
+          <li>
+            <a href="/2018/11/29/0050-about-config-ru/">[Sinatra] config.ruとは</a>
+          </li>
+        
+          <li>
+            <a href="/2018/11/14/0049-docker-mysql-error-caching-sha2-password/">[MySQL] Unable to load authentication plugin &#39;caching_sha2_password&#39;</a>
+          </li>
+        
+          <li>
+            <a href="/2018/11/05/0048-express-with-log4js/">[Node] ExpressでAPIを作ったらログも吐く</a>
+          </li>
+        
+          <li>
+            <a href="/2018/11/02/0047-helloworld-express-with-json/">[Node] Expressを使って最速でJSONを返す</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      &copy; 2018 t-kojima<br>
+      Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+
+
+  <link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
+  <script src="/fancybox/jquery.fancybox.pack.js"></script>
+
+
+<script src="/js/script.js"></script>
+
+
+
+  </div>
+  <script async src="//cdn.embedly.com/widgets/platform.js" charset="UTF-8"></script>
+</body>
+</html>
