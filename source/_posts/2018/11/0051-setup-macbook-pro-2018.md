@@ -124,6 +124,30 @@ ssh-keygen -t rsa -b 4096 -C "hogefuga@example.com"
 
 - [お前らのSSH Keysの作り方は間違っている - Qiita](https://qiita.com/suthio/items/2760e4cff0e185fe2db9)
 
+# nvmのインストール
+
+この記事を新しいMacで書いていて、いざデプロイしようとしたらyarn（+node）が未インストールということに気づいた。
+
+なのでhomebrewでインストールする。
+余談だけどデフォルトで.bash_profileがないのね…なのでこれも作る
+
+```bash
+brew install nvm
+mkdir ~/.nvm
+touch ~/.bash_profile
+echo export NVM_DIR=~/.nvm >> .bash_profile
+echo source $(brew --prefix nvm)/nvm.sh >> .bash_profile
+```
+
+nvmが入ったら、LTSをインストールして、yarnをいれる
+
+```bash
+nvm install --lts
+npm -g install yarn
+```
+
+これでブログをデプロイできる…
+
 # さいごに
 
 他にもPowerlineとか入れたいけど、とりあえず普段使いに困らないレベルになったのでここまで
