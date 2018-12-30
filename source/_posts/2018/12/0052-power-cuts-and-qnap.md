@@ -2,6 +2,7 @@
 title: '停電とNASのシャットダウン'
 date: 2018-12-29 08:40:03
 categories:
+  - QNAP
 tags:
   - qnap
 ---
