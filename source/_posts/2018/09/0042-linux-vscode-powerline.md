@@ -1,6 +1,8 @@
 ---
 title: 'LinuxでVSCodeでPowerline'
 date: 2018-09-26 14:53:39
+categories:
+  - VSCode
 tags:
   - vscode
   - powerline
