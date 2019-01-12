@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+
+  
+  <title>MacでVSCodeでPowerline | Today&#39;s Commit</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="Mac にも powerline を入れたい！ 過去に Windows と Linux ではやったので、今度は Mac に入れてみる。  Windows で Cmder で VSCode で Powerline Linux で VSCode で Powerline">
+<meta name="keywords" content="vscode,powerline">
+<meta property="og:type" content="article">
+<meta property="og:title" content="MacでVSCodeでPowerline">
+<meta property="og:url" content="https://t-kojima.github.io/2019/01/12/0054-mac-vscode-powerline/index.html">
+<meta property="og:site_name" content="Today&#39;s Commit">
+<meta property="og:description" content="Mac にも powerline を入れたい！ 過去に Windows と Linux ではやったので、今度は Mac に入れてみる。  Windows で Cmder で VSCode で Powerline Linux で VSCode で Powerline">
+<meta property="og:locale" content="ja">
+<meta property="og:image" content="https://t-kojima.github.io/images/54-01.png">
+<meta property="og:image" content="https://t-kojima.github.io/images/54-02.png">
+<meta property="og:image" content="https://t-kojima.github.io/images/54-03.png">
+<meta property="og:updated_time" content="2019-01-12T13:14:38.061Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="MacでVSCodeでPowerline">
+<meta name="twitter:description" content="Mac にも powerline を入れたい！ 過去に Windows と Linux ではやったので、今度は Mac に入れてみる。  Windows で Cmder で VSCode で Powerline Linux で VSCode で Powerline">
+<meta name="twitter:image" content="https://t-kojima.github.io/images/54-01.png">
+  
+    <link rel="alternate" href="/atom.xml" title="Today&#39;s Commit" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  
+    <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
+  
+  <link rel="stylesheet" href="/css/style.css">
+  
+    <link rel="amphtml" href="https://t-kojima.github.io/2019/01/12/0054-mac-vscode-powerline//amp/index.html">
+  
+</head>
+
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">Today&#39;s Commit</a>
+      </h1>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSSフィード"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="検索"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="https://t-kojima.github.io"></form>
+      </div>
+    </div>
+  </div>
+</header>
+      <div class="outer">
+        <section id="main"><article id="post-0054-mac-vscode-powerline" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/2019/01/12/0054-mac-vscode-powerline/" class="article-date">
+  <time datetime="2019-01-11T23:45:48.000Z" itemprop="datePublished">2019-01-12</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/VSCode/">VSCode</a>
+  </div>
+
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      MacでVSCodeでPowerline
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>Mac にも powerline を入れたい！</p>
+<p>過去に Windows と Linux ではやったので、今度は Mac に入れてみる。</p>
+<ul>
+<li><a href="https://t-kojima.github.io/2018/09/24/0041-windows-cmder-vscode-powerline/">Windows で Cmder で VSCode で Powerline</a></li>
+<li><a href="https://t-kojima.github.io/2018/09/26/0042-linux-vscode-powerline/">Linux で VSCode で Powerline</a></li>
+</ul>
+<a id="more"></a>
+<p><a href="https://powerline.readthedocs.io/en/2.4/installation/osx.html" target="_blank" rel="noopener">Powerline 公式の方法</a>でやってみる。</p>
+<h1><span id="pip-をインストール">pip をインストール</span></h1><p>まずインストールには Python と pip が必要になるので、バージョンを確認してみる。</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">$ python --version</span><br><span class="line">Python 2.7.10</span><br><span class="line">$ pip --version</span><br><span class="line">bash: pip: <span class="built_in">command</span> not found</span><br></pre></td></tr></table></figure>
+<p>なんてこった pip がない</p>
+<p>というか python 環境が全くない（3 系とか）ので、pyenv から 3 系を入れてみよう。pyenv からインストールすれば pip も一緒にインストールされる。</p>
+<h2><span id="pyenv-のインストール">pyenv のインストール</span></h2><p><a href="https://qiita.com/crankcube@github/items/15f06b32ec56736fc43a" target="_blank" rel="noopener">MacOS と Homebrew と pyenv で快適 python 環境を。 - Qiita</a> を参考に入れる。</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">$ brew install pyenv</span><br><span class="line">==&gt; Installing dependencies <span class="keyword">for</span> pyenv: autoconf, openssl, pkg-config and readline</span><br><span class="line">==&gt; Installing pyenv dependency: autoconf</span><br><span class="line">==&gt; Downloading https://homebrew.bintray.com/bottles/autoconf-2.69.mojave.bottle.4.tar.gz</span><br><span class="line"><span class="comment">######################################################################## 100.0%</span></span><br><span class="line">==&gt; Pouring autoconf-2.69.mojave.bottle.4.tar.gz</span><br><span class="line">==&gt; Caveats</span><br><span class="line">Emacs Lisp files have been installed to:</span><br><span class="line">  /usr/<span class="built_in">local</span>/share/emacs/site-lisp/autoconf</span><br><span class="line">==&gt; Summary</span><br><span class="line">🍺  /usr/<span class="built_in">local</span>/Cellar/autoconf/2.69: 71 files, 3.0MB</span><br><span class="line">==&gt; Installing pyenv dependency: openssl</span><br><span class="line">==&gt; Downloading https://homebrew.bintray.com/bottles/openssl-1.0.2q.mojave.bottle.tar.gz</span><br><span class="line"><span class="comment">######################################################################## 100.0%</span></span><br><span class="line">~~ 省略 ~~</span><br><span class="line"></span><br><span class="line">$ pyenv --version</span><br><span class="line">pyenv 1.2.9</span><br></pre></td></tr></table></figure>
+<p>1.2.9 が入った。</p>
+<p>.bash_profile に追記してパスを通す</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">$ <span class="built_in">echo</span> <span class="string">'export PYENV_ROOT="$HOME/.pyenv"'</span> &gt;&gt; ~/.bash_profile</span><br><span class="line">$ <span class="built_in">echo</span> <span class="string">'export PATH="$PYENV_ROOT/bin:$PATH"'</span> &gt;&gt; ~/.bash_profile</span><br><span class="line">$ <span class="built_in">echo</span> <span class="string">'eval "$(pyenv init -)"'</span> &gt;&gt; ~/.bash_profile</span><br><span class="line">$ <span class="built_in">source</span> ~/.bash_profile</span><br></pre></td></tr></table></figure>
+<p><code>pyenv install --list</code> でインストール可能な一覧が見れる。今回は<code>3.7.2</code>を入れてみる。</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">$ pyenv install 3.7.2</span><br></pre></td></tr></table></figure>
+<p>入ったらグローバルに設定して完了だ</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">$ pyenv global 3.7.2</span><br><span class="line">$ pyenv versions</span><br><span class="line">  system</span><br><span class="line">* 3.7.2 (<span class="built_in">set</span> by /Users/********/.pyenv/version)</span><br><span class="line">$ python --version</span><br><span class="line">Python 3.7.2</span><br><span class="line">$ pip --version</span><br><span class="line">pip 18.1 from /Users/********/.pyenv/versions/3.7.2/lib/python3.7/site-packages/pip (python 3.7)</span><br></pre></td></tr></table></figure>
+<p>pip も無事使えるようになっている。</p>
+<h3><span id="zlib-エラー">zlib エラー</span></h3><p>macos Mojave ではビルド時に以下のエラーになってしまう。</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">zipimport.ZipImportError: can<span class="string">'t decompress data; zlib not available</span></span><br><span class="line"><span class="string">make: *** [install] Error 1</span></span><br></pre></td></tr></table></figure>
+<p>参考：<a href="https://qiita.com/zreactor/items/c3fd04417e0d61af0afe" target="_blank" rel="noopener">[MacOS Mojave]pyenv で python のインストールが zlib エラーで失敗した時の対応 - Qiita</a></p>
+<p>以下のコマンドで Mojave 用の macOS SDK header を入れる</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">sudo installer -pkg /Library/Developer/CommandLineTools/Packages/macOS_SDK_headers_for_macOS_10.14.pkg -target /</span><br></pre></td></tr></table></figure>
+<p>再度 <code>pyenv install 3.7.2</code> でインストールして成功すれば OK だ</p>
+<h1><span id="powerline-のインストール">powerline のインストール</span></h1><p>前置き（？）が長くなってしまったが、powerline を入れる。<br>改めて<a href="https://powerline.readthedocs.io/en/2.4/installation/osx.html" target="_blank" rel="noopener">Powerline 公式の方法</a>でやろう。</p>
+<p><a href="https://qiita.com/tkhr/items/8cc17c02dea1803be9c6" target="_blank" rel="noopener">Powerline 導入例 - Qiita</a>も参考にしながらやる。</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">$ pip install powerline-status</span><br><span class="line">Collecting powerline-status</span><br><span class="line">  Using cached https://files.pythonhosted.org/packages/9c/30/8bd3c62642778af9ad813a526c6ff7dd2f98144d6580ad6fab94ca389265/powerline-status-2.7.tar.gz</span><br><span class="line">Installing collected packages: powerline-status</span><br><span class="line">  Running setup.py install <span class="keyword">for</span> powerline-status ... <span class="keyword">done</span></span><br><span class="line">Successfully installed powerline-status-2.7</span><br></pre></td></tr></table></figure>
+<p>即入った。簡単</p>
+<p>ちなみに公式だと<code>--user</code>オプションをつけるようあるが、python を homebrew からインストールした際は付けないよう注意書きがしてある。<br><code>pyenv</code>から入れた場合もオプションをつけたら動かなかった。<code>pyenv</code>から入れた場合も同様にオプション無しが正解のようだ。</p>
+<p><code>powerline-daemon -h</code> でヘルプが表示されれば OK</p>
+<h2><span id="bash-に適用">bash に適用</span></h2><p><a href="https://powerline.readthedocs.io/en/2.4/usage/shell-prompts.html#bash-prompt" target="_blank" rel="noopener">Shell prompts — Powerline beta documentation</a>を参考に shell に powerline 適用する。</p>
+<p>まずリポジトリのルートを確認</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">$ pip --version</span><br><span class="line">pip 18.1 from /Users/********/.pyenv/versions/3.7.2/lib/python3.7/site-packages/pip (python 3.7)</span><br></pre></td></tr></table></figure>
+<p>ここの<code>/Users/********/.pyenv/versions/3.7.2/lib/python3.7/site-packages</code>がルートになる。</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">$ <span class="built_in">echo</span> <span class="string">'powerline-daemon -q'</span> &gt;&gt; ~/.bash_profile</span><br><span class="line">$ <span class="built_in">echo</span> <span class="string">'. &#123;repository_root&#125;/powerline/bindings/bash/powerline.sh'</span> &gt;&gt; ~/.bash_profile</span><br><span class="line">$ <span class="built_in">source</span> ~/.bash_profile</span><br></pre></td></tr></table></figure>
+<p>これで bash を再起動すると shell に powerline が適用される。</p>
+<p>しかしこのままだと文字化けしてしまうので、powerline 用のフォントを入れる。</p>
+<h2><span id="フォントをインストール">フォントをインストール</span></h2><p>参考元のままやる</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="built_in">cd</span> ~/Desktop</span><br><span class="line">git <span class="built_in">clone</span> git@github.com:powerline/fonts.git</span><br><span class="line">./fonts/install.sh</span><br></pre></td></tr></table></figure>
+<p>このように powerline 用のフォントが追加された。</p>
+<p><img src="/images/54-01.png" alt="FontBook.app"></p>
+<h3><span id="vscode-のフォントを変更">VSCode のフォントを変更</span></h3><p>VSCode でユーザー設定を開き、フォントを変更する。</p>
+<p>ついでのサイズを 12 にする。ちょうどいいと思う。</p>
+<figure class="highlight"><table><tr><td class="code"><pre><span class="line">"terminal.integrated.fontFamily": "Source Code Pro for Powerline",</span><br><span class="line">"terminal.integrated.fontSize": 12,</span><br></pre></td></tr></table></figure>
+<p>これで VSCode のターミナルに powerline が適用された！</p>
+<p><img src="/images/54-02.png" alt="Powerlineが適用されたターミナル"></p>
+<h1><span id="configuration">Configuration</span></h1><p>デフォルト表記だと git のブランチが表示されなかったりするので、設定を変更する。</p>
+<p>参考：<a href="https://powerline.readthedocs.io/en/2.4/configuration.html" target="_blank" rel="noopener">Configuration and customization — Powerline beta documentation</a></p>
+<p>デフォルトの設定はリポジトリルートの奥底にあるが、<code>~/.config/powerline</code>配下に設定ファイルを置くと、記述した分だけデフォルト設定を上書きしてくれる。</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">mkdir ~/.config/powerline</span><br><span class="line">touch ~/.config/powerline/config.json</span><br><span class="line">code ~/.config/powerline/config.json</span><br></pre></td></tr></table></figure>
+<p>VSCode で編集</p>
+<figure class="highlight json"><table><tr><td class="code"><pre><span class="line">&#123;</span><br><span class="line">  <span class="attr">"ext"</span>: &#123;</span><br><span class="line">    <span class="attr">"shell"</span>: &#123;</span><br><span class="line">      <span class="attr">"theme"</span>: <span class="string">"custom"</span></span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>themes/custom.json も作る</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">touch ~/.config/powerline/themes/shell/custom.json</span><br><span class="line">code ~/.config/powerline/themes/shell/custom.json</span><br></pre></td></tr></table></figure>
+<p>こちらも VSCode で編集</p>
+<figure class="highlight json"><table><tr><td class="code"><pre><span class="line">&#123;</span><br><span class="line">  <span class="attr">"segments"</span>: &#123;</span><br><span class="line">    <span class="attr">"left"</span>: [</span><br><span class="line">      &#123;</span><br><span class="line">        <span class="attr">"function"</span>: <span class="string">"powerline.segments.shell.mode"</span></span><br><span class="line">      &#125;,</span><br><span class="line">      &#123;</span><br><span class="line">        <span class="attr">"function"</span>: <span class="string">"powerline.segments.common.net.hostname"</span>,</span><br><span class="line">        <span class="attr">"priority"</span>: <span class="number">10</span></span><br><span class="line">      &#125;,</span><br><span class="line">      &#123;</span><br><span class="line">        <span class="attr">"function"</span>: <span class="string">"powerline.segments.common.env.user"</span>,</span><br><span class="line">        <span class="attr">"priority"</span>: <span class="number">30</span></span><br><span class="line">      &#125;,</span><br><span class="line">      &#123;</span><br><span class="line">        <span class="attr">"function"</span>: <span class="string">"powerline.segments.common.env.virtualenv"</span>,</span><br><span class="line">        <span class="attr">"priority"</span>: <span class="number">50</span></span><br><span class="line">      &#125;,</span><br><span class="line">      &#123;</span><br><span class="line">        <span class="attr">"function"</span>: <span class="string">"powerline.segments.common.vcs.branch"</span>,</span><br><span class="line">        <span class="attr">"priority"</span>: <span class="number">40</span>,</span><br><span class="line">        <span class="attr">"args"</span>: &#123;</span><br><span class="line">          <span class="attr">"status_colors"</span>: <span class="literal">true</span></span><br><span class="line">        &#125;</span><br><span class="line">      &#125;,</span><br><span class="line">      &#123;</span><br><span class="line">        <span class="attr">"function"</span>: <span class="string">"powerline.segments.shell.cwd"</span>,</span><br><span class="line">        <span class="attr">"priority"</span>: <span class="number">10</span>,</span><br><span class="line">        <span class="attr">"args"</span>: &#123;</span><br><span class="line">          <span class="attr">"dir_limit_depth"</span>: <span class="number">1</span></span><br><span class="line">        &#125;</span><br><span class="line">      &#125;,</span><br><span class="line">      &#123;</span><br><span class="line">        <span class="attr">"function"</span>: <span class="string">"powerline.segments.shell.jobnum"</span>,</span><br><span class="line">        <span class="attr">"priority"</span>: <span class="number">20</span></span><br><span class="line">      &#125;,</span><br><span class="line">      &#123;</span><br><span class="line">        <span class="attr">"function"</span>: <span class="string">"powerline.segments.shell.last_pipe_status"</span>,</span><br><span class="line">        <span class="attr">"priority"</span>: <span class="number">10</span></span><br><span class="line">      &#125;</span><br><span class="line">    ]</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><code>powerline-daemon --refresh</code> すると適用される。</p>
+<p><img src="/images/54-03.png" alt="コンフィグを修正した後のターミナル"></p>
+<p>ここまでがんばったが、設定のやり方が分かり辛すぎる…<br>powerline の issue で 「documentation is confusing」 とか言われてて笑える w…</p>
+<h1><span id="さいごに">さいごに</span></h1><p>結構めんどかった。インストール方法を調べると色々な方法が出てきてどれが適当かよくわからない。</p>
+<p>今回公式の方法に沿って行ったが、Linux の時と同様に<code>powerline-shell</code>を使ったほうがサクっといけたような気がしてならない。</p>
+<p>…ま、いいか</p>
+<h2><span id="環境">環境</span></h2><ul>
+<li>Mac OSX 10.14.1 Mojave</li>
+<li>VSCode 1.30.2</li>
+<li>powerline-status 2.7</li>
+</ul>
+
+      
+    </div>
+    <footer class="article-footer">
+      <div data-url="https://t-kojima.github.io/2019/01/12/0054-mac-vscode-powerline/" data-id="cjqthto98003n57u71em8vqsp" class="article-share-items"></div>
+      <!-- <a data-url="https://t-kojima.github.io/2019/01/12/0054-mac-vscode-powerline/" data-id="cjqthto98003n57u71em8vqsp" class="article-share-link">共有</a> -->
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/powerline/">powerline</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/vscode/">vscode</a></li></ul>
+
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+  
+    <a href="/2018/12/30/0053-qnap-network-and-virtual-switch/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">前の記事</strong>
+      <div class="article-nav-title">[QNAP] TS-451PのNIC設定が変更できない</div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">カテゴリ</h3>
+    <div class="widget">
+      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/Mac/">Mac</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/MySQL/">MySQL</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Node/">Node</a><span class="category-list-count">2</span><ul class="category-list-child"><li class="category-list-item"><a class="category-list-link" href="/categories/Node/Express/">Express</a><span class="category-list-count">2</span></li></ul></li><li class="category-list-item"><a class="category-list-link" href="/categories/Python/">Python</a><span class="category-list-count">2</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/QNAP/">QNAP</a><span class="category-list-count">2</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Rails/">Rails</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Sinatra/">Sinatra</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/VSCode/">VSCode</a><span class="category-list-count">3</span></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">タグ</h3>
+    <div class="widget">
+      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/axios/">axios</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/babel/">babel</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/bottle/">bottle</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/browserify/">browserify</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/csharp/">csharp</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/docker/">docker</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/eslint/">eslint</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/euler/">euler</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/express/">express</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/firebase/">firebase</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/flask/">flask</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/hexo/">hexo</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/javascript/">javascript</a><span class="tag-list-count">8</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/jupyter/">jupyter</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/karma/">karma</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/kintone/">kintone</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/linux/">linux</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/log4js/">log4js</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/luigi/">luigi</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mac/">mac</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mocha/">mocha</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mysql/">mysql</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/node-fetch/">node-fetch</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/nodejs/">nodejs</a><span class="tag-list-count">13</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/powerline/">powerline</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/prettier/">prettier</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/python/">python</a><span class="tag-list-count">8</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/qnap/">qnap</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/rails/">rails</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/react/">react</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/redis/">redis</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/rpa/">rpa</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/rspec/">rspec</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ruby/">ruby</a><span class="tag-list-count">7</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/sidekiq/">sidekiq</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/sinatra/">sinatra</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/sqlalchemy/">sqlalchemy</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/vagrant/">vagrant</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/virtualbox/">virtualbox</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/vscode/">vscode</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/vue/">vue</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/webpack/">webpack</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/zipstream/">zipstream</a><span class="tag-list-count">1</span></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">タグクラウド</h3>
+    <div class="widget tagcloud">
+      <a href="/tags/axios/" style="font-size: 10px;">axios</a> <a href="/tags/babel/" style="font-size: 10px;">babel</a> <a href="/tags/bottle/" style="font-size: 10px;">bottle</a> <a href="/tags/browserify/" style="font-size: 10px;">browserify</a> <a href="/tags/csharp/" style="font-size: 10px;">csharp</a> <a href="/tags/docker/" style="font-size: 10px;">docker</a> <a href="/tags/eslint/" style="font-size: 11.67px;">eslint</a> <a href="/tags/euler/" style="font-size: 10px;">euler</a> <a href="/tags/express/" style="font-size: 11.67px;">express</a> <a href="/tags/firebase/" style="font-size: 13.33px;">firebase</a> <a href="/tags/flask/" style="font-size: 10px;">flask</a> <a href="/tags/hexo/" style="font-size: 11.67px;">hexo</a> <a href="/tags/javascript/" style="font-size: 18.33px;">javascript</a> <a href="/tags/jupyter/" style="font-size: 10px;">jupyter</a> <a href="/tags/karma/" style="font-size: 11.67px;">karma</a> <a href="/tags/kintone/" style="font-size: 13.33px;">kintone</a> <a href="/tags/linux/" style="font-size: 10px;">linux</a> <a href="/tags/log4js/" style="font-size: 10px;">log4js</a> <a href="/tags/luigi/" style="font-size: 15px;">luigi</a> <a href="/tags/mac/" style="font-size: 10px;">mac</a> <a href="/tags/mocha/" style="font-size: 10px;">mocha</a> <a href="/tags/mysql/" style="font-size: 11.67px;">mysql</a> <a href="/tags/node-fetch/" style="font-size: 10px;">node-fetch</a> <a href="/tags/nodejs/" style="font-size: 20px;">nodejs</a> <a href="/tags/powerline/" style="font-size: 13.33px;">powerline</a> <a href="/tags/prettier/" style="font-size: 10px;">prettier</a> <a href="/tags/python/" style="font-size: 18.33px;">python</a> <a href="/tags/qnap/" style="font-size: 11.67px;">qnap</a> <a href="/tags/rails/" style="font-size: 10px;">rails</a> <a href="/tags/react/" style="font-size: 13.33px;">react</a> <a href="/tags/redis/" style="font-size: 10px;">redis</a> <a href="/tags/rpa/" style="font-size: 10px;">rpa</a> <a href="/tags/rspec/" style="font-size: 10px;">rspec</a> <a href="/tags/ruby/" style="font-size: 16.67px;">ruby</a> <a href="/tags/sidekiq/" style="font-size: 10px;">sidekiq</a> <a href="/tags/sinatra/" style="font-size: 15px;">sinatra</a> <a href="/tags/sqlalchemy/" style="font-size: 11.67px;">sqlalchemy</a> <a href="/tags/vagrant/" style="font-size: 10px;">vagrant</a> <a href="/tags/virtualbox/" style="font-size: 10px;">virtualbox</a> <a href="/tags/vscode/" style="font-size: 15px;">vscode</a> <a href="/tags/vue/" style="font-size: 13.33px;">vue</a> <a href="/tags/webpack/" style="font-size: 10px;">webpack</a> <a href="/tags/zipstream/" style="font-size: 10px;">zipstream</a>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">アーカイブ</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/01/">1月 2019</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/12/">12月 2018</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/11/">11月 2018</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/10/">10月 2018</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/09/">9月 2018</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/08/">8月 2018</a><span class="archive-list-count">6</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/07/">7月 2018</a><span class="archive-list-count">11</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/06/">6月 2018</a><span class="archive-list-count">12</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/05/">5月 2018</a><span class="archive-list-count">11</span></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">最近の投稿</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2019/01/12/0054-mac-vscode-powerline/">MacでVSCodeでPowerline</a>
+          </li>
+        
+          <li>
+            <a href="/2018/12/30/0053-qnap-network-and-virtual-switch/">[QNAP] TS-451PのNIC設定が変更できない</a>
+          </li>
+        
+          <li>
+            <a href="/2018/12/29/0052-power-cuts-and-qnap/">停電とNASのシャットダウン</a>
+          </li>
+        
+          <li>
+            <a href="/2018/12/20/0051-setup-macbook-pro-2018/">MacBookPro2018のセットアップ</a>
+          </li>
+        
+          <li>
+            <a href="/2018/11/29/0050-about-config-ru/">[Sinatra] config.ruとは</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      &copy; 2019 t-kojima<br>
+      Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+
+
+  <link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
+  <script src="/fancybox/jquery.fancybox.pack.js"></script>
+
+
+<script src="/js/script.js"></script>
+
+
+
+  </div>
+  <script async src="//cdn.embedly.com/widgets/platform.js" charset="UTF-8"></script>
+</body>
+</html>

@@ -61,7 +61,7 @@
 			    "@id":"https://t-kojima.github.io/2018/09/26/0042-linux-vscode-powerline/"
 			},
 			"datePublished": "2018-09-26T05:53:39.000Z",
-			"dateModified": "2018-12-20T11:07:38.292Z",
+			"dateModified": "2019-01-11T23:46:20.782Z",
 			
 			"image": {
 				"@type": "ImageObject",
@@ -1777,6 +1777,35 @@ h6.categories {
 		    
 		   		<!-- categories and bread crumb -->
 		    	
+				<div class="categories-header">
+					<div class="categories">
+						<div class="breadcrumb inline-icon">
+							<ol itemscope itemtype="http://schema.org/BreadcrumbList">
+							  <li itemprop="itemListElement" itemscope itemtype="http://schema.org/ListItem">
+							    <a itemprop="item" href="/">
+							    	<span class="sns-icon home-icon"></span>
+							        <span itemprop="name"><span class="fa fa-fw fa-home"></span></span>
+							    </a>
+							    <meta itemprop="position" content="1" />
+							  </li>
+
+								
+						    		<li itemprop="itemListElement" itemscope
+									      itemtype="http://schema.org/ListItem">
+									    <a itemprop="item" href="/categories/VSCode/">
+									      
+									      	<span class="sns-icon folder-icon"></span>
+									      
+									      <span itemprop="name">VSCode</span>
+									    </a>
+									    <meta itemprop="position" content="2" />
+									</li>
+								
+							</ol>
+						</div>
+					</div>
+				</div>
+				
 		    
 		    	<!-- entry title -->
 				<div class="title-cover">
@@ -1829,7 +1858,7 @@ h6.categories {
 <p>powerline-shell &#x3092;&#x4F7F;&#x3063;&#x3066;&#x30B7;&#x30A7;&#x30EB;&#x306B; powerline &#x3092;&#x9069;&#x7528;&#x3055;&#x305B;&#x308B;&#x3002;Python &#x3067;&#x4F5C;&#x3089;&#x308C;&#x3066;&#x3044;&#x3066; pip &#x3067;&#x7C21;&#x5358;&#x306B;&#x30A4;&#x30F3;&#x30B9;&#x30C8;&#x30FC;&#x30EB;&#x3067;&#x304D;&#x308B;&#x3002;</p>
 <figure class="highlight bash"><table><tbody><tr><td class="code"><pre><span class="line">pip install powerline-shell</span><br></pre></td></tr></tbody></table></figure>
 <p>bash &#x3092;&#x4F7F;&#x3063;&#x3066;&#x3044;&#x308B;&#x5834;&#x5408;&#x306F;&#x3001;.bashrc &#x306B;&#x4EE5;&#x4E0B;&#x3092;&#x8FFD;&#x8A18;</p>
-<figure class="highlight bash"><table><tbody><tr><td class="code"><pre><span class="line"><span class="keyword">function</span> <span class="function"><span class="title">_update_ps1</span></span>() {</span><br><span class="line">    PS1=$(powerline-shell $?)</span><br><span class="line">}</span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> [[ <span class="variable">$TERM</span> != linux &amp;&amp; ! <span class="variable">$PROMPT_COMMAND</span> =~ _update_ps1 ]]; <span class="keyword">then</span></span><br><span class="line">    PROMPT_COMMAND=<span class="string">&quot;_update_ps1; <span class="variable">$PROMPT_COMMAND</span>&quot;</span></span><br><span class="line"><span class="keyword">fi</span></span><br></pre></td></tr></tbody></table></figure>
+<figure class="highlight bash"><table><tbody><tr><td class="code"><pre><span class="line"><span class="keyword">function</span> <span class="function">_update_ps1</span>() {</span><br><span class="line">    PS1=$(powerline-shell $?)</span><br><span class="line">}</span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> [[ <span class="variable">$TERM</span> != linux &amp;&amp; ! <span class="variable">$PROMPT_COMMAND</span> =~ _update_ps1 ]]; <span class="keyword">then</span></span><br><span class="line">    PROMPT_COMMAND=<span class="string">&quot;_update_ps1; <span class="variable">$PROMPT_COMMAND</span>&quot;</span></span><br><span class="line"><span class="keyword">fi</span></span><br></pre></td></tr></tbody></table></figure>
 <p>bash &#x4EE5;&#x5916;&#x306F;<a href="https://github.com/b-ryan/powerline-shell#setup" target="_blank" rel="noopener">README &#x306E; Setup</a>&#x3092;&#x53C2;&#x8003;&#x306B;&#x3057;&#x3066;&#x6B32;&#x3057;&#x3044;&#x3002;zsh &#x3068;&#x304B; fish &#x3068;&#x304B;&#x3042;&#x308B;&#x3002;</p>
 <p>&#x3053;&#x308C;&#x3067; powerline &#x304C;&#x30B7;&#x30A7;&#x30EB;&#x306B;&#x9069;&#x7528;&#x3055;&#x308C;&#x308B;&#x304C;&#x3001;&#x307E;&#x3060;&#x30D5;&#x30A9;&#x30F3;&#x30C8;&#x304C;&#x7121;&#x3044;&#x306E;&#x3067;&#x8A18;&#x53F7;&#x304C;&#x8868;&#x793A;&#x3055;&#x308C;&#x306A;&#x3044;&#x3002;</p>
 <p>&#x7D9A;&#x3051;&#x3066; powerline &#x7528;&#x306E;&#x30D5;&#x30A9;&#x30F3;&#x30C8;&#x3092;&#x30A4;&#x30F3;&#x30B9;&#x30C8;&#x30FC;&#x30EB;&#x3057;&#x3066;&#x3044;&#x304F;&#x3002;</p>
@@ -1932,7 +1961,7 @@ h6.categories {
 				
 				<div class="copyright-title">
 					<span>
-					&copy; 2018&nbsp;Today&#39;s Commit
+					&copy; 2019&nbsp;Today&#39;s Commit
 					</span>
 				</div>
 				
