@@ -15,7 +15,7 @@
 <meta property="og:site_name" content="Today&#39;s Commit">
 <meta property="og:description" content="小ネタ直近の n 月を取得したい。例えば 10 月なら、今日（7 月 10 日）から一番近いのは 2018 年 10 月、という感じ。">
 <meta property="og:locale" content="ja">
-<meta property="og:updated_time" content="2019-07-10T13:28:03.712Z">
+<meta property="og:updated_time" content="2019-07-12T07:03:13.101Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="直近のとある月を得たい">
 <meta name="twitter:description" content="小ネタ直近の n 月を取得したい。例えば 10 月なら、今日（7 月 10 日）から一番近いのは 2018 年 10 月、という感じ。">
@@ -97,26 +97,27 @@
         <p>小ネタ<br>直近の n 月を取得したい。例えば 10 月なら、今日（7 月 10 日）から一番近いのは 2018 年 10 月、という感じ。</p>
 <a id="more"></a>
 <p>お題は単純に思えるけど、意外とスキッと書けない。<br>Rails の<a href="http://railsdoc.com/references/Date" target="_blank" rel="noopener">Date</a>をみても、翌月とか前月とか、n ヶ月前とか取得するメソッドはあれど、直近 n 月を取得するメソッドはない。</p>
-<hr>
-<p>とりあえず何も考えず愚直に書いてみる</p>
+<h2><span id="思いついたままやる">思いついたままやる</span></h2><p>とりあえず何も考えず愚直に書いてみる</p>
 <figure class="highlight ruby"><table><tr><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">closest_month</span><span class="params">(target_month, date)</span></span></span><br><span class="line">  year = date.month &gt;= target_month ? date.year : date.prev_year.year</span><br><span class="line">  Date.new(year, target_month, <span class="number">1</span>)</span><br><span class="line"><span class="keyword">end</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 今日から見て直近の10月を取得（したい）</span></span><br><span class="line">closest_month(<span class="number">10</span>, Date.current)</span><br></pre></td></tr></table></figure>
 <p>この長さならワンライナーでもいい気がするな…</p>
 <figure class="highlight ruby"><table><tr><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">closest_month</span><span class="params">(target_month, date)</span></span></span><br><span class="line">  Date.new(date.month &gt;= target_month ? date.year : date.prev_year.year, target_month, <span class="number">1</span>)</span><br><span class="line"><span class="keyword">end</span></span><br></pre></td></tr></table></figure>
-<hr>
-<p>別解も考えた</p>
+<h2><span id="if文を排除">if文を排除</span></h2><p>if文というか、三項演算子で条件判定が入っているのがなんか気になる。<br>対象の月が前だろうと後だろうと同じ式から導き出せないだろうか？と思って考えた。</p>
 <figure class="highlight ruby"><table><tr><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">closest_month</span><span class="params">(target_month, date)</span></span></span><br><span class="line">  month_array = (target_month..<span class="number">12</span>).to_a + (<span class="number">1</span>...target_month).to_a</span><br><span class="line">  date.prev_month(month_array.index(date.month)).beginning_of_month</span><br><span class="line"><span class="keyword">end</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 今日から見て直近の10月を取得（したい）</span></span><br><span class="line">closest_month(<span class="number">10</span>, Date.current)</span><br></pre></td></tr></table></figure>
-<p>ちょっと解説</p>
+<p>ちょっと複雑かな？と思うので解説</p>
 <p><code>month_array = (target_month..12).to_a + (1...target_month).to_a</code>ここで、例えば<code>target_month</code>が<code>10</code>とすると<br><code>[10, 11, 12, 1, 2, 3, 4, 5, 6, 7, 8, 9]</code>という配列が得られる。</p>
 <p>この配列から、当月のindexを引くと対象月との差分が得られる。<br>つまり当月が7月なら、<code>index=9</code>になるので、9ヶ月前が対象月の10月になる。</p>
 <p>なので、<code>date.prev_month(month_array.index(date.month)).beginning_of_month</code>で差分だけ前の月を取得するという形だ。</p>
-<hr>
 <p>うーん、なんかうまいことやってる感は出たけど<br>最初のワンライナーがシンプルでわかりやすいかも。</p>
+<h2><span id="もう少し簡素に">もう少し簡素に</span></h2><p><code>[対象月から始まる配列].index(現在月) = 差分</code>という式で上の計算式は成り立っていてが<br><code>[0〜11の配列][現在月 - 対象月] = 差分</code>という式でもいける。こっちのほうがちょっと短いかな</p>
+<figure class="highlight ruby"><table><tr><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">closest_month</span><span class="params">(target_month, date)</span></span></span><br><span class="line">  date.prev_month((<span class="number">0</span>...<span class="number">12</span>).to_a[date.month - target_month]).beginning_of_month</span><br><span class="line"><span class="keyword">end</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 今日から見て直近の10月を取得（したい）</span></span><br><span class="line">closest_month(<span class="number">10</span>, Date.current)</span><br></pre></td></tr></table></figure>
+<p>少しシンプルになった。。。気がする。</p>
+<p>でも最初のワンライナーがわかりやすいかなぁ。</p>
 
       
     </div>
     <footer class="article-footer">
-      <div data-url="https://t-kojima.github.io/2019/07/10/0056-cloest-month/" data-id="cjxxa4cyp004mqiu7794g4jmy" class="article-share-items"></div>
-      <!-- <a data-url="https://t-kojima.github.io/2019/07/10/0056-cloest-month/" data-id="cjxxa4cyp004mqiu7794g4jmy" class="article-share-link">共有</a> -->
+      <div data-url="https://t-kojima.github.io/2019/07/10/0056-cloest-month/" data-id="cjxzr8xyl000wxwu735fyhn79" class="article-share-items"></div>
+      <!-- <a data-url="https://t-kojima.github.io/2019/07/10/0056-cloest-month/" data-id="cjxzr8xyl000wxwu735fyhn79" class="article-share-link">共有</a> -->
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/ruby/">ruby</a></li></ul>
