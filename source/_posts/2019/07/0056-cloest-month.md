@@ -15,7 +15,7 @@ tags:
 お題は単純に思えるけど、意外とスキッと書けない。
 Rails の[Date](http://railsdoc.com/references/Date)をみても、翌月とか前月とか、n ヶ月前とか取得するメソッドはあれど、直近 n 月を取得するメソッドはない。
 
----
+## 思いついたままやる
 
 とりあえず何も考えず愚直に書いてみる
 
@@ -37,9 +37,10 @@ def closest_month(target_month, date)
 end
 ```
 
----
+## if文を排除
 
-別解も考えた
+if文というか、三項演算子で条件判定が入っているのがなんか気になる。
+対象の月が前だろうと後だろうと同じ式から導き出せないだろうか？と思って考えた。
 
 ```ruby
 def closest_month(target_month, date)
@@ -51,7 +52,7 @@ end
 closest_month(10, Date.current)
 ```
 
-ちょっと解説
+ちょっと複雑かな？と思うので解説
 
 `month_array = (target_month..12).to_a + (1...target_month).to_a`ここで、例えば`target_month`が`10`とすると
 `[10, 11, 12, 1, 2, 3, 4, 5, 6, 7, 8, 9]`という配列が得られる。
@@ -61,7 +62,23 @@ closest_month(10, Date.current)
 
 なので、`date.prev_month(month_array.index(date.month)).beginning_of_month`で差分だけ前の月を取得するという形だ。
 
----
-
 うーん、なんかうまいことやってる感は出たけど
 最初のワンライナーがシンプルでわかりやすいかも。
+
+## もう少し簡素に
+
+`[対象月から始まる配列].index(現在月) = 差分`という式で上の計算式は成り立っていてが
+`[0〜11の配列][現在月 - 対象月] = 差分`という式でもいける。こっちのほうがちょっと短いかな
+
+```ruby
+def closest_month(target_month, date)
+  date.prev_month((0...12).to_a[date.month - target_month]).beginning_of_month
+end
+
+# 今日から見て直近の10月を取得（したい）
+closest_month(10, Date.current)
+```
+
+少しシンプルになった。。。気がする。
+
+でも最初のワンライナーがわかりやすいかなぁ。
